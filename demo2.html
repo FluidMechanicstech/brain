@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>정신과 진료 보조 시스템 - 신경화학 & 수용체 시뮬레이터</title>
+<style>
+  /* --- 기존 스타일 유지 --- */
+  body { background:#0a0a0a; color:#eee; font-family:'Segoe UI',sans-serif; margin:0; padding:20px; }
+  .container { max-width:1600px; margin:0 auto; }
+  h2 { text-align:center; color:#4fc3f7; margin-bottom:5px; }
+  .subtitle { text-align:center; color:#888; font-size:13px; margin-bottom:20px; }
+  .main-grid { display:grid; grid-template-columns:320px 1fr 300px; gap:15px; } /* 왼쪽 패널 약간 넓힘 */
+  canvas { background:#000; display:block; border:2px solid #333; border-radius:8px; width: 100%; }
+  
+  /* --- 컨트롤 패널 스타일 --- */
+  #controls { background:#1a1a1a; padding:15px; border-radius:8px; display:flex; flex-direction:column; gap:10px; max-height: 800px; overflow-y: auto; }
+  
+  .mode-switch { display:flex; background:#111; border-radius:6px; padding:4px; margin-bottom:15px; border:1px solid #333; flex-shrink: 0; }
+  .mode-btn { flex:1; padding:8px; border:none; background:transparent; color:#666; cursor:pointer; font-weight:bold; border-radius:4px; transition:all 0.3s; font-size:13px; }
+  .mode-btn.active { background:#4fc3f7; color:#000; box-shadow:0 2px 5px rgba(0,0,0,0.3); }
+  
+  .control-section { border-top: 1px solid #333; padding-top: 10px; margin-top: 5px; }
+  .control-section-title { font-size: 11px; color: #4fc3f7; font-weight: bold; margin-bottom: 8px; display: block; }
+  .control-group { margin-bottom:12px; }
+  
+  /* 의사용 컨트롤 숨김 처리 */
+  .doctor-only { display: none; }
+  .doctor-only.visible { display: block; animation: fadeIn 0.3s; }
+  
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  label { display:block; color:#aaa; font-size:12px; margin-bottom:3px; }
+  input[type="number"], select, input[type="range"] { width:100%; padding:6px; background:#2a2a2a; border:1px solid #444; color:#fff; border-radius:4px; font-size:12px; box-sizing: border-box; }
+  
+  /* Range Slider 스타일 */
+  input[type="range"] { -webkit-appearance: none; height: 4px; background: #444; outline: none; padding: 0; margin: 10px 0; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: #4fc3f7; border-radius: 50%; cursor: pointer; }
+  
+  .action-buttons { margin-top: auto; border-top: 1px solid #333; padding-top: 15px; flex-shrink: 0; }
+  button { width:100%; padding:10px; margin:3px 0; background:#333; color:#fff; border:1px solid #444; border-radius:4px; cursor:pointer; font-weight:bold; font-size:12px; transition:0.2s; }
+  button:hover { background:#444; }
+  button#applyBtn { background:#4fc3f7; color:#000; border:none; margin-bottom:10px; }
+  button#applyBtn:hover { background:#81d4fa; }
+  
+  /* --- 우측 패널 --- */
+  #rightPanel { background:#1a1a1a; padding:15px; border-radius:8px; max-height:800px; overflow-y:auto; }
+  .info-section { background:#2a2a2a; padding:12px; margin:8px 0; border-radius:6px; border-left:3px solid #4fc3f7; font-size:11px; line-height:1.5; }
+  .info-title { color:#4fc3f7; font-weight:bold; margin-bottom:5px; font-size:12px; }
+  .equation { background:#1a1a1a; padding:8px; margin:5px 0; border-radius:4px; font-family:monospace; font-size:11px; color:#ffaa00; }
+  .value-display { color:#ff4444; font-weight:bold; }
+  
+  /* --- 범례 --- */
+  #legend { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; font-size:11px; padding:10px; background:#1a1a1a; border-radius:6px; margin-top:10px; }
+  .legend-item { display:flex; align-items:center; gap:5px; }
+  .legend-color { width:15px; height:15px; border-radius:2px; }
+  .neurotransmitter-bar { height:8px; background:#333; border-radius:4px; margin:5px 0; overflow:hidden; }
+  .nt-fill { height:100%; transition:width 0.3s; }
+  
+  /* 스크롤바 커스텀 */
+  ::-webkit-scrollbar { width:8px; }
+  ::-webkit-scrollbar-track { background:#1a1a1a; }
+  ::-webkit-scrollbar-thumb { background:#4fc3f7; border-radius:4px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>🧠 정신과 진료 보조 시스템 - 신경화학 & 수용체 시뮬레이터</h2>
+  <div class="subtitle">약물 기전 시각화 및 수용체 반응성 분석 도구</div>
+  
+  <div class="main-grid">
+    <div id="controls">
+      <div class="mode-switch">
+        <button class="mode-btn active" onclick="setMode('patient')">👤 환자용 (상담)</button>
+        <button class="mode-btn" onclick="setMode('doctor')">👨‍⚕️ 의사용 (정밀설정)</button>
+      </div>
+
+      <div class="control-section">
+        <span class="control-section-title">💊 처방 및 상태 설정</span>
+        <div class="control-group">
+          <label>약물/물질 선택</label>
+          <select id="drugSelect">
+            <option value="none">정상 상태 (Baseline)</option>
+            <option value="caffeine">카페인 (Caffeine)</option>
+            <option value="nicotine">니코틴 (Nicotine)</option>
+            <option value="alcohol">알코올 (Alcohol)</option>
+            <option value="thc">대마 (THC)</option>
+            <option value="mdma">MDMA</option>
+            <option value="cocaine">코카인 (Cocaine)</option>
+            <option value="amphetamine">암페타민 (Amphetamine)</option>
+            <option value="lsd">LSD</option>
+            <option value="psilocybin">실로시빈 (Psilocybin)</option>
+            <option value="ketamine">케타민 (Ketamine)</option>
+          </select>
+        </div>
+        
+        <div class="control-group">
+          <label>투여량 / 농도 (mg)</label>
+          <input id="dosage" type="number" value="100" min="0" step="10">
+        </div>
+        
+        <div class="control-group">
+          <label>복용 후 경과 시간 (분)</label>
+          <input id="timeElapsed" type="number" value="30" min="0" step="5">
+        </div>
+      </div>
+
+      <div id="advancedControls" class="doctor-only">
+        
+        <div class="control-section">
+          <span class="control-section-title">🔌 신경수용체 (Receptors) 민감도/밀도</span>
+          <div class="subtitle" style="text-align:left; margin-bottom:5px;">(1.0=정상, <1.0=내성/Downregulation, >1.0=과민)</div>
+          
+          <div class="control-group">
+            <label>D2 도파민 수용체: <span id="val_d2" style="color:#4fc3f7">1.0</span></label>
+            <input id="rec_dopamine" type="range" min="0.1" max="2.0" step="0.1" value="1.0" oninput="document.getElementById('val_d2').innerText=this.value">
+          </div>
+
+          <div class="control-group">
+            <label>5-HT 세로토닌 수용체: <span id="val_5ht" style="color:#4fc3f7">1.0</span></label>
+            <input id="rec_serotonin" type="range" min="0.1" max="2.0" step="0.1" value="1.0" oninput="document.getElementById('val_5ht').innerText=this.value">
+          </div>
+
+          <div class="control-group">
+            <label>GABA-A 수용체: <span id="val_gaba" style="color:#4fc3f7">1.0</span></label>
+            <input id="rec_gaba" type="range" min="0.1" max="2.0" step="0.1" value="1.0" oninput="document.getElementById('val_gaba').innerText=this.value">
+          </div>
+
+          <div class="control-group">
+            <label>NMDA (글루타메이트) 수용체: <span id="val_nmda" style="color:#4fc3f7">1.0</span></label>
+            <input id="rec_glutamate" type="range" min="0.1" max="2.0" step="0.1" value="1.0" oninput="document.getElementById('val_nmda').innerText=this.value">
+          </div>
+        </div>
+
+        <div class="control-section">
+          <span class="control-section-title">⚙️ 생물물리학 파라미터 (고급)</span>
+          
+          <div class="control-group">
+            <label>🧬 DNA 나선 밀도</label>
+            <input id="helixDensity" type="number" value="0.7" min="0.1" max="1" step="0.1">
+          </div>
+          
+          <div class="control-group">
+            <label>🌊 유체 점성 (μ)</label>
+            <input id="viscosity" type="number" value="0.05" min="0.01" max="0.2" step="0.01">
+          </div>
+          
+          <div class="control-group">
+            <label>⚡ 확산 계수 (D)</label>
+            <input id="diffusion" type="number" value="1.5" min="0.5" max="5" step="0.5">
+          </div>
+          
+          <div class="control-group">
+            <label>🧪 pH 레벨</label>
+            <input id="pH" type="number" value="7.4" min="6.8" max="7.8" step="0.1">
+          </div>
+        </div>
+      </div>
+      
+      <div class="action-buttons">
+        <button id="applyBtn">🚀 시뮬레이션 적용</button>
+        <button id="pauseBtn">⏸️ 일시정지 / 재생</button>
+        <button id="resetBtn">🔄 초기화</button>
+        <button id="saveBtn">💾 상담 자료 저장</button>
+      </div>
+    </div>
+    
+    <div>
+      <canvas id="canvas" width="1200" height="800"></canvas>
+      <div id="legend">
+        <div class="legend-item"><div class="legend-color" style="background:#ff4444;"></div>활성 뇌영역</div>
+        <div class="legend-item"><div class="legend-color" style="background:#444;"></div>비활성</div>
+        <div class="legend-item"><div class="legend-color" style="background:#ffaa00;"></div>신경전달물질</div>
+        <div class="legend-item"><div class="legend-color" style="background:#4fc3f7;"></div>시냅스/수용체</div>
+        <div class="legend-item"><div class="legend-color" style="background:#0f0;"></div>전자 구름</div>
+        <div class="legend-item"><div class="legend-color" style="background:red;"></div>DNA A</div>
+        <div class="legend-item"><div class="legend-color" style="background:green;"></div>DNA T</div>
+        <div class="legend-item"><div class="legend-color" style="background:blue;"></div>DNA C</div>
+        <div class="legend-item"><div class="legend-color" style="background:yellow;"></div>DNA G</div>
+      </div>
+    </div>
+    
+    <div id="rightPanel"></div>
+  </div>
+</div>
+
+<script>
+// --- UI 제어 ---
+function setMode(mode) {
+  const advancedControls = document.getElementById('advancedControls');
+  const btns = document.querySelectorAll('.mode-btn');
+  
+  btns.forEach(btn => btn.classList.remove('active'));
+  
+  if (mode === 'doctor') {
+    advancedControls.classList.add('visible');
+    btns[1].classList.add('active');
+  } else {
+    advancedControls.classList.remove('visible');
+    btns[0].classList.add('active');
+  }
+}
+
+// 기존 로직 + 수용체 로직 추가
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let isPaused = false;
+
+// 물리 상수
+const BOLTZMANN = 1.380649e-23;
+const PLANCK = 6.62607015e-34;
+const AVOGADRO = 6.02214076e23;
+
+// 뇌 영역 정의
+const brainRegions = {
+  prefrontalCortex: { x: 600, y: 200, name: '전전두피질', size: 40, dna: 'ATCGATCGATCG' },
+  motorCortex: { x: 500, y: 180, name: '운동피질', size: 35, dna: 'GCTAGCTAGCTA' },
+  premotor: { x: 550, y: 170, name: '전운동피질', size: 30, dna: 'CGCGATATCGCG' },
+  parietalCortex: { x: 400, y: 200, name: '두정엽', size: 35, dna: 'TATACGCGTATA' },
+  somatosensory: { x: 450, y: 220, name: '체감각', size: 30, dna: 'GCGCATATATAT' },
+  temporalCortex: { x: 650, y: 350, name: '측두엽', size: 35, dna: 'ATATATCGCGCG' },
+  auditoryCortex: { x: 550, y: 330, name: '청각피질', size: 30, dna: 'CGCGCGATATAT' },
+  hippocampus: { x: 600, y: 400, name: '해마', size: 28, dna: 'ATCGATCGATCG' },
+  amygdala: { x: 650, y: 420, name: '편도체', size: 25, dna: 'GCTAGCTAGCTA' },
+  occipitalCortex: { x: 300, y: 250, name: '후두엽', size: 35, dna: 'TATATACGCGCG' },
+  visualCortex: { x: 350, y: 280, name: '시각피질', size: 32, dna: 'CGCGATATATCG' },
+  cingulate: { x: 550, y: 280, name: '대상회', size: 30, dna: 'ATCGCGCGATCG' },
+  insula: { x: 700, y: 300, name: '섬엽', size: 28, dna: 'GCGCATATGCGC' },
+  striatum: { x: 600, y: 320, name: '선조체', size: 30, dna: 'ATATCGCGATAT' },
+  nucleusAccumbens: { x: 620, y: 340, name: '측좌핵', size: 25, dna: 'CGCGATCGCGAT' },
+  substantiaNigra: { x: 580, y: 450, name: '흑질', size: 26, dna: 'ATCGATATATCG' },
+  hypothalamus: { x: 600, y: 480, name: '시상하부', size: 24, dna: 'GCGCGCATATAT' },
+  thalamus: { x: 550, y: 360, name: '시상', size: 28, dna: 'TATACGCGATAT' },
+  brainstem: { x: 600, y: 550, name: '뇌간', size: 30, dna: 'ATCGCGCGCGAT' },
+  cerebellum: { x: 450, y: 600, name: '소뇌', size: 40, dna: 'GCGCATATCGCG' },
+  vta: { x: 560, y: 500, name: 'VTA', size: 22, dna: 'ATATATCGCGCG' },
+  raphe: { x: 620, y: 520, name: '봉선핵', size: 22, dna: 'CGCGCGATATAT' },
+  locusCoeruleus: { x: 540, y: 540, name: '청반', size: 20, dna: 'ATATCGCGATCG' }
+};
+
+// 향정신성 물질 데이터
+const drugData = {
+  none: {
+    name: '정상 상태',
+    activeRegions: ['prefrontalCortex', 'motorCortex', 'visualCortex', 'auditoryCortex', 'thalamus'],
+    effectStrength: 0.3,
+    dopamine: 0.5, serotonin: 0.5, gaba: 0.5, glutamate: 0.5, acetylcholine: 0.5,
+    pH_shift: 0, osmolarity: 1.0, temperature: 310.15
+  },
+  caffeine: {
+    name: '카페인',
+    activeRegions: ['prefrontalCortex', 'motorCortex', 'premotor', 'parietalCortex', 'cingulate', 'thalamus', 'brainstem', 'locusCoeruleus'],
+    effectStrength: 0.5,
+    dopamine: 0.7, serotonin: 0.5, gaba: 0.4, glutamate: 0.6, acetylcholine: 0.6,
+    pH_shift: 0.1, osmolarity: 1.05, temperature: 310.5
+  },
+  nicotine: {
+    name: '니코틴',
+    activeRegions: ['prefrontalCortex', 'striatum', 'nucleusAccumbens', 'vta', 'hippocampus', 'amygdala', 'insula', 'thalamus'],
+    effectStrength: 0.6,
+    dopamine: 0.85, serotonin: 0.6, gaba: 0.5, glutamate: 0.7, acetylcholine: 0.9,
+    pH_shift: -0.05, osmolarity: 1.02, temperature: 310.3
+  },
+  alcohol: {
+    name: '알코올',
+    activeRegions: ['prefrontalCortex', 'hippocampus', 'amygdala', 'cerebellum', 'brainstem', 'striatum'],
+    inactiveRegions: ['motorCortex', 'premotor', 'somatosensory', 'visualCortex'],
+    effectStrength: 0.7,
+    dopamine: 0.6, serotonin: 0.55, gaba: 0.9, glutamate: 0.3, acetylcholine: 0.4,
+    pH_shift: -0.15, osmolarity: 0.95, temperature: 309.8
+  },
+  thc: {
+    name: 'THC',
+    activeRegions: ['prefrontalCortex', 'hippocampus', 'amygdala', 'striatum', 'nucleusAccumbens', 'cerebellum', 'hypothalamus', 'vta'],
+    effectStrength: 0.75,
+    dopamine: 0.75, serotonin: 0.6, gaba: 0.7, glutamate: 0.65, acetylcholine: 0.55,
+    pH_shift: 0.05, osmolarity: 1.08, temperature: 310.4
+  },
+  mdma: {
+    name: 'MDMA',
+    activeRegions: ['prefrontalCortex', 'amygdala', 'hippocampus', 'striatum', 'nucleusAccumbens', 'vta', 'raphe', 'insula', 'cingulate'],
+    effectStrength: 0.9,
+    dopamine: 0.8, serotonin: 0.95, gaba: 0.6, glutamate: 0.7, acetylcholine: 0.65,
+    pH_shift: 0.2, osmolarity: 1.15, temperature: 311.5
+  },
+  cocaine: {
+    name: '코카인',
+    activeRegions: ['prefrontalCortex', 'striatum', 'nucleusAccumbens', 'vta', 'motorCortex', 'amygdala', 'cingulate', 'insula', 'locusCoeruleus'],
+    effectStrength: 0.95,
+    dopamine: 0.98, serotonin: 0.7, gaba: 0.5, glutamate: 0.8, acetylcholine: 0.65,
+    pH_shift: 0.15, osmolarity: 1.2, temperature: 311.2
+  },
+  amphetamine: {
+    name: '암페타민',
+    activeRegions: ['prefrontalCortex', 'striatum', 'nucleusAccumbens', 'vta', 'motorCortex', 'premotor', 'parietalCortex', 'cingulate', 'locusCoeruleus'],
+    effectStrength: 0.85,
+    dopamine: 0.95, serotonin: 0.65, gaba: 0.45, glutamate: 0.75, acetylcholine: 0.7,
+    pH_shift: 0.18, osmolarity: 1.18, temperature: 311.0
+  },
+  lsd: {
+    name: 'LSD',
+    activeRegions: ['prefrontalCortex', 'visualCortex', 'occipitalCortex', 'temporalCortex', 'parietalCortex', 'cingulate', 'insula', 'thalamus', 'raphe', 'hippocampus'],
+    effectStrength: 0.95,
+    dopamine: 0.7, serotonin: 0.98, gaba: 0.6, glutamate: 0.85, acetylcholine: 0.75,
+    pH_shift: 0.12, osmolarity: 1.12, temperature: 310.8
+  },
+  psilocybin: {
+    name: '실로시빈',
+    activeRegions: ['prefrontalCortex', 'visualCortex', 'occipitalCortex', 'cingulate', 'hippocampus', 'amygdala', 'thalamus', 'raphe', 'insula'],
+    effectStrength: 0.9,
+    dopamine: 0.65, serotonin: 0.95, gaba: 0.55, glutamate: 0.8, acetylcholine: 0.7,
+    pH_shift: 0.1, osmolarity: 1.1, temperature: 310.6
+  },
+  ketamine: {
+    name: '케타민',
+    activeRegions: ['prefrontalCortex', 'hippocampus', 'thalamus', 'cingulate'],
+    inactiveRegions: ['motorCortex', 'cerebellum', 'somatosensory', 'visualCortex', 'auditoryCortex'],
+    effectStrength: 0.85,
+    dopamine: 0.7, serotonin: 0.6, gaba: 0.65, glutamate: 0.25, acetylcholine: 0.5,
+    pH_shift: -0.1, osmolarity: 0.92, temperature: 309.9
+  }
+};
+
+let currentDrug = 'none';
+let animationFrame;
+let time = 0;
+let particles = [];
+let electrons = [];
+let fluidField = [];
+
+// 수용체 설정값 가져오기
+function getReceptorSettings() {
+  return {
+    dopamine: parseFloat(document.getElementById('rec_dopamine').value),
+    serotonin: parseFloat(document.getElementById('rec_serotonin').value),
+    gaba: parseFloat(document.getElementById('rec_gaba').value),
+    glutamate: parseFloat(document.getElementById('rec_glutamate').value)
+  };
+}
+
+// DNA 이중나선 생성
+function generateDNAHelix(sequence, x0, y0, radius) {
+  const helix = [];
+  const baseColors = { A: '#ff0000', T: '#00ff00', C: '#0000ff', G: '#ffff00' };
+  const pairs = { A: 'T', T: 'A', C: 'G', G: 'C' };
+  
+  for (let i = 0; i < sequence.length; i++) {
+    const t = i * 0.5;
+    const angle = t;
+    const x1 = x0 + radius * Math.cos(angle);
+    const y1 = y0 + radius * Math.sin(angle) + i * 2;
+    const x2 = x0 - radius * Math.cos(angle);
+    const y2 = y0 - radius * Math.sin(angle) + i * 2;
+    
+    helix.push({
+      x1, y1, x2, y2,
+      base1: sequence[i],
+      base2: pairs[sequence[i]],
+      color1: baseColors[sequence[i]],
+      color2: baseColors[pairs[sequence[i]]]
+    });
+  }
+  return helix;
+}
+
+// Navier-Stokes 2D 유체 필드
+function initFluidField() {
+  fluidField = [];
+  for (let i = 0; i < 50; i++) {
+    for (let j = 0; j < 50; j++) {
+      fluidField.push({
+        x: i * 24,
+        y: j * 16,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        pressure: 1.0
+      });
+    }
+  }
+}
+
+// Burgers 방정식 적용
+function applyBurgersEquation(drug) {
+  const viscosity = parseFloat(document.getElementById('viscosity').value);
+  const dt = 0.1;
+  
+  fluidField.forEach((cell, idx) => {
+    // ∂u/∂t + u∂u/∂x = ν∂²u/∂x²
+    const advection = cell.vx * cell.vx * 0.1;
+    const diffusion = viscosity * (Math.random() - 0.5);
+    
+    cell.vx += (-advection + diffusion) * dt * drug.effectStrength;
+    cell.vy += (-advection + diffusion) * dt * drug.effectStrength;
+    
+    const speed = Math.sqrt(cell.vx * cell.vx + cell.vy * cell.vy);
+    if (speed > 2) {
+      cell.vx = (cell.vx / speed) * 2;
+      cell.vy = (cell.vy / speed) * 2;
+    }
+  });
+}
+
+// 전자 구름 생성
+function createElectronCloud(region, count) {
+  const newElectrons = [];
+  const diffusion = parseFloat(document.getElementById('diffusion').value);
+  
+  for (let i = 0; i < count; i++) {
+    const r = diffusion * Math.sqrt(-2 * Math.log(Math.random()));
+    const theta = 2 * Math.PI * Math.random();
+    
+    newElectrons.push({
+      x: region.x + r * Math.cos(theta),
+      y: region.y + r * Math.sin(theta),
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: (Math.random() - 0.5) * 0.5,
+      energy: Math.random() * 2,
+      phase: Math.random() * Math.PI * 2
+    });
+  }
+  return newElectrons;
+}
+
+function quantumTunneling(electron) {
+  const tunnelingProb = parseFloat(document.getElementById('tunneling').value); // 기존 ID 사용
+  
+  if (Math.random() < tunnelingProb) {
+    const tunnelingDistance = 50 + Math.random() * 100;
+    const angle = Math.random() * Math.PI * 2;
+    electron.x += tunnelingDistance * Math.cos(angle);
+    electron.y += tunnelingDistance * Math.sin(angle);
+    return true;
+  }
+  return false;
+}
+
+function calculateAcidBase() {
+  const pH = parseFloat(document.getElementById('pH').value);
+  const drug = drugData[currentDrug];
+  const effectivePH = pH + drug.pH_shift;
+  const pKa = 7.4;
+  const ratio = Math.pow(10, effectivePH - pKa);
+  
+  return {
+    pH: effectivePH,
+    acidicForm: 1 / (1 + ratio),
+    basicForm: ratio / (1 + ratio),
+    bufferCapacity: 2.303 * ratio / Math.pow(1 + ratio, 2)
+  };
+}
+
+// 입자 생성 (수용체 감도 반영)
+function createParticles(activeRegions, drug) {
+  particles = [];
+  const receptors = getReceptorSettings();
+  
+  // 수용체 감도가 높을수록 입자가 더 많이/강하게 보임
+  // 평균 감도 계산
+  const avgSensitivity = (receptors.dopamine + receptors.serotonin + receptors.gaba + receptors.glutamate) / 4;
+  
+  const particleCount = Math.floor(drug.effectStrength * 60 * avgSensitivity);
+  
+  activeRegions.forEach(regionKey => {
+    const region = brainRegions[regionKey];
+    if (!region) return;
+    
+    const count = Math.floor(particleCount / activeRegions.length);
+    for (let i = 0; i < count; i++) {
+      const type = ['dopamine', 'serotonin', 'gaba', 'glutamate'][Math.floor(Math.random() * 4)];
+      let speedMod = 1.0;
+      
+      // 수용체 타입별 속도/수명 보정
+      if (type === 'dopamine') speedMod = receptors.dopamine;
+      if (type === 'serotonin') speedMod = receptors.serotonin;
+      if (type === 'gaba') speedMod = receptors.gaba;
+      if (type === 'glutamate') speedMod = receptors.glutamate;
+
+      particles.push({
+        x: region.x + (Math.random() - 0.5) * region.size,
+        y: region.y + (Math.random() - 0.5) * region.size,
+        vx: (Math.random() - 0.5) * 3 * speedMod,
+        vy: (Math.random() - 0.5) * 3 * speedMod,
+        life: 1.0 * speedMod, // 감도가 높으면 수명도 길게(결합 오래함)
+        type: type,
+        sensitivity: speedMod
+      });
+    }
+  });
+}
+
+// 뇌 외곽선
+function drawBrainOutline() {
+  ctx.strokeStyle = '#333';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.ellipse(500, 350, 250, 280, 0, 0, Math.PI * 2);
+  ctx.moveTo(350, 600);
+  ctx.quadraticCurveTo(450, 650, 550, 600);
+  ctx.moveTo(580, 550);
+  ctx.lineTo(600, 650);
+  ctx.stroke();
+  
+  ctx.strokeStyle = '#222';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(500, 100);
+  ctx.lineTo(500, 550);
+  ctx.stroke();
+}
+
+// 렌더링
+function render() {
+  if (isPaused) return;
+  
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  drawBrainOutline();
+  
+  const drug = drugData[currentDrug];
+  const activeRegions = drug.activeRegions || [];
+  const inactiveRegions = drug.inactiveRegions || [];
+  const helixDensity = parseFloat(document.getElementById('helixDensity').value);
+  const receptors = getReceptorSettings();
+
+  time += 0.1;
+  
+  // Burgers Equation
+  applyBurgersEquation(drug);
+  
+  // 유체 필드
+  ctx.globalAlpha = 0.1;
+  fluidField.forEach(cell => {
+    const speed = Math.sqrt(cell.vx * cell.vx + cell.vy * cell.vy);
+    ctx.strokeStyle = `rgba(79, 195, 247, ${speed * 0.5})`;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(cell.x, cell.y);
+    ctx.lineTo(cell.x + cell.vx * 10, cell.y + cell.vy * 10);
+    ctx.stroke();
+  });
+  ctx.globalAlpha = 1;
+  
+  // 시냅스 연결 (수용체 감도에 따라 밝기 조절)
+  activeRegions.forEach(key1 => {
+    const region1 = brainRegions[key1];
+    if (!region1) return;
+    
+    activeRegions.forEach(key2 => {
+      if (key1 >= key2) return;
+      const region2 = brainRegions[key2];
+      if (!region2 || Math.random() > helixDensity) return;
+      
+      const avgSens = (receptors.dopamine + receptors.glutamate) / 2; // 대략적 활성도
+      const alpha = 0.1 * avgSens;
+
+      const gradient = ctx.createLinearGradient(region1.x, region1.y, region2.x, region2.y);
+      gradient.addColorStop(0, `rgba(79, 195, 247, ${alpha + 0.3})`);
+      gradient.addColorStop(1, `rgba(79, 195, 247, ${alpha})`);
+      
+      ctx.strokeStyle = gradient;
+      ctx.lineWidth = (1 + drug.effectStrength * 2) * avgSens;
+      ctx.beginPath();
+      ctx.moveTo(region1.x, region1.y);
+      ctx.lineTo(region2.x, region2.y);
+      ctx.stroke();
+    });
+  });
+  
+  // 전자 구름
+  electrons.forEach((e, idx) => {
+    e.x += e.vx;
+    e.y += e.vy;
+    e.phase += 0.1;
+    
+    if (quantumTunneling(e)) {
+      e.energy += 0.5;
+    }
+    
+    const psi = Math.sin(e.phase) * Math.exp(-e.energy * 0.1);
+    const probability = psi * psi;
+    
+    ctx.fillStyle = `rgba(0, 255, 0, ${probability * 0.6})`;
+    ctx.beginPath();
+    ctx.arc(e.x, e.y, 2, 0, Math.PI * 2);
+    ctx.fill();
+    
+    if (e.x < 0 || e.x > canvas.width || e.y < 0 || e.y > canvas.height) {
+      electrons.splice(idx, 1);
+    }
+  });
+  
+  // 신경전달물질 입자
+  particles.forEach((p, idx) => {
+    p.x += p.vx;
+    p.y += p.vy;
+    p.life -= 0.008; // 기본 감소
+    
+    if (p.life <= 0) {
+      particles.splice(idx, 1);
+      return;
+    }
+    
+    const colors = {
+      dopamine: [255, 170, 0],
+      serotonin: [255, 100, 255],
+      gaba: [100, 100, 255],
+      glutamate: [255, 255, 100]
+    };
+    const c = colors[p.type] || [255, 170, 0];
+    
+    // 수용체 감도(p.sensitivity)가 낮으면 입자가 흐릿함
+    ctx.fillStyle = `rgba(${c[0]}, ${c[1]}, ${c[2]}, ${p.life * 0.8 * p.sensitivity})`;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 2.5 * p.sensitivity, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  
+  // 뇌 영역
+  Object.entries(brainRegions).forEach(([key, region]) => {
+    const isActive = activeRegions.includes(key);
+    const isInactive = inactiveRegions && inactiveRegions.includes(key);
+    
+    if (isActive && Math.random() < helixDensity) {
+      const helix = generateDNAHelix(region.dna, region.x, region.y, 8);
+      helix.forEach(strand => {
+        ctx.strokeStyle = '#444';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(strand.x1, strand.y1);
+        ctx.lineTo(strand.x2, strand.y2);
+        ctx.stroke();
+        ctx.fillStyle = strand.color1;
+        ctx.beginPath();
+        ctx.arc(strand.x1, strand.y1, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = strand.color2;
+        ctx.beginPath();
+        ctx.arc(strand.x2, strand.y2, 2, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+    
+    if (isActive) {
+      const glowSize = region.size + 12 + Math.sin(time * 0.5) * 6;
+      const gradient = ctx.createRadialGradient(region.x, region.y, region.size / 2, region.x, region.y, glowSize);
+      gradient.addColorStop(0, 'rgba(255, 68, 68, 0.5)');
+      gradient.addColorStop(1, 'rgba(255, 68, 68, 0)');
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(region.x, region.y, glowSize, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    
+    if (isActive) {
+      ctx.fillStyle = '#ff4444';
+      ctx.strokeStyle = '#ff6666';
+    } else if (isInactive) {
+      ctx.fillStyle = '#1a1a1a';
+      ctx.strokeStyle = '#333';
+    } else {
+      ctx.fillStyle = '#444';
+      ctx.strokeStyle = '#666';
+    }
+    
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(region.x, region.y, region.size / 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    
+    ctx.fillStyle = isActive ? '#fff' : '#888';
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(region.name, region.x, region.y + region.size / 2 + 14);
+  });
+  
+  ctx.fillStyle = '#4fc3f7';
+  ctx.font = 'bold 14px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText(`${drug.name} | 시간: ${time.toFixed(1)}초`, 20, 25);
+  
+  // 입자 생성 조건에 수용체 감도 반영
+  const avgSens = (receptors.dopamine + receptors.serotonin + receptors.gaba + receptors.glutamate) / 4;
+  if (particles.length < (80 * avgSens) && activeRegions.length > 0 && Math.random() < 0.3) {
+    createParticles(activeRegions, drug);
+  }
+  
+  if (electrons.length < 150 && activeRegions.length > 0 && Math.random() < 0.2) {
+    activeRegions.forEach(key => {
+      const region = brainRegions[key];
+      if (region) {
+        electrons.push(...createElectronCloud(region, 3));
+      }
+    });
+  }
+  
+  animationFrame = requestAnimationFrame(render);
+}
+
+// 정보 패널 업데이트
+function updateInfoPanel() {
+  const drug = drugData[currentDrug];
+  const acidBase = calculateAcidBase();
+  const diffusion = parseFloat(document.getElementById('diffusion').value);
+  const viscosity = parseFloat(document.getElementById('viscosity').value);
+  const tunneling = parseFloat(document.getElementById('tunneling').value);
+  const receptors = getReceptorSettings();
+  
+  let html = `
+    <div class="info-section">
+      <div class="info-title">💊 ${drug.name}</div>
+      효과 강도: <span class="value-display">${(drug.effectStrength * 100).toFixed(0)}%</span><br>
+      활성 영역: <span class="value-display">${(drug.activeRegions || []).length}개</span>
+    </div>
+
+    <div class="info-section">
+      <div class="info-title">🔌 수용체 결합 상태 (Receptor Binding)</div>
+      설정된 민감도(Affinity)에 따른 예상 반응:<br>
+      <ul>
+        <li>D2 (도파민): <span class="value-display">${receptors.dopamine.toFixed(1)}x</span> ${receptors.dopamine < 1 ? '(내성)' : receptors.dopamine > 1 ? '(과민)' : '(정상)'}</li>
+        <li>5-HT (세로토닌): <span class="value-display">${receptors.serotonin.toFixed(1)}x</span></li>
+        <li>GABA-A: <span class="value-display">${receptors.gaba.toFixed(1)}x</span></li>
+        <li>NMDA: <span class="value-display">${receptors.glutamate.toFixed(1)}x</span></li>
+      </ul>
+      <div class="equation">
+        Total Effect = 농도[C] × 친화력[Kd]⁻¹<br>
+        현재 보정 계수: ${((receptors.dopamine + receptors.serotonin + receptors.gaba + receptors.glutamate)/4).toFixed(2)}
+      </div>
+    </div>
+    
+    <div class="info-section">
+      <div class="info-title">🧬 신경전달물질 농도 (보정됨)</div>
+      <strong>도파민 (Dopamine)</strong>
+      <div class="neurotransmitter-bar">
+        <div class="nt-fill" style="width:${drug.dopamine * 100 * receptors.dopamine}%; max-width:100%; background:linear-gradient(90deg, #ff4444, #ff8888);"></div>
+      </div>
+      
+      <strong>세로토닌 (Serotonin)</strong>
+      <div class="neurotransmitter-bar">
+        <div class="nt-fill" style="width:${drug.serotonin * 100 * receptors.serotonin}%; max-width:100%; background:linear-gradient(90deg, #ff44ff, #ff88ff);"></div>
+      </div>
+      
+      <strong>GABA</strong>
+      <div class="neurotransmitter-bar">
+        <div class="nt-fill" style="width:${drug.gaba * 100 * receptors.gaba}%; max-width:100%; background:linear-gradient(90deg, #4444ff, #8888ff);"></div>
+      </div>
+      
+      <strong>글루타메이트 (Glutamate)</strong>
+      <div class="neurotransmitter-bar">
+        <div class="nt-fill" style="width:${drug.glutamate * 100 * receptors.glutamate}%; max-width:100%; background:linear-gradient(90deg, #ffff44, #ffff88);"></div>
+      </div>
+    </div>
+
+    <div class="info-section">
+      <div class="info-title">🌊 Navier-Stokes 2D 방정식</div>
+      유체역학적 신경전달물질 흐름<br>
+      <div class="equation">
+        ∂u/∂t + (u·∇)u = -∇p/ρ + ν∇²u<br>
+        점성계수 ν = <span class="value-display">${viscosity}</span>
+      </div>
+    </div>
+    
+    <div class="info-section">
+      <div class="info-title">⚡ 전자 분포 (양자역학)</div>
+      확산계수 D = <span class="value-display">${diffusion}</span><br>
+      <div class="equation">
+        ρ(r) = |ψ|² = exp(-r²/2σ²)<br>
+        σ = √(2Dt) (Gaussian 분포)
+      </div>
+    </div>
+    
+    <div class="info-section">
+      <div class="info-title">🎯 양자 터널링</div>
+      터널링 확률: <span class="value-display">${(tunneling * 100).toFixed(1)}%</span><br>
+      <div class="equation">
+        T ≈ exp(-2κd)<br>
+        κ = √(2m(V-E)/ℏ²)
+      </div>
+    </div>
+    
+    <div class="info-section">
+      <div class="info-title">🧪 산-염기 평형</div>
+      <div class="equation">
+        pH = pKa + log([A⁻]/[HA])<br>
+        현재 pH = <span class="value-display">${acidBase.pH.toFixed(2)}</span>
+      </div>
+    </div>
+  `;
+  
+  document.getElementById('rightPanel').innerHTML = html;
+}
+
+// 이벤트 핸들러
+document.getElementById('applyBtn').onclick = () => {
+  currentDrug = document.getElementById('drugSelect').value;
+  time = 0;
+  particles = [];
+  electrons = [];
+  initFluidField();
+  
+  const drug = drugData[currentDrug];
+  createParticles(drug.activeRegions || [], drug);
+  
+  (drug.activeRegions || []).forEach(key => {
+    const region = brainRegions[key];
+    if (region) {
+      electrons.push(...createElectronCloud(region, 10));
+    }
+  });
+  
+  updateInfoPanel();
+  isPaused = false;
+  
+  if (animationFrame) cancelAnimationFrame(animationFrame);
+  render();
+};
+
+document.getElementById('pauseBtn').onclick = () => {
+  isPaused = !isPaused;
+  document.getElementById('pauseBtn').textContent = isPaused ? '▶️ 재생' : '⏸️ 일시정지';
+  if (!isPaused) render();
+};
+
+document.getElementById('resetBtn').onclick = () => {
+  document.getElementById('drugSelect').value = 'none';
+  document.getElementById('dosage').value = '100';
+  document.getElementById('timeElapsed').value = '30';
+  
+  // 수용체 초기화
+  document.getElementById('rec_dopamine').value = '1.0';
+  document.getElementById('rec_serotonin').value = '1.0';
+  document.getElementById('rec_gaba').value = '1.0';
+  document.getElementById('rec_glutamate').value = '1.0';
+  document.getElementById('val_d2').innerText = '1.0';
+  document.getElementById('val_5ht').innerText = '1.0';
+  document.getElementById('val_gaba').innerText = '1.0';
+  document.getElementById('val_nmda').innerText = '1.0';
+
+  document.getElementById('helixDensity').value = '0.7';
+  document.getElementById('viscosity').value = '0.05';
+  document.getElementById('diffusion').value = '1.5';
+  document.getElementById('tunneling').value = '0.08';
+  document.getElementById('pH').value = '7.4';
+  currentDrug = 'none';
+  time = 0;
+  particles = [];
+  electrons = [];
+  initFluidField();
+  updateInfoPanel();
+  isPaused = false;
+  
+  if (animationFrame) cancelAnimationFrame(animationFrame);
+  render();
+};
+
+document.getElementById('saveBtn').onclick = () => {
+  const link = document.createElement('a');
+  link.download = `brain_simulation_${currentDrug}_${Date.now()}.png`;
+  link.href = canvas.toDataURL();
+  link.click();
+};
+
+// 수용체 슬라이더 변경 시 패널 실시간 업데이트
+['rec_dopamine', 'rec_serotonin', 'rec_gaba', 'rec_glutamate'].forEach(id => {
+  document.getElementById(id).addEventListener('input', updateInfoPanel);
+});
+
+// 초기화
+initFluidField();
+updateInfoPanel();
+render();
+</script>
+</body>
+</html>
