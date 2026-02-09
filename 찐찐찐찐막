@@ -1,0 +1,15 @@
+[Mahalanobis_Distance_Gradient_Analysis.txt]
+1. 답변 요약
+마할라노비스 거리(Mahalanobis Distance)를 편미분하면 데이터의 통계적 분포(공분산)를 반영하여 공간의 왜곡을 보정한 그래디언트 구조가 도출됩니다.
+2. 수식 전개
+마할라노비스 거리 (d):
+d = sqrt( (x - mu)^T * Sigma^-1 * (x - mu) )
+(x: 데이터 포인트, mu: 평균 벡터, Sigma: 공분산 행렬)
+x에 대한 편미분 (Gradient):
+grad_x(d) = [ Sigma^-1 * (x - mu) ] / d 
+3. 그래디언트 구조의 주요 특징
+통계적 가중치 반영: 단순 유클리드 거리와 달리 공분산의 역행렬(Sigma^-1)이 곱해져 있어, 변수 간 상관관계와 분산이 큰 방향에 따라 기울기가 조정됩니다.
+기하학적 방향성: 그래디언트 벡터는 데이터 분포의 중심에서 멀어지는 방향을 가리키며, 데이터 밀도에 따라 그 크기가 변하는 기하학적 구조를 가집니다. Stack Exchange - Gradient of a Mahalanobis distance
+비선형적 특성: 거리 함수 자체가 비선형(제곱근)이므로, 위치 x에 따라 변화율이 달라지는 비선형 그래디언트 필드를 형성합니다. 
+4. 응용 분야
+이 그래디언트 구조는 데이터의 분포를 고려한 경사 하강법(Gradient Descent) 최적화나, 이상치 탐지(Outlier Detection) 시 중심으로부터의 변화율을 정밀하게 추적하는 데 사용됩니다. MATLAB - Mahalanobis Distance for Samples
