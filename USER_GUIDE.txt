@@ -1,0 +1,598 @@
+================================================================================
+MSTT - Mahalanobis Security Testing Toolkit
+완전 가이드 및 사용 설명서
+================================================================================
+
+목차
+----
+1. 소개
+2. 설치 방법
+3. 핵심 개념
+4. 사용 방법
+   4.1 블랙박스 테스팅
+   4.2 화이트박스 테스팅  
+   4.3 그레이박스 테스팅
+5. 실전 시나리오
+6. 고급 기능
+7. 문제 해결
+8. FAQ
+
+
+================================================================================
+1. 소개
+================================================================================
+
+MSTT는 마할라노비스 거리를 기반으로 한 보안 테스팅 도구입니다.
+
+주요 기능:
+----------
+✓ 블랙박스 테스팅: 외부 관찰만으로 이상 탐지
+✓ 화이트박스 테스팅: 코드 수준 취약점 분석
+✓ 그레이박스 테스팅: 하이브리드 접근법
+✓ 자동 리포트 생성: HTML, JSON, 콘솔
+✓ 실시간 탐지: 설정 가능한 신뢰도 수준
+
+적용 분야:
+---------
+• API 보안 테스팅
+• 네트워크 침입 탐지 (IDS)
+• 사용자 행동 분석 (UEBA)
+• 코드 취약점 분석 (SAST)
+• 웹 애플리케이션 방화벽 (WAF)
+
+
+================================================================================
+2. 설치 방법
+================================================================================
+
+Ubuntu Linux 자동 설치:
+-----------------------
+$ chmod +x install.sh
+$ ./install.sh
+
+수동 설치:
+---------
+1. Python 3.8+ 설치 확인
+   $ python3 --version
+
+2. 의존성 설치
+   $ pip install numpy scipy --break-system-packages
+
+3. 파일 복사
+   $ mkdir mstt_toolkit
+   $ cp mstt.py examples.py mstt_toolkit/
+
+4. 테스트
+   $ cd mstt_toolkit
+   $ python3 -c "from mstt import *; print('Success!')"
+
+
+================================================================================
+3. 핵심 개념
+================================================================================
+
+3.1 마할라노비스 거리
+--------------------
+D(x) = √[(x - μ)ᵀ Σ⁻¹ (x - μ)]
+
+의미:
+- μ: 정상 행동의 평균
+- Σ: 공분산 행렬 (변수 간 상관관계)
+- D: x가 정상으로부터 얼마나 떨어져 있는지
+
+장점:
+✓ 변수 간 상관관계 고려
+✓ 스케일 정규화 자동
+✓ 통계적으로 의미 있는 거리
+
+
+3.2 비선형 편미분 (그래디언트)
+----------------------------
+∇D = Σ⁻¹(x - μ) / D(x)
+     └───┬────┘   └─┬─┘
+      분자(선형)  분모(비선형)
+
+활용:
+• 분자: 빠른 screening, 방향 결정
+• 분모: 정확한 거리 측정
+• 전체: 취약점 위치 파악
+
+
+3.3 테스팅 방법론
+----------------
+
+블랙박스:
+- 코드 접근 없음
+- 외부 관찰만 사용
+- 빠른 탐지
+- 제로데이 공격 탐지 가능
+
+화이트박스:
+- 전체 코드 접근
+- 내부 구조 분석
+- 정확한 근본 원인 파악
+- 자동 패치 제안
+
+그레이박스:
+- 부분적 코드 접근
+- 블랙박스로 빠른 스캔
+- 화이트박스로 정밀 분석
+- 최고의 효율성
+
+
+================================================================================
+4. 사용 방법
+================================================================================
+
+4.1 블랙박스 테스팅
+------------------
+
+기본 워크플로우:
+1. 정상 행동 패턴 수집
+2. 모델 학습
+3. 테스트 데이터 분석
+4. 리포트 생성
+
+예제 코드:
+---------
+```python
+from mstt import BlackboxTester, ReportGenerator
+
+# 1. 정상 트래픽 패턴
+normal_traffic = [
+    {'requests_per_sec': 10, 'response_time': 0.2, 'error_rate': 0.01},
+    {'requests_per_sec': 12, 'response_time': 0.25, 'error_rate': 0.02},
+    # ... 더 많은 샘플 (최소 10개 권장)
+]
+
+# 2. 테스터 초기화 및 학습
+tester = BlackboxTester(confidence=0.95)  # 95% 신뢰도
+tester.collect_baseline(normal_traffic)
+
+# 3. 테스트 데이터
+test_data = [
+    {'requests_per_sec': 500, 'response_time': 5.0, 'error_rate': 0.5},  # DDoS?
+    {'requests_per_sec': 11, 'response_time': 0.22, 'error_rate': 0.015}, # 정상
+]
+
+# 4. 테스트 실행
+result = tester.test(test_data, target_name="API Gateway")
+
+# 5. 리포트 생성
+ReportGenerator.generate_console_report(result)
+ReportGenerator.generate_html_report(result, "report.html")
+```
+
+신뢰도 설정:
+----------
+confidence=0.90  →  10% 오탐률, 민감한 탐지
+confidence=0.95  →   5% 오탐률, 균형잡힌 설정 (권장)
+confidence=0.99  →   1% 오탐률, 엄격한 탐지
+
+
+4.2 화이트박스 테스팅
+--------------------
+
+기본 워크플로우:
+1. 코드 메트릭 수집
+2. 정상 패턴 분석
+3. 취약점 테스트
+4. 패치 권장사항 생성
+
+예제 코드:
+---------
+```python
+from mstt import WhiteboxTester
+
+# 1. 정상 코드의 메트릭 (여러 함수/모듈)
+code_metrics = {
+    'cyclomatic_complexity': [5, 6, 4, 7, 5, 6],     # 순환 복잡도
+    'input_validation': [9, 8, 9, 7, 8, 9],          # 입력 검증 점수
+    'auth_coverage': [10, 9, 10, 8, 9, 10],          # 인증 커버리지
+}
+
+# 2. 테스터 초기화
+tester = WhiteboxTester(confidence=0.95)
+tester.analyze_code_structure(code_metrics)
+
+# 3. 테스트 벡터 (의심되는 코드)
+test_vectors = [
+    {'cyclomatic_complexity': 25, 'input_validation': 2, 'auth_coverage': 3},  # 취약!
+    {'cyclomatic_complexity': 5, 'input_validation': 9, 'auth_coverage': 10},  # 정상
+]
+
+# 4. 테스트 실행
+result = tester.test_vulnerability(test_vectors, target_name="Auth Module")
+
+# 5. 패치 권장사항
+for event in result.details:
+    if event.is_anomaly:
+        patch = tester.generate_patch_recommendations(event)
+        print(f"문제: {patch['problem_area']}")
+        print(f"조치: {patch['action']}")
+```
+
+주요 메트릭 예시:
+---------------
+• cyclomatic_complexity: 코드 복잡도 (낮을수록 좋음, >10 주의)
+• input_validation_score: 입력 검증 점수 (0-10, 높을수록 좋음)
+• memory_safety_score: 메모리 안전성 (0-10)
+• auth_check_coverage: 인증 체크 커버리지 (%)
+• sql_injection_protection: SQL 인젝션 방어 (0-10)
+
+
+4.3 그레이박스 테스팅
+--------------------
+
+기본 워크플로우:
+1. 블랙박스 베이스라인 설정
+2. (선택) 코드 메트릭 추가
+3. 3단계 자동 테스팅
+4. 통합 리포트
+
+예제 코드:
+---------
+```python
+from mstt import GreyboxTester
+
+# 1. 관찰 가능한 정상 행동
+normal_observations = [
+    {'request_rate': 10, 'session_duration': 300, 'pages_visited': 10},
+    # ...
+]
+
+# 2. (선택) 부분적 코드 정보
+code_metrics = {
+    'request_rate': [10, 12, 8, 15, 11],
+    'session_duration': [300, 350, 280, 400, 320],
+    # ...
+}
+
+# 3. 테스터 설정
+tester = GreyboxTester(confidence=0.95)
+tester.setup(
+    baseline_observations=normal_observations,
+    code_metrics=code_metrics  # 선택적
+)
+
+# 4. 테스트 (자동 3단계)
+test_data = [...]
+result = tester.test(test_data, target_name="Web Application")
+
+# 5. 리포트
+ReportGenerator.generate_html_report(result, "greybox_report.html")
+```
+
+3단계 프로세스:
+--------------
+Stage 1: 블랙박스 빠른 스캔 (모든 데이터)
+         → 의심 케이스 식별
+
+Stage 2: 의심 케이스 추출
+         → API 스펙/부분 정보 활용
+
+Stage 3: 화이트박스 정밀 분석 (의심 케이스만)
+         → 근본 원인 파악
+         → 수정 방향 제시
+
+
+================================================================================
+5. 실전 시나리오
+================================================================================
+
+5.1 API 보안 테스팅
+------------------
+
+상황: REST API의 비정상 트래픽 탐지
+
+특징 벡터:
+- request_rate: 초당 요청 수
+- payload_size: 페이로드 크기 (bytes)
+- response_time: 응답 시간 (seconds)
+- error_rate: 에러율 (0-1)
+- status_codes: HTTP 상태 코드 분포
+
+탐지 대상:
+✓ DDoS 공격: 높은 request_rate, 높은 error_rate
+✓ SQL Injection: 큰 payload_size, 높은 error_rate
+✓ Brute Force: 높은 request_rate, 낮은 response_time
+
+권장 설정:
+- confidence: 0.95
+- 최소 학습 샘플: 100개 (1주일치 정상 트래픽)
+- 테스트 방법: 블랙박스 또는 그레이박스
+
+
+5.2 네트워크 침입 탐지 (IDS)
+--------------------------
+
+상황: 네트워크 경계에서 침입 탐지
+
+특징 벡터:
+- packet_rate: 패킷 전송률
+- avg_packet_size: 평균 패킷 크기
+- connection_duration: 연결 지속 시간
+- port_diversity: 사용 포트 다양성
+- protocol_distribution: 프로토콜 분포
+
+탐지 대상:
+✓ DDoS: 매우 높은 packet_rate, 작은 packet_size
+✓ Port Scan: 높은 port_diversity, 짧은 connection_duration
+✓ Slow Attack: 낮은 packet_rate, 매우 긴 connection_duration
+
+권장 설정:
+- confidence: 0.99 (낮은 오탐률 중요)
+- 실시간 모니터링
+- 테스트 방법: 블랙박스
+
+
+5.3 코드 취약점 분석 (SAST)
+-------------------------
+
+상황: 소스 코드의 보안 취약점 발견
+
+특징 벡터:
+- cyclomatic_complexity: 코드 복잡도
+- input_validation_score: 입력 검증 수준
+- memory_safety_score: 메모리 관리 안전성
+- auth_check_coverage: 인증 확인 커버리지
+- crypto_strength: 암호화 강도
+
+탐지 대상:
+✓ Buffer Overflow: 낮은 memory_safety_score
+✓ SQL Injection: 낮은 input_validation_score
+✓ Auth Bypass: 낮은 auth_check_coverage
+
+권장 설정:
+- confidence: 0.95
+- 함수/모듈 단위 분석
+- 테스트 방법: 화이트박스
+
+
+5.4 사용자 행동 분석 (UEBA)
+-------------------------
+
+상황: 내부자 위협 및 계정 탈취 탐지
+
+특징 벡터:
+- login_time: 로그인 시간대 (0-23)
+- location_changes: 위치 변경 횟수
+- data_access_volume: 데이터 접근량 (MB)
+- privileged_actions: 권한 있는 작업 수
+- failed_attempts: 실패한 시도 횟수
+
+탐지 대상:
+✓ 내부자 위협: 비정상 시간, 대량 데이터 접근
+✓ 계정 탈취: 위치 변경, 비정상 행동 패턴
+✓ 권한 상승 시도: 많은 privileged_actions, failed_attempts
+
+권장 설정:
+- confidence: 0.95
+- 사용자별 프로파일 생성
+- 테스트 방법: 블랙박스
+
+
+5.5 웹 애플리케이션 침투 테스트
+------------------------------
+
+상황: 웹 앱의 보안 취약점 발견
+
+특징 벡터:
+- request_rate: 요청 빈도
+- session_duration: 세션 지속 시간
+- pages_visited: 방문 페이지 수
+- form_submissions: 폼 제출 횟수
+- cookie_manipulation: 쿠키 조작 시도
+
+탐지 대상:
+✓ 자동화 크롤링: 높은 request_rate, 많은 pages_visited
+✓ 폼 스팸: 많은 form_submissions
+✓ 세션 하이재킹: 비정상 cookie_manipulation
+
+권장 설정:
+- confidence: 0.95
+- 테스트 방법: 그레이박스 (최적)
+
+
+================================================================================
+6. 고급 기능
+================================================================================
+
+6.1 모델 저장 및 로드
+--------------------
+
+```python
+# 모델 저장
+tester.engine.save("api_security_model.json")
+
+# 나중에 로드
+new_tester = BlackboxTester()
+new_tester.engine.load("api_security_model.json")
+```
+
+용도:
+- 학습된 모델 재사용
+- 프로덕션 배포
+- 버전 관리
+
+
+6.2 실시간 모니터링
+------------------
+
+```python
+import time
+
+tester = BlackboxTester()
+tester.collect_baseline(historical_data)
+threshold = tester.engine.get_threshold(0.95)
+
+while True:
+    current_metrics = get_current_system_metrics()
+    distance = tester.engine.distance(current_metrics)
+    
+    if distance > threshold:
+        send_alert(f"Anomaly detected! Distance: {distance:.3f}")
+        log_event(current_metrics, distance)
+    
+    time.sleep(1)  # 1초마다 체크
+```
+
+
+6.3 배치 처리
+------------
+
+```python
+# 대량 로그 파일 분석
+import json
+
+with open('access.log') as f:
+    logs = [json.loads(line) for line in f]
+
+features = [extract_features(log) for log in logs]
+result = tester.test(features, target_name="Access Logs")
+```
+
+
+6.4 커스텀 특징 추출
+------------------
+
+```python
+def extract_custom_features(raw_data):
+    """원시 데이터에서 특징 추출"""
+    return {
+        'feature1': compute_feature1(raw_data),
+        'feature2': compute_feature2(raw_data),
+        'feature3': compute_feature3(raw_data),
+    }
+
+# 사용
+raw_logs = load_raw_logs()
+features = [extract_custom_features(log) for log in raw_logs]
+tester.collect_baseline(features)
+```
+
+
+6.5 임계값 조정
+--------------
+
+```python
+# 기본 임계값
+threshold_95 = tester.engine.get_threshold(0.95)
+
+# 더 엄격한 탐지
+threshold_99 = tester.engine.get_threshold(0.99)
+
+# 더 민감한 탐지
+threshold_90 = tester.engine.get_threshold(0.90)
+
+# 수동 임계값 (실험적)
+custom_threshold = 3.0  # 평균에서 3 표준편차
+```
+
+
+================================================================================
+7. 문제 해결
+================================================================================
+
+문제 1: "Singular matrix" 에러
+-------------------------------
+원인: 공분산 행렬이 특이 행렬 (역행렬 계산 불가)
+해결:
+1. 더 많은 학습 샘플 제공 (최소 특징 수의 3배)
+2. 상관관계가 1.0인 특징 제거
+3. Ridge 정규화 자동 적용됨 (코드 내장)
+
+
+문제 2: 오탐률이 너무 높음
+------------------------
+원인: 임계값이 너무 낮거나 학습 데이터 부족
+해결:
+1. confidence 증가 (0.95 → 0.99)
+2. 더 많은 정상 샘플로 학습
+3. 특징 벡터 재검토 (노이즈 제거)
+
+
+문제 3: 이상치를 탐지 못함
+------------------------
+원인: 임계값이 너무 높거나 특징이 부적절
+해결:
+1. confidence 감소 (0.95 → 0.90)
+2. 더 관련성 높은 특징 선택
+3. 특징 스케일 확인
+
+
+문제 4: 메모리 부족
+------------------
+원인: 대량 데이터 처리
+해결:
+1. 배치 단위로 처리
+2. 샘플링 (전체 데이터의 10%)
+3. 특징 수 줄이기
+
+
+문제 5: 속도가 느림
+------------------
+원인: 많은 특징 또는 복잡한 계산
+해결:
+1. 선형 부분만 사용 (빠른 screening)
+```python
+# 빠른 버전
+numerator = tester.engine.numerator(x)
+quick_score = np.linalg.norm(numerator)
+if quick_score > quick_threshold:
+    # 정밀 분석
+    distance = tester.engine.distance(x)
+```
+2. 특징 수 줄이기 (PCA 등)
+3. 병렬 처리
+
+
+================================================================================
+8. FAQ
+================================================================================
+
+Q1: 몇 개의 정상 샘플이 필요한가요?
+A1: 최소 특징 수의 3배, 권장 50-100개 이상
+
+Q2: 실시간으로 사용할 수 있나요?
+A2: 네! 거리 계산은 매우 빠릅니다 (< 1ms)
+
+Q3: 새로운 공격 유형도 탐지하나요?
+A3: 네! 통계적 이상이면 탐지 가능 (제로데이 공격)
+
+Q4: 화이트박스와 블랙박스 중 무엇을 선택해야 하나요?
+A4: 코드 접근 가능 → 그레이박스 (최고)
+    코드 없음 → 블랙박스
+    전체 코드 → 화이트박스
+
+Q5: 오탐을 줄이려면?
+A5: 1) confidence 증가 (0.95 → 0.99)
+    2) 더 많은 학습 샘플
+    3) 관련성 높은 특징만 사용
+
+Q6: 다른 도구와 통합할 수 있나요?
+A6: 네! JSON 리포트를 SIEM, 로그 시스템 등과 연동
+
+Q7: GPU를 사용할 수 있나요?
+A7: 현재 CPU만 지원. 대부분 경우 충분히 빠름
+
+Q8: 멀티클래스 분류는?
+A8: 각 클래스별로 별도 모델 생성 후 비교
+
+Q9: 시계열 데이터는?
+A9: 윈도우 단위로 특징 추출 후 사용
+
+Q10: 상용 배포 가능한가요?
+A10: 네! MIT 라이선스
+
+
+================================================================================
+연락처 및 지원
+================================================================================
+
+이슈 리포트: GitHub Issues
+문서: README.md
+라이선스: MIT
+
+Happy Security Testing! 🔒
+================================================================================
