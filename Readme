@@ -3,15 +3,17 @@
 1. 은하 회전곡선 (Galaxy Rotation Curves)
 가시 별과 가스만으로는 은하 외곽 별들의 공전 속도가 너무 빠릅니다. 뉴턴 역학에 따르면 속도가 거리에 따라 떨어져야 하지만, 실제로는 평탄(flat)한 회전곡선을 보입니다.
 이는 추가적인 관성 질량을 가진 물질(암흑물질 halo)이 중력으로 별들을 끌어당기지만 빛을 내지 않아 “보이지 않는” 것을 설명합니다. 관성(운동 저항)과 중력이 정상 물질처럼 작용한다는 증거입니다.
-
-
+https://wittman.physics.ucdavis.edu/Animations/RotationCurve/rotcurve.png
+http://w3.lnf.infn.it/wp-content/uploads/2018/01/1CR_web.jpg
 2. 은하단 내 은하들의 속도 분산 (Velocity Dispersion in Clusters)
 은하단에서 개별 은하들의 운동 속도가 가시 물질의 중력만으로는 설명되지 않습니다. 비리얼 정리(virial theorem)로 계산하면 질량이 10~100배 부족합니다. 암흑물질이 관성 질량으로 작용해 전체 시스템의 운동 에너지를 지탱합니다.
 3. 중력 렌즈 효과 (Gravitational Lensing)
 아인슈타인 고리에 의한 빛의 휘어짐으로 보이지 않는 질량 분포를 직접 매핑할 수 있습니다. 질량 지도가 빛나는 물질과 일치하지 않고 별도 halo 형태로 존재합니다. 이는 순수하게 중력(관성 질량)으로만 검출되는 물질의 증거입니다.
 4. Bullet Cluster (1E 0657-56)와 다른 충돌 은하단 — 가장 강력한 증거
 두 은하단이 충돌할 때:
-
+https://chandra.harvard.edu/photo/2006/1e0657/1e0657.jpg
+https://ned.ipac.caltech.edu/level5/March15/Roos/Figures/figure18.jpg
+https://svs.gsfc.nasa.gov/vis/a030000/a030000/a030094/chandra_bullett_preview_print.jpg
 정상 물질(주로 뜨거운 가스)은 전자기 상호작용으로 충돌·감속·가열되어 X선으로 관측 (핑크색).
 은하(별)와 암흑물질은 거의 충돌 없이 그대로 통과.
 중력 렌즈로 측정한 총 질량(파란색)은 가스와 분리되어 은하와 함께 이동.
@@ -23,6 +25,9 @@
 5. 우주마이크로파배경(CMB) anisotropies와 power spectrum
 CMB의 음향 진동 패턴(peak 위치와 높이)은 압력 지지 없는 cold, collisionless 물질이 있어야 잘 맞습니다. 바리온(정상 물질)만으로는 초기 우주의 구조 형성이 부족합니다. 암흑물질이 초기 우주에서 관성으로 클러스터링하며 중력 씨앗 역할을 했음을 보여줍니다.
 Status of Dark Matter in the Universe - Katherine Freese
+
+https://ned.ipac.caltech.edu/level5/Sept17/Freese/Figures/figure5.jpg
+
 6. 대규모 구조 형성 (Large-Scale Structure)
 우주의 filament(필라멘트), void(공동), 은하단 분포는 암흑물질이 먼저 중력으로 모여 “스캐폴딩(scaffolding)”을 만든 후 정상 물질이 그 위에 떨어져 별과 은하를 형성했다는 모델로 가장 잘 설명됩니다. 압력(전자기 상호작용)이 없는 관성물질이 필수적입니다.
 7. 빅뱅 핵합성(BBN)과 바리온 밀도
