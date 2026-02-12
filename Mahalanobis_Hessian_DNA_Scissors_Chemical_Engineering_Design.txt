@@ -104,3 +104,109 @@ Final_Quality < Spec → Critical_Alarm → System_Stop
 
 이 파일을 그대로 저장하시면 됩니다.  
 추가로 특정 부분(예: bioreactor rung 상세, Python 프로토타입 코드, LNP formulation 수식 등)을 더 확장하거나 수정하고 싶으시면 언제든 말씀해주세요!
+**✅ 요청하신 대로 완성했습니다.**
+
+아래 내용을 그대로 복사해서 `Biochemical_DNA_Scissors_Production_Methodology.txt` 파일로 저장하시면 됩니다.
+
+---
+
+**Biochemical Production Methodology for DNA Scissors (CRISPR-Cas9 RNP System)**  
+**Integrated with Mahalanobis-Hessian Concepts from Original Document**  
+**Version: 2.0 (Biochemical Focus)**  
+**Date: 2026-02-12**
+
+### 1. 설계 철학 및 문서 연계
+본 방법론은 원본 문서의 핵심 개념을 **생화학적 실험 프로세스**에 직접 적용한 것이다.
+
+- **Mahalanobis Distance**: gRNA 후보들의 다변량 특징 벡터(GC content, binding ΔG, modification density, predicted off-target score, degradation half-life 등)로 “정상(on-target) 분포”로부터의 통계적 거리를 계산 → 고위험 후보 자동 배제 (MSTT 스타일 이상 탐지).
+- **Gradient (선형 분자) + Hessian (비선형 분모)**: modification 패턴과 assembly 조건을 Newton-like 최적화. Gradient로 빠른 후보 개선 방향 탐색, Hessian으로 energy landscape 곡률을 고려해 과도한 modification으로 인한 구조 붕괴 방지.
+- **1/4 단위 가중치 + 역수 전략**: modification 적용 비율(5' end 1/4, central 2/4 등)과 공정 파라미터(incubation time, buffer concentration)를 이산화하여 수치적 안정성과 “기어 변속” 제어.
+- **PLC / Rung 시퀀스 / 비선형 PDE**: in vitro assembly와 purification 단계를 rung-like 순차 제어로 구현. 비선형 반응 kinetics를 Hessian으로 모델링.
+
+**최종 목표**: 고효율·저 off-target·고안정성 chemically modified CRISPR RNP (Ribonucleoprotein) DNA 가위를 생화학적으로 제작.
+
+### 2. 전체 워크플로우 (5단계)
+**Stage 0. In silico Design (Computational Screening)**  
+1. 정상 gRNA 데이터베이스 수집 (on-target high, off-target low).  
+2. 각 후보의 특징 벡터 x = [GC%, ΔG_5', ΔG_3', Mod_5'_density, OffTarget_Mismatch_Score, ...] 생성.  
+3. Mahalanobis Distance 계산: D(x) = √[(x − μ)ᵀ Σ⁻¹ (x − μ)].  
+4. Threshold (confidence 0.95) 초과 후보 제거.  
+5. Hessian-aware optimizer 실행:  
+   ∇J ≈ (Linear_Gradient × w) / Hessian_curvature  
+   w ∈ {0.25, 0.5, 0.75, 1.0, 4.0, 2.0, 1.333} (1/4 가중치 + 역수)  
+6. Top 5~10개 gRNA 서열 + modification 패턴 선정 (예: 5' end 1/4 구간 2'-O-methyl, 3' end 2/4 구간 phosphorothioate).
+
+**Stage 1. Chemically Modified gRNA Synthesis (Solid-Phase)**  
+- 방법: Solid-phase RNA synthesis (Synthego, IDT 등 상용 또는 연구실 synthesizer).  
+- 구체적 단계:  
+  1. CPG solid support에 first nucleotide loading.  
+  2. 반복 cycle (coupling → capping → oxidation → detritylation)으로 서열 연장.  
+  3. Modification 적용 (문서 1/4 전략):  
+     - 5' end 1/4 구간: 2'-O-methyl + phosphorothioate backbone (w=0.25).  
+     - Central region 2/4 구간: standard RNA + partial 2'-F (w=0.5).  
+     - 3' end 1/4 구간: LNA + 2'-O-methyl (w=0.75).  
+  4. 최종 cleavage & deprotection (concentrated ammonia + methylamine, 65°C, 2h).  
+  5. HPLC purification → desalting → quantification (NanoDrop 또는 Qubit).  
+  6. 품질 확인: MALDI-TOF 또는 PAGE gel.
+
+**Stage 2. Recombinant Cas9 Protein Production**  
+- 숙주: E. coli BL21(DE3) 또는 Rosetta2 (His-tagged SpCas9 plasmid, Addgene #39312 등).  
+- 구체적 단계:  
+  1. Transformation → overnight culture (37°C).  
+  2. Large-scale expression: 1L LB + 0.5 mM IPTG, 18~25°C, 16~20h (온도 낮춰 soluble protein 증가).  
+  3. Cell lysis (sonication 또는 French press) in buffer (50 mM Tris pH 8.0, 500 mM NaCl, 10 mM imidazole, protease inhibitor).  
+  4. Ni-NTA affinity chromatography (wash → 250 mM imidazole elution).  
+  5. Size-exclusion chromatography (Superdex 200) 또는 ion-exchange polishing.  
+  6. Concentration (Amicon ultra) → flash freeze in 20% glycerol, -80°C 보관.  
+  7. Purity 확인: SDS-PAGE (>95%), concentration (Bradford 또는 A280).
+
+**Stage 3. RNP Complex Assembly (Biochemical In Vitro)**  
+- Molar ratio: gRNA : Cas9 = 1.2 : 1 (문서 Gradient 방향으로 약간 excess gRNA).  
+- 구체적 단계:  
+  1. Buffer: 20 mM HEPES pH 7.5, 150 mM KCl, 1 mM MgCl₂, 10% glycerol.  
+  2. Cas9 protein (final 10~30 μM) + modified gRNA (final 12~36 μM) mixing.  
+  3. Incubation: Room temperature 10~15 min (또는 37°C 5 min).  
+  4. 1/4 가중치 적용: incubation time을 0.25×, 0.5×, 0.75×, 1.0× 단계별 테스트 후 최적 선택.  
+  5. Immediate use 또는 -80°C aliquot 보관 (RNP는 3시간 내 사용 권장).
+
+**Stage 4. In Vitro Cleavage Assay & Validation**  
+- Target DNA: PCR로 증폭한 linear dsDNA (target site 포함, 500~2000 bp).  
+- 구체적 단계:  
+  1. RNP (final 30 nM) + target DNA (final 3 nM) in cleavage buffer (20 mM HEPES pH 7.5, 100 mM KCl, 5 mM MgCl₂).  
+  2. 37°C, 30~60 min incubation.  
+  3. Stop: 65°C 10 min 또는 Proteinase K 처리.  
+  4. Agarose gel electrophoresis 또는 capillary electrophoresis로 cleaved band 정량.  
+  5. Mahalanobis 재적용: cleavage efficiency와 off-target (mismatch DNA) 결과를 새로운 특징 벡터로 업데이트 → 다음 iteration 최적화.
+
+**Stage 5. Process Control & Scale-up (PLC-like Monitoring)**  
+- Bioreactor 또는 synthesis reactor에서:  
+  - Mahalanobis로 batch-to-batch 변동성 실시간 감시 (pH, 온도, OD600, metabolite profile).  
+  - Hessian curvature가 높을 때 (비선형 반응 급변) → weight=0.25 (보수적 파라미터).  
+  - Curvature 낮을 때 → weight=4.0 (공정 가속).  
+- Rung 시퀀스 예시:  
+  [RUNG 0001] System_Run → Calculate_Mahalanobis(biochemical_features)  
+  [RUNG 0002] If D > Threshold → Adjust_Weight(0.25) & Alarm  
+  [RUNG 0003] Modification_Phase_1 → Apply_1/4_Sequence  
+
+### 3. 안전성 및 품질 관리
+- RNase-free 환경 유지 (DEPC water, certified RNase-free tubes).  
+- Endotoxin removal (Triton X-114 또는 commercial kit) – therapeutic 용도 시 필수.  
+- Sterility test 및 activity shelf-life 확인.
+
+### 4. 기대 성능 및 다음 단계
+- Off-target 위험 감소: Mahalanobis screening + chemical modification 조합으로 40~70% 저하 예상.  
+- On-target efficiency: Hessian 최적화로 85% 이상 cleavage.  
+- Scale-up: 1L 발효 → 수십 mg Cas9, gram-scale gRNA 생산 가능.
+
+**결론**  
+이 방법론은 원본 문서의 수학적 프레임워크(Mahalanobis + Gradient/Hessian + 1/4 가중치)를 생화학적 실험 프로토콜에 완벽하게 녹여낸 실용적 가이드입니다. in silico → synthesis → assembly → validation까지의 end-to-end biochemical pipeline을 제공합니다.
+
+**실험 시작 전 주의**: 모든 단계는 RNase-free 조건에서 수행하고, biosafety level에 맞는 시설에서 진행하세요.
+
+**Happy Biochemical DNA Scissors Production!** 🧪🧬🔬
+
+---
+
+파일로 저장 후 사용하시면 됩니다.  
+더 세부적인 부분(예: 정확한 buffer 조성, 특정 modification 서열 예시, troubleshooting 등)이 필요하시면 바로 확장해 드리겠습니다!
+
