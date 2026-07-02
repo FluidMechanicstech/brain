@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>파이프라인 아키텍처 분석 — formula_flow_pipeline.py</title>
+<style>
+  :root{
+    --bg:#FAF9F6; --bg-alt:#F1EFEA; --card:#FFFFFF;
+    --text:#1C1C1A; --text-2:#5C5B55; --text-3:#8C8A83;
+    --border:#E2E0D8;
+    --purple:#5B4FC4; --purple-bg:#EDEAFB;
+    --teal:#0F6E56; --teal-bg:#E1F2EC;
+    --mono-bg:#F1EEE6;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#15151A; --bg-alt:#1C1C22; --card:#1E1E25;
+      --text:#ECEBE6; --text-2:#A8A6A0; --text-3:#76746E;
+      --border:#2E2E36;
+      --purple:#9088E8; --purple-bg:#26234A;
+      --teal:#4FC8A4; --teal-bg:#163A30;
+      --mono-bg:#23232B;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    line-height:1.65; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:880px; margin:0 auto; padding:64px 28px 100px;}
+  .eyebrow{
+    font-family:ui-monospace,"SF Mono",Consolas,monospace;
+    font-size:13px; letter-spacing:0.04em; color:var(--text-3);
+    margin:0 0 14px;
+  }
+  h1{font-size:32px; font-weight:700; margin:0 0 10px; letter-spacing:-0.01em;}
+  .subtitle{font-size:16px; color:var(--text-2); margin:0 0 40px; max-width:560px;}
+
+  .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--border); border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:56px;}
+  .stat{background:var(--card); padding:18px 14px; text-align:center;}
+  .stat .num{display:block; font-size:26px; font-weight:700;}
+  .stat .label{display:block; font-size:12px; color:var(--text-2); margin-top:4px;}
+
+  section{margin-bottom:60px;}
+  .section-head{display:flex; align-items:baseline; gap:10px; margin-bottom:8px;}
+  .section-num{font-family:ui-monospace,monospace; font-size:13px; color:var(--text-3);}
+  h2{font-size:21px; font-weight:700; margin:0;}
+  .section-desc{color:var(--text-2); font-size:14.5px; margin:0 0 26px; max-width:620px;}
+
+  /* timeline */
+  .timeline{list-style:none; margin:0; padding:0; position:relative;}
+  .timeline::before{content:''; position:absolute; left:19px; top:6px; bottom:6px; width:1px; background:var(--border);}
+  .t-item{position:relative; padding:0 0 26px 56px;}
+  .t-item:last-child{padding-bottom:0;}
+  .t-badge{
+    position:absolute; left:0; top:0; width:38px; height:38px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:ui-monospace,monospace; font-size:14px; font-weight:600;
+    border:1.5px solid; background:var(--card); z-index:1;
+  }
+  .t-badge.purple{color:var(--purple); border-color:var(--purple);}
+  .t-badge.teal{color:var(--teal); border-color:var(--teal);}
+  .t-title{font-size:15.5px; font-weight:600; margin:6px 0 3px;}
+  .t-desc{font-size:14px; color:var(--text-2); margin:0 0 6px;}
+  .t-tag{
+    display:inline-block; font-size:11.5px; padding:2px 9px; border-radius:20px;
+    font-family:ui-monospace,monospace;
+  }
+  .t-tag.purple{background:var(--purple-bg); color:var(--purple);}
+  .t-tag.teal{background:var(--teal-bg); color:var(--teal);}
+
+  /* table */
+  .detail-table{width:100%; border-collapse:collapse; font-size:13.5px;}
+  .detail-table th{
+    text-align:left; font-size:11.5px; text-transform:uppercase; letter-spacing:0.04em;
+    color:var(--text-3); padding:0 12px 10px; border-bottom:1px solid var(--border);
+  }
+  .detail-table td{padding:14px 12px; border-bottom:1px solid var(--border); vertical-align:top;}
+  .detail-table tr:last-child td{border-bottom:none;}
+  .step-cell{font-weight:600; white-space:nowrap;}
+  .formula{
+    font-family:ui-monospace,"SF Mono",Consolas,monospace; font-size:12.5px;
+    background:var(--mono-bg); border-radius:6px; padding:8px 10px; display:block;
+    line-height:1.55; color:var(--text);
+  }
+  .method-tag{
+    font-size:11.5px; padding:2px 8px; border-radius:20px; white-space:nowrap;
+    font-family:ui-monospace,monospace;
+  }
+  .method-tag.purple{background:var(--purple-bg); color:var(--purple);}
+  .method-tag.teal{background:var(--teal-bg); color:var(--teal);}
+  .io-text{color:var(--text-2); font-size:12.5px;}
+
+  /* dependency section */
+  .edge-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:22px;}
+  .edge-card{background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px 18px;}
+  .edge-card h3{font-size:13px; margin:0 0 10px; color:var(--text-3); font-weight:600; text-transform:uppercase; letter-spacing:0.03em;}
+  .edge-row{display:flex; align-items:center; gap:8px; font-size:14px; margin-bottom:10px; font-family:ui-monospace,monospace;}
+  .edge-row:last-child{margin-bottom:0;}
+  .edge-row .arrow{color:var(--teal); font-weight:700;}
+  .edge-row .arrow.muted{color:var(--text-3);}
+  .edge-row .payload{color:var(--text-2); font-family:-apple-system,sans-serif; font-size:12.5px;}
+  .iso-list{display:flex; gap:8px; flex-wrap:wrap;}
+  .iso-pill{
+    font-family:ui-monospace,monospace; font-size:13px; padding:5px 12px; border-radius:20px;
+    background:var(--bg-alt); border:1px solid var(--border);
+  }
+
+  .summary-box{
+    background:var(--bg-alt); border-left:3px solid var(--purple); border-radius:0 10px 10px 0;
+    padding:20px 24px; font-size:15px; color:var(--text);
+  }
+  footer{margin-top:60px; padding-top:24px; border-top:1px solid var(--border); font-size:12.5px; color:var(--text-3); font-family:ui-monospace,monospace;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="eyebrow">formula_flow_pipeline.py · 최종 대통합 가설 리포트</p>
+  <h1>파이프라인 아키텍처 분석</h1>
+  <p class="subtitle">유도식 1~10 통합 파이프라인의 전체 흐름, 단계별 알고리즘, 그리고 실제 데이터 의존성을 정리한 문서.</p>
+
+  <div class="stats">
+    <div class="stat"><span class="num">10</span><span class="label">전체 단계</span></div>
+    <div class="stat"><span class="num">3</span><span class="label">기호+수치 혼합 단계</span></div>
+    <div class="stat"><span class="num">3</span><span class="label">실제 데이터 연결</span></div>
+    <div class="stat"><span class="num">4</span><span class="label">독립 계산 단계</span></div>
+  </div>
+
+  <section>
+    <div class="section-head"><span class="section-num">01</span><h2>전체 아키텍처 흐름</h2></div>
+    <p class="section-desc"><code>run_pipeline()</code>이 빈 <code>state</code> 딕셔너리를 만든 뒤, step1부터 step10까지 순서대로 함수에 넘기고 각 함수가 갱신된 state를 반환하는 단일 선형 흐름. 보라색은 sympy 기반 기호 연산만 쓰는 단계, 청록색은 numpy 수치 계산이 포함된 단계.</p>
+    <ol class="timeline">
+      <li class="t-item">
+        <div class="t-badge purple">1</div>
+        <p class="t-title">EM 라그랑지안</p>
+        <p class="t-desc">L_EM = -(1/4)·F_μν·F^μν 를 기호로 정의.</p>
+        <span class="t-tag purple">기호 연산</span>
+      </li>
+      <li class="t-item">
+        <div class="t-badge purple">2</div>
+        <p class="t-title">아인슈타인 라그랑지안</p>
+        <p class="t-desc">L_Einstein = R / (16πG) 를 기호로 정의.</p>
+        <span class="t-tag purple">기호 연산</span>
+      </li>
+      <li class="t-item">
+        <div class="t-badge purple">3</div>
+        <p class="t-title">Trig-Cantor 항</p>
+        <p class="t-desc">κ·sin(Ax)cos(Bx)·R_Cantor 항을 합차공식으로 전개·검증하고, θ→π/2에서 발산하는 tan(k_total·x) 항(grad_trig)을 생성.</p>
+        <span class="t-tag purple">기호 연산</span>
+      </li>
+      <li class="t-item">
+        <div class="t-badge teal">4</div>
+        <p class="t-title">MHD 운동량 방정식</p>
+        <p class="t-desc">3단계의 grad_trig를 source term으로 그대로 연결한 3D MHD 운동량 방정식을 세우고, 토이 u=sin(kx)e^(-νk²t)로 에너지 적분을 수치 검증.</p>
+        <span class="t-tag teal">기호 + 수치</span>
+      </li>
+      <li class="t-item">
+        <div class="t-badge purple">5</div>
+        <p class="t-title">버거스 방정식</p>
+        <p class="t-desc">콜-호프 치환 u = -2ν(∂φ/∂ξ)/φ 을 버거스 방정식에 대입해 선형 열방정식으로 환원되는지 기호로 정리.</p>
+        <span class="t-tag purple">기호 연산</span>
+      </li>
+      <li class="t-item">
+        <div class="t-badge teal">6</div>
+        <p class="t-title">콜-호프 해 검증</p>
+        <p class="t-desc">φ(ξ,t) = C_EL/√(4πνt)·exp(-ξ²/4νt) + C_EL 이 열방정식을 만족하는지 유한차분으로 수치 검증하고, 같은 점에서 u(ξ,t) 값을 추출.</p>
+        <span class="t-tag teal">수치 연산</span>
+      </li>
+      <li class="t-item">
+        <div class="t-badge purple">7</div>
+        <p class="t-title">쌍곡 메트릭</p>
+        <p class="t-desc">메트릭 g = diag(-1,1)/ξ² 으로부터 크리스토펠 기호를 거쳐 리치 스칼라 곡률 R을 기호로 직접 계산.</p>
+        <span class="t-tag purple">기호 연산</span>
+      </li>
+      <li class="t-item">
+        <div class="t-badge purple">8</div>
+        <p class="t-title">곡률 가속도 벡터</p>
+        <p class="t-desc">7단계의 ξ_sym을 그대로 재사용해 H_μ = -(1/ξ²)·∇_μξ 를 계산하고 ξ=1,2,5에서의 값을 평가.</p>
+        <span class="t-tag purple">기호 연산</span>
+      </li>
+      <li class="t-item">
+        <div class="t-badge teal">9</div>
+        <p class="t-title">ODE 기울기</p>
+        <p class="t-desc">du/dξ = C_EL·K_dim/cosθ 의 θ→0 극한을 구한 뒤, 6단계에서 나온 C_EL_val 수치를 대입해 실제 값까지 계산.</p>
+        <span class="t-tag teal">기호 + 수치 대입</span>
+      </li>
+      <li class="t-item">
+        <div class="t-badge purple">10</div>
+        <p class="t-title">슈뢰딩거 기댓값</p>
+        <p class="t-desc">예시 파동함수 ψ=√2·sin(kπx)에 대해 Γ(ξ)=⟨ψ|H|ψ⟩ 를 기호 적분으로 계산. 이전 단계와 무관한 독립 계산.</p>
+        <span class="t-tag purple">기호 연산</span>
+      </li>
+    </ol>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">02</span><h2>단계별 알고리즘 상세</h2></div>
+    <p class="section-desc">각 단계가 다루는 수식, 계산 방식, 그리고 state 딕셔너리에서 실제로 읽어들이는 입력과 새로 만들어내는 출력 키.</p>
+    <table class="detail-table">
+      <thead>
+        <tr><th>단계</th><th>수식</th><th>방식</th><th>입력(이어받음)</th><th>출력(생성)</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="step-cell">1. EM 라그랑지안</td>
+          <td><span class="formula">L_EM = -(1/4)·F_μν·F^μν</span></td>
+          <td><span class="method-tag purple">기호</span></td>
+          <td class="io-text">없음 (시작점)</td>
+          <td class="io-text">L_EM, F</td>
+        </tr>
+        <tr>
+          <td class="step-cell">2. 아인슈타인 라그랑지안</td>
+          <td><span class="formula">L_Einstein = R / (16πG)</span></td>
+          <td><span class="method-tag purple">기호</span></td>
+          <td class="io-text">없음</td>
+          <td class="io-text">L_Einstein, R_sym, G_sym</td>
+        </tr>
+        <tr>
+          <td class="step-cell">3. Trig-Cantor 항</td>
+          <td><span class="formula">L = κ·sin(Ax)cos(Bx)·R_Cantor<br>→ tan(k_total·x) 발산항</span></td>
+          <td><span class="method-tag purple">기호</span></td>
+          <td class="io-text">없음 (신규 기호 도입)</td>
+          <td class="io-text">grad_trig, L_trig, identity_check</td>
+        </tr>
+        <tr>
+          <td class="step-cell">4. MHD 운동량 방정식</td>
+          <td><span class="formula">ρ(∂u/∂t + u·∂u/∂x) =<br>-∂p/∂x + (curl B×B) + source</span></td>
+          <td><span class="method-tag teal">기호+수치</span></td>
+          <td class="io-text">grad_trig, x (3단계)</td>
+          <td class="io-text">momentum_eq, energy_integral</td>
+        </tr>
+        <tr>
+          <td class="step-cell">5. 버거스 방정식</td>
+          <td><span class="formula">∂u/∂t + u·∂u/∂ξ = ν·∂²u/∂ξ²<br>u = -2ν(∂φ/∂ξ)/φ</span></td>
+          <td><span class="method-tag purple">기호</span></td>
+          <td class="io-text">없음 (신규 기호 ξ, ν, φ)</td>
+          <td class="io-text">u_sub, phi</td>
+        </tr>
+        <tr>
+          <td class="step-cell">6. 콜-호프 해 검증</td>
+          <td><span class="formula">φ(ξ,t) = C_EL/√(4πνt)·exp(-ξ²/4νt) + C_EL</span></td>
+          <td><span class="method-tag teal">수치</span></td>
+          <td class="io-text">없음 (독립 상수 정의)</td>
+          <td class="io-text">C_EL_val, u_val</td>
+        </tr>
+        <tr>
+          <td class="step-cell">7. 쌍곡 메트릭</td>
+          <td><span class="formula">g = diag(-1,1)/ξ² → 리치 스칼라 R</span></td>
+          <td><span class="method-tag purple">기호</span></td>
+          <td class="io-text">없음 (신규 좌표 ξ_sym)</td>
+          <td class="io-text">R_scalar, xi_sym</td>
+        </tr>
+        <tr>
+          <td class="step-cell">8. 곡률 가속도 벡터</td>
+          <td><span class="formula">H_μ = -(1/ξ²)·∇_μξ</span></td>
+          <td><span class="method-tag purple">기호</span></td>
+          <td class="io-text">xi_sym (7단계)</td>
+          <td class="io-text">H_mu_value</td>
+        </tr>
+        <tr>
+          <td class="step-cell">9. ODE 기울기</td>
+          <td><span class="formula">du/dξ = C_EL·K_dim / cosθ<br>θ→0 극한</span></td>
+          <td><span class="method-tag teal">기호+수치 대입</span></td>
+          <td class="io-text">C_EL_val (6단계)</td>
+          <td class="io-text">du_dxi_numeric</td>
+        </tr>
+        <tr>
+          <td class="step-cell">10. 슈뢰딩거 기댓값</td>
+          <td><span class="formula">Γ(ξ) = ⟨ψ|H|ψ⟩, ψ = √2·sin(kπx)</span></td>
+          <td><span class="method-tag purple">기호</span></td>
+          <td class="io-text">없음</td>
+          <td class="io-text">expectation</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">03</span><h2>실제 데이터 의존성</h2></div>
+    <p class="section-desc">각 단계의 docstring은 "이전 단계를 이어받는다"고 적혀 있지만, 실제 코드에서 직전 단계가 만든 값을 입력으로 사용하는 연결은 9번의 전환 중 3번뿐이다. 나머지는 같은 state 딕셔너리를 거쳐가는 순차 실행일 뿐, 실제 수학적 종속 관계는 없다.</p>
+
+    <div class="edge-grid">
+      <div class="edge-card">
+        <h3>실제 데이터 연결 (3건)</h3>
+        <div class="edge-row"><span>3</span><span class="arrow">→</span><span>4</span><span class="payload">grad_trig, x 전달</span></div>
+        <div class="edge-row"><span>7</span><span class="arrow">→</span><span>8</span><span class="payload">xi_sym 전달</span></div>
+        <div class="edge-row"><span>6</span><span class="arrow">→</span><span>9</span><span class="payload">C_EL_val 전달</span></div>
+      </div>
+      <div class="edge-card">
+        <h3>순차 실행만 (실제 데이터 없음)</h3>
+        <div class="edge-row"><span>1</span><span class="arrow muted">···</span><span>2</span><span class="arrow muted">···</span><span>3</span><span class="payload">사전 단계 결과 미사용</span></div>
+        <div class="edge-row"><span>4</span><span class="arrow muted">···</span><span>5</span><span class="arrow muted">···</span><span>6</span><span class="payload">사전 단계 결과 미사용</span></div>
+        <div class="edge-row"><span>8</span><span class="arrow muted">···</span><span>9</span><span class="arrow muted">···</span><span>10</span><span class="payload">사전 단계 결과 미사용</span></div>
+      </div>
+    </div>
+
+    <p style="font-size:13.5px; color:var(--text-2); margin-bottom:10px;">완전히 독립적인 계산 (입력도 출력도 다른 단계와 실제로 연결되지 않음)</p>
+    <div class="iso-list">
+      <span class="iso-pill">1단계</span>
+      <span class="iso-pill">2단계</span>
+      <span class="iso-pill">5단계</span>
+      <span class="iso-pill">10단계</span>
+    </div>
+  </section>
+
+  <section style="margin-bottom:0;">
+    <div class="section-head"><span class="section-num">04</span><h2>종합 정리</h2></div>
+    <div class="summary-box">
+      1, 2, 5, 10단계는 사실상 독립적인 계산이고, 4·8·9단계만 직전 단계의 결과를 실제로 입력으로 사용한다(3→4, 7→8, 6→9). 즉 "단계가 이어받는다"는 주석 표현은 절반 정도는 흐름의 형식 — 같은 state 딕셔너리를 통과한다는 의미 — 일 뿐이고, 실제 수학적 종속 관계는 그보다 적다.
+    </div>
+  </section>
+
+  <footer>analysis target: formula_flow_pipeline.py · steps 1–10</footer>
+</div>
+</body>
+</html>
