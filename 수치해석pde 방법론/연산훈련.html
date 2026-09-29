@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>연산 훈련 — 도감 따라 계산하기</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false})"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#1a2230;--muted:#5d6878;--line:#d9dee6;--key:#c05a0c;--acc:#0f766e;--tip:#fff6e8;--tip-bd:#f1c98b;--ex:#eef6ff;--ex-bd:#a9c8ee;--ans:#effaf4;--ans-bd:#a8dcbf}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0e1116;--card:#161b22;--ink:#e6edf3;--muted:#9aa6b6;--line:#2d3440;--key:#ffb454;--acc:#5fd0c0;--tip:#2a2213;--tip-bd:#6b5227;--ex:#13202f;--ex-bd:#2f4f78;--ans:#13261d;--ans-bd:#2e6547}}
+:root[data-theme="dark"]{--bg:#0e1116;--card:#161b22;--ink:#e6edf3;--muted:#9aa6b6;--line:#2d3440;--key:#ffb454;--acc:#5fd0c0;--tip:#2a2213;--tip-bd:#6b5227;--ex:#13202f;--ex-bd:#2f4f78;--ans:#13261d;--ans-bd:#2e6547}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.85 "Noto Sans KR",system-ui,sans-serif}
+main{max-width:820px;margin:0 auto;padding:32px 16px 90px;overflow-wrap:anywhere}
+h1{font-size:1.6rem;margin:0 0 6px;line-height:1.35}
+.sub{color:var(--muted);margin:0 0 20px}
+h2{font-size:1.25rem;margin:44px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--line)}
+h3{font-size:1.05rem;margin:26px 0 6px;color:var(--acc)}
+p{margin:0 0 12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:14px 0}
+.tip{background:var(--tip);border:1px solid var(--tip-bd);border-radius:8px;padding:10px 14px;margin:12px 0}
+.ex{background:var(--ex);border:1px solid var(--ex-bd);border-radius:8px;padding:10px 14px;margin:12px 0}
+.ex b.q{color:var(--key)}
+details{background:var(--ans);border:1px solid var(--ans-bd);border-radius:8px;padding:6px 12px;margin:8px 0}
+details summary{cursor:pointer;font-weight:500}
+.table-wrap{overflow-x:auto;margin:10px 0}
+table{border-collapse:collapse;width:100%;font-size:.92rem;background:var(--card)}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}
+th{background:var(--bg);font-weight:600}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+ol,ul{margin:4px 0 12px;padding-left:1.4em}
+li{margin:3px 0}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0}
+/* 수식($u_\theta$) 안쪽 span까지 테두리가 씌워져 깨지던 문제: 직계 자식에만 적용 */
+.flow>span{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:2px 9px;font-size:.9rem}
+.flow i{font-style:normal;color:var(--muted)}
+.flow>span{max-width:100%}
+.flow>span.loop{border-color:var(--acc);color:var(--acc)}
+.badge{display:inline-block;font-size:.78rem;border:1px solid var(--line);border-radius:999px;padding:0 8px;margin-right:4px}
+.badge.no{color:#b4234a;border-color:#b4234a}.badge.yes{color:#1c8f66;border-color:#1c8f66}.badge.part{color:#a3690a;border-color:#a3690a}
+.katex-display{overflow-x:auto;overflow-y:hidden;margin:.4em 0}
+.toc{columns:2;column-gap:24px;font-size:.93rem;margin:0;padding-left:1.2em}
+.toc a{color:var(--acc);text-decoration:none}
+@media (max-width:600px){.toc{columns:1}}
+</style>
+</head>
+<body>
+<main>
+<h1>연산 훈련 — 도감을 따라 직접 계산하기</h1>
+<p class="sub">「이산화 도감 — 논문 적용 3」의 내용(파이프라인, 1차원 열방정식, Burgers 방정식, 1차원 슈뢰딩거 방정식, PINN 학습, 지표)을 손으로 계산하며 익힌다. 9절은 「도감 알고리즘 재실험」(1·2차원 열방정식, Burgers, 슈뢰딩거, Euler–Bernoulli 보)과 논문 11절(결론)의 실측 데이터로 예측을 직접 계산해 보는 연습이다. 중학교 수학(분수, 거듭제곱, 일차식)과 고등학교 수학 조금(미분의 뜻, 지수·로그)이면 따라올 수 있게 썼다. 10절은 「열방정식 이산화 발표판」의 두 가설을 4가지 시간적분(Explicit Euler · Implicit Euler · Crank–Nicolson · RK4)에 대입해 반례를 찾고, 경계 R(T) 갱신을 직접 계산해 보는 연습이다. 11절은 베르누이 방정식(유체의 베르누이 정리와, 치환으로 푸는 베르누이 미분방정식)을 같은 순서로 풀어 보고, 그 풀이에 앞의 시간적분 네 가지를 적용해 본다. 연습문제의 답은 접혀 있으니, 먼저 풀어 보고 펼쳐서 확인하자.</p>
+
+<div class="card"><b>목차</b>
+<ol class="toc">
+<li><a href="#s1">기호 읽는 법</a></li>
+<li><a href="#s2">파이프라인 한눈에 보기</a></li>
+<li><a href="#s3">기본 도구: 기울기 · 차분 · 곱하기 · 차수</a></li>
+<li><a href="#s4">1차원 열방정식 따라가기</a></li>
+<li><a href="#s5">Burgers 방정식 따라가기</a></li>
+<li><a href="#s6">1차원 슈뢰딩거 방정식 따라가기</a></li>
+<li><a href="#s7">PINN 학습 손으로 돌리기</a></li>
+<li><a href="#s8">지표 계산하기</a></li>
+<li><a href="#s9">실험 데이터로 예측 확인하기</a></li>
+<li><a href="#s10">반례로 가설 시험하기 (4가지 시간적분 · R(T))</a></li>
+<li><a href="#s11">베르누이 방정식 따라가기</a></li>
+</ol></div>
+
+<!-- ====================== 1 ====================== -->
+<h2 id="s1">1. 기호 읽는 법</h2>
+<div class="table-wrap"><table>
+<tr><th>기호</th><th>읽는 법</th><th>뜻</th></tr>
+<tr><td>$u(x,t)$</td><td>유</td><td>위치 $x$, 시간 $t$에서의 값 (온도, 높이, 속도 등)</td></tr>
+<tr><td>$u_t$</td><td>유 티</td><td>시간이 지날 때 $u$가 변하는 빠르기 (시간에 대한 기울기)</td></tr>
+<tr><td>$u_x$</td><td>유 엑스</td><td>옆으로 움직일 때 $u$가 변하는 빠르기 (공간에 대한 기울기)</td></tr>
+<tr><td>$u_{xx}$</td><td>유 엑스엑스</td><td>기울기가 변하는 빠르기 = 휘어진 정도 (볼록·오목)</td></tr>
+<tr><td>$h$</td><td>에이치</td><td>격자 한 칸의 폭 (점 사이 거리)</td></tr>
+<tr><td>$k$ 또는 $\Delta t$</td><td>케이, 델타 티</td><td>시간 한 스텝의 길이</td></tr>
+<tr><td>$U_i^n$</td><td>유 아이 엔</td><td>$i$번째 격자점, $n$번째 시간 스텝의 값 (컴퓨터에 저장되는 숫자)</td></tr>
+<tr><td>$\sum$</td><td>시그마</td><td>모두 더하기</td></tr>
+<tr><td>$i$</td><td>허수 단위</td><td>$i^2=-1$인 수 (슈뢰딩거에서만 등장)</td></tr>
+<tr><td>$|z|$</td><td>절댓값</td><td>크기. 복소수 $a+bi$면 $\sqrt{a^2+b^2}$</td></tr>
+<tr><td>$\theta$</td><td>세타</td><td>PINN에서 신경망 안의 조절 손잡이(숫자)들 (9절에서는 $\theta=\xi h$, 파동 한 개에 대한 격자 폭)</td></tr>
+<tr><td>$K$</td><td>케이</td><td>도감 카드의 차분 라플라시안 $\frac1{h^2}[1,-2,1]$ (논문 11절의 $L_h$). FEM의 강성행렬 $\frac1h[-1,2,-1]$과는 부호가 반대이니 섞지 말 것</td></tr>
+</table></div>
+
+<!-- ====================== 2 ====================== -->
+<h2 id="s2">2. 파이프라인 한눈에 보기</h2>
+<p>도감의 모든 카드는 같은 순서로 문제를 푼다. 요리 순서표처럼 외워 두자.</p>
+<h3>파트 1 — 격자로 풀기 (FDM · FEM)</h3>
+<div class="flow"><span>① 방정식 · 무차원화</span><i>→</i><span>② 경계조건</span><i>→</i><span>③ 초기조건</span><i>→</i><span>④ 메쉬 생성</span><i>→</i><span>⑤ 공간 이산화</span><i>→</i><span>⑥ ODE 시스템</span><i>→</i><span>⑦ 시간 이산화 · 비선형 처리</span><i>→</i><span>⑧ 점화식</span><i>→</i><span>⑨ 검증</span><i>→</i><span>⑩ 메쉬 정련 ⟲</span><i>→</i><span>⑪ PINN 결합</span></div>
+<ol>
+<li><b>방정식 · 무차원화</b>: 풀 식을 정하고, 단위를 없애 숫자를 1 근처로 맞춘다.</li>
+<li><b>경계조건</b>: 막대 양 끝에서 무슨 일이 일어나는지 정한다.</li>
+<li><b>초기조건</b>: 처음($t=0$) 모습을 정한다.</li>
+<li><b>메쉬 생성</b>: 공간을 점 $N$개로 나눈다. 칸 폭 $h$가 정해진다.</li>
+<li><b>공간 이산화</b>: $u_x$, $u_{xx}$ 같은 기울기를 이웃 점들의 차이로 바꾼다.</li>
+<li><b>ODE 시스템</b>: 그러면 "점마다 시간에 따라 어떻게 변하나"만 남는다.</li>
+<li><b>시간 이산화</b>: 시간도 $k$ 간격으로 끊는다. 곱셈 항 같은 비선형 부분의 처리법도 여기서 정한다.</li>
+<li><b>점화식</b>: "지금 값으로 다음 값을 계산하는 규칙"이 완성된다.</li>
+<li><b>검증</b>: 격자를 촘촘히 해 가며 오차가 예상대로 줄어드는지 본다.</li>
+<li><b>메쉬 정련</b>: 오차가 큰 곳에 점을 더 넣고 ④로 돌아간다.</li>
+<li><b>PINN 결합</b>: 격자로 얻은 답을 신경망의 채점 기준으로 쓴다.</li>
+</ol>
+<p>시간이 없는 문제(정상상태)는 ⑥⑦⑧ 대신 연립일차방정식 $KU=F$를 한 번에 푼다.</p>
+<h3>파트 2 — 신경망으로 풀기 (PINN)</h3>
+<div class="flow"><span>① 방정식 · 조건 · 무차원화</span><i>→</i><span>② 신경망 $u_\theta$</span><i>→</i><span>③ 채점할 점 뽑기</span><i>→</i><span>④ 자동미분</span><i>→</i><span>⑤ 손실</span><i>→</i><span>⑥ 손실의 기울기</span><i>→</i><span class="loop">⑦ 손잡이 조정 ⟲ epoch 반복</span><i>→</i><span>⑧ 평가</span></div>
+<ol>
+<li><b>방정식 · 조건 · 무차원화</b>: 격자법과 같은 문제를 그대로 쓴다.</li>
+<li><b>신경망 $u_\theta$</b>: 층 수 · 노드 수 · 활성화함수(tanh)를 정한다. $\theta$는 안의 조절 손잡이들이다.</li>
+<li><b>채점할 점 뽑기</b>: 방정식 · 초기조건 · 경계조건을 채점할 점(collocation point)을 난수로 뽑는다.</li>
+<li><b>자동미분</b>: 신경망을 컴퓨터가 직접 미분해 $u_t,\ u_{xx}$ 같은 값을 얻는다(강형은 2계, 약형은 1계 미분).</li>
+<li><b>손실</b>: 방정식 · 초기 · 경계를 어긴 정도를 제곱해서 더한다.</li>
+<li><b>손실의 기울기</b>: 손잡이를 조금 돌리면 손실이 얼마나 변하나, $\nabla_\theta\mathcal L$.</li>
+<li><b>손잡이 조정</b>: 기울기 반대 방향으로 학습률만큼 움직인다(Adam 등). ③~⑦을 epoch만큼 반복한다.</li>
+<li><b>평가</b>: 격자법 참조해 대비 final error, runtime, 여러 seed의 흔들림(CV)을 잰다.</li>
+</ol>
+<p>신경망이라는 "모양을 바꿀 수 있는 함수"를 두고, 방정식을 얼마나 어겼는지를 점수(손실)로 매긴 뒤, 점수가 줄어드는 쪽으로 손잡이를 조금씩 돌린다.</p>
+
+<div class="ex"><b class="q">연습 2-1 (무차원화)</b> 구리 막대 길이 $L=4$ mm $=0.004$ m, 열이 퍼지는 빠르기 $\alpha\approx1.1\times10^{-4}$ m²/s이다. 열이 막대 전체에 퍼지는 시간의 크기 $L^2/\alpha$는 몇 초인가? 온도가 4 K에서 300 K 사이일 때 $\tilde T=(T-4)/296$으로 바꾸면 $\tilde T$는 어느 범위에 있나?</div>
+<details><summary>답</summary>$L^2/\alpha=0.000016/0.00011\approx0.145$ 초. $T=4$이면 $\tilde T=0$, $T=300$이면 $\tilde T=1$ → $0\le\tilde T\le1$. 이렇게 숫자를 0~1 근처로 맞추는 게 무차원화다. 신경망은 입력·출력이 수백 배씩 차이 나면 학습이 잘 안 된다.</details>
+
+<!-- ====================== 3 ====================== -->
+<h2 id="s3">3. 기본 도구</h2>
+
+<h3>3-1. 기울기를 점 두 개로 계산하기</h3>
+<p>기울기 = (세로 변화) ÷ (가로 변화). 컴퓨터는 아주 가까운 두 점으로 기울기를 근사한다.</p>
+$$u_x\approx\frac{u(x+h)-u(x)}{h}\quad(\text{앞 차분}),\qquad u_x\approx\frac{u(x+h)-u(x-h)}{2h}\quad(\text{중심 차분})$$
+<div class="ex"><b class="q">연습 3-1</b> $u=x^2$, $x=1$, $h=0.1$일 때 앞 차분과 중심 차분을 계산하라. 정답 기울기는 $2x=2$이다.</div>
+<details><summary>답</summary>앞: $(1.21-1)/0.1=2.1$ (오차 0.1). 중심: $(1.21-0.81)/0.2=2.0$ (오차 0). 양쪽을 보는 중심 차분이 훨씬 정확하다.</details>
+
+<h3>3-2. 휘어진 정도($u_{xx}$)를 점 세 개로</h3>
+$$u_{xx}\approx\frac{u(x-h)-2u(x)+u(x+h)}{h^2}$$
+<p>뜻: 가운데 점이 양옆 평균보다 얼마나 낮은가(볼록) 높은가(오목).</p>
+<div class="ex"><b class="q">연습 3-2</b> $u=x^2$, $x=1$, $h=0.1$로 계산하라. 정답은 $2$이다.</div>
+<details><summary>답</summary>$(0.81-2+1.21)/0.01=0.02/0.01=2$. 포물선에서는 정확히 맞는다.</details>
+
+<h3>3-3. 한 스텝은 곱하기, $n$ 스텝은 거듭제곱</h3>
+<p>많은 점화식은 "다음 값 = $R$ × 지금 값" 꼴이 된다. 그러면 $n$번 뒤에는 $R^n$배가 된다.</p>
+$$U^{n+1}=R\,U^n\ \Rightarrow\ U^n=R^n\,U^0$$
+<div class="ex"><b class="q">연습 3-3</b> $R=0.9$, $U^0=1$이면 3번 뒤 값은? $R=1.1$이면? 어느 쪽이 "터지는(불안정한)" 계산인가?</div>
+<details><summary>답</summary>$0.9^3=0.729$, $1.1^3=1.331$. $|R|&gt;1$이면 스텝마다 커져서 결국 터진다. 그래서 안정 조건은 $|R|\le1$이다.</details>
+
+<h3>3-4. 오차가 몇 배 줄었나 → 차수</h3>
+<p>칸 폭 $h$를 절반으로 줄였을 때 오차가 $2^p$배 줄면 "$p$차 방법"이다.</p>
+<div class="table-wrap"><table>
+<tr><th>오차가 줄어든 배수</th><td class="n">2</td><td class="n">4</td><td class="n">8</td><td class="n">16</td></tr>
+<tr><th>차수 $p$</th><td class="n">1</td><td class="n">2</td><td class="n">3</td><td class="n">4</td></tr>
+</table></div>
+$$p=\frac{\log(\text{줄어든 배수})}{\log2}$$
+<div class="ex"><b class="q">연습 3-4</b> 오차가 $0.012$에서 $0.003$으로 줄었다. 차수는? 오차가 $5.03\times10^{-3}$에서 $2.46\times10^{-3}$으로 줄었다면?</div>
+<details><summary>답</summary>$0.012/0.003=4=2^2$ → 2차. $5.03/2.46\approx2.04\approx2^1$ → 1차 (논문 표의 명시적 Euler 결과).</details>
+
+
+<!-- ====================== 4 (열방정식) ====================== -->
+<h2 id="s4">4. 1차원 열방정식 따라가기</h2>
+<div class="card">$$u_t=\alpha\,u_{xx}$$
+<b>읽는 법</b>: 온도 $u$가 변하는 빠르기는 온도 그래프가 휘어진 정도에 비례한다. 오목한 곳(주변보다 차가운 곳)은 데워지고, 볼록한 곳(주변보다 뜨거운 곳)은 식는다. $\alpha$는 열이 퍼지는 빠르기이다. 논문에서는 스텝의 차수(명제 2.5), Crank–Nicolson이 분수 근사라는 사실(명제 7.2), 활성화함수 조건(명제 9.1)을 설명하는 기준 문제이고, 발표 자료의 주제이다.</div>
+
+<h3>① 경계조건 · 초기조건</h3>
+<p>도감 카드는 양 끝 온도를 0으로 고정한다: $u(0,t)=u(1,t)=0$. 처음 모양은 $u(x,0)=\sin\pi x$ (가운데가 가장 뜨거운 산 모양).</p>
+<div class="ex"><b class="q">연습 4-1 (정답 확인)</b> $u=e^{-\alpha\pi^2t}\sin\pi x$가 답인지 확인하라. 힌트: $\sin\pi x$를 두 번 미분하면 $-\pi^2\sin\pi x$, $e^{ct}$를 $t$로 미분하면 $c\,e^{ct}$이다.</div>
+<details><summary>답</summary>$u_t=-\alpha\pi^2e^{-\alpha\pi^2t}\sin\pi x$, $u_{xx}=-\pi^2e^{-\alpha\pi^2t}\sin\pi x$ → $u_t=\alpha u_{xx}$ ✓. 양 끝에서 $\sin0=\sin\pi=0$ ✓. 모양은 그대로이고 높이만 $e^{-\alpha\pi^2t}$배로 줄어든다.</details>
+
+<h3>② 메쉬 · 공간 이산화 · ODE 시스템</h3>
+<p>균일 격자 $x_i=ih$에서 $u_{xx}$를 3-2의 세 점 공식으로 바꾸면, 점마다 "얼마나 빨리 변하나"가 나온다.</p>
+$$\frac{dU_i}{dt}=\alpha\,\frac{U_{i-1}-2U_i+U_{i+1}}{h^2}$$
+<div class="ex"><b class="q">연습 4-2</b> $\alpha=1$, $h=0.25$, 격자 값이 $U=[0,\ 0.5,\ 1,\ 0.5,\ 0]$이다. 가운데 점($U=1$)은 데워지나 식나? 빠르기는?</div>
+<details><summary>답</summary>$(0.5-2+0.5)/0.0625=-1/0.0625=-16$ → 음수이므로 식는다. 주변보다 뜨거운(볼록한) 점이기 때문이다.</details>
+
+<h3>③ 시간 이산화 — 네 가지 방법의 한 스텝</h3>
+<p>$r=\alpha k/h^2$라 하자. 각 방법이 점화식을 만드는 방식:</p>
+<ul>
+<li><b>명시적 Euler</b>: 지금 기울기로 전진. $U_i^{n+1}=U_i^n+r\,(U_{i-1}^n-2U_i^n+U_{i+1}^n)$</li>
+<li><b>암시적 Euler</b> (도감 카드의 방법): 다음 값의 기울기로 전진. $(I-k\alpha K)\,U^{n+1}=U^n$ — 연립방정식을 풀어야 한다.</li>
+<li><b>Crank–Nicolson</b>: 지금과 다음 기울기의 평균.</li>
+<li><b>RK4</b>: 한 스텝 안에서 기울기를 4번 재서 가중 평균. 한 스텝의 곱하기 수가 $e^z$의 급수를 4차까지 자른 $1+z+\tfrac{z^2}{2}+\tfrac{z^3}{6}+\tfrac{z^4}{24}$이다($z=\lambda\Delta t$).</li>
+</ul>
+<div class="ex"><b class="q">연습 4-3 (명시적 Euler 한 스텝)</b> 연습 4-2의 격자에서 $r=0.25$로 한 스텝 가면 가운데 값은?</div>
+<details><summary>답</summary>$1+0.25\times(0.5-2+0.5)=1-0.25=0.75$.</details>
+
+<h3>④ 안정 조건 — 톱니 모양으로 시험하기</h3>
+<p>가장 위험한 모양은 값이 $+1,-1,+1,-1,\dots$로 번갈아 나오는 톱니이다. 이웃이 모두 $-U_i$이므로 $U_{i-1}-2U_i+U_{i+1}=-4U_i$가 되고, 한 스텝의 곱하기 수 $R$이 바로 나온다.</p>
+$$\text{명시적 Euler: }R=1-4r,\qquad \text{암시적 Euler: }R=\frac1{1+4r},\qquad \text{Crank–Nicolson: }R=\frac{1-2r}{1+2r}$$
+<p>RK4는 $z=-4r$를 넣은 $R=1-4r+8r^2-\tfrac{32}{3}r^3+\tfrac{32}{3}r^4$이고, 안정 한계는 $r\le0.696$이다(10절에서 계산).</p>
+<div class="ex"><b class="q">연습 4-4</b> $r=0.25,\ 0.5,\ 1$일 때 명시적 Euler의 $R$을 구하라. 어디서부터 터지나?</div>
+<details><summary>답</summary>$1-1=0$, $1-2=-1$, $1-4=-3$. $|R|\le1$이려면 $1-4r\ge-1$, 즉 $r\le\tfrac12$ ($k\le h^2/2\alpha$). $r=1$이면 스텝마다 3배씩 커지며 부호가 뒤집혀 터진다.</details>
+<div class="ex"><b class="q">연습 4-5</b> $r=1$과 $r=100$에서 암시적 Euler와 Crank–Nicolson의 $R$을 구하라. 둘 중 톱니가 깔끔하게 사라지는 쪽은?</div>
+<details><summary>답</summary>암시적: $1/5=0.2$, $1/401\approx0.0025$ → 톱니가 금방 사라진다. CN: $(1-2)/(1+2)=-1/3$, $(1-200)/(1+200)\approx-0.99$ → 크기는 거의 줄지 않고 부호만 뒤집히며 흔들린다. 발표 자료의 "극단 강성에서 Strang+CN이 443.73 K(처음 온도 300 K보다 높음)로 비물리적 가열"이 이 현상이다. 두 방법 모두 $|R|\le1$이라 터지지는 않는다(무조건 안정). CN의 문제는 불안정이 아니라, 값이 처음보다 커지면 안 된다는 <b>단조성(최대원리)</b>이 깨지는 것이다.</details>
+
+<h3>⑤ 검증 — 공간 오차와 시간 오차 나눠 보기</h3>
+<p>가장 작은 격자로 직접 계산해 보자. $h=0.5$이면 내부 점은 가운데 하나뿐이고, 양 끝은 0이다.</p>
+$$\frac{dU}{dt}=\alpha\frac{0-2U+0}{0.25}=-8\alpha U$$
+<div class="ex"><b class="q">연습 4-6</b> $\alpha=1$, $k=0.1$로 암시적 Euler 한 스텝의 곱하기 수를 구하라. 이것을 (a) 격자는 그대로 두고 시간만 정확히 푼 값 $e^{-8\times0.1}$, (b) 정답 $e^{-\pi^2\times0.1}$과 비교하라.</div>
+<details><summary>답</summary>$(1+0.8)U^{n+1}=U^n$ → $R=1/1.8\approx0.556$. (a) $e^{-0.8}\approx0.449$, (b) $e^{-0.987}\approx0.373$.<br>$0.556$과 $0.449$의 차이는 <b>시간 오차</b>(k가 커서), $0.449$와 $0.373$의 차이는 <b>공간 오차</b>(격자가 8을 $\pi^2\approx9.87$ 대신 쓴 것). 격자를 촘촘히 하면 8이 $\pi^2$에 가까워지고, $k$를 줄이면 $R$이 $e^{-8k}$에 가까워진다. 이것이 "시간·공간 수렴성 분리"이다.</details>
+<div class="ex"><b class="q">연습 4-7 (차수)</b> $k$를 반으로 줄일 때마다 오차가 명시적·암시적 Euler는 2배, Crank–Nicolson은 4배, RK4는 약 16배 준다. 각각 몇 차인가?</div>
+<details><summary>답</summary>$2=2^1$ → 1차, $4=2^2$ → 2차. CN이 평균을 쓰기 때문에 한 차수 더 정확하다. RK4는 $16=2^4$ → 4차(발표판 관측 15.9배, 차수 3.99). 실험에서 도감 카드(암시적 Euler)의 시간 차수는 0.996, 0.998, 공간 차수는 2.00으로 나왔다.</details>
+
+<h3>⑥ PINN 결합</h3>
+<p>잔차는 $r=u_t-\alpha u_{xx}$. 2계 미분 $u_{xx}$가 필요하므로 두 번 미분해도 0이 되지 않는 활성화함수(tanh, sin)를 쓴다. ReLU는 꺾인 직선이라 두 번 미분하면 0이 되어 $u_{xx}$를 표현하지 못한다. 격자법으로 구한 해는 PINN의 채점 기준(참조해)으로 쓴다.</p>
+<div class="ex"><b class="q">연습 4-8</b> 정답 $u=e^{-\pi^2t}\sin\pi x$ ($\alpha=1$)를 $x=0.5$, $t=0.1$에서 잔차 식에 넣으면 얼마인가?</div>
+<details><summary>답</summary>$\sin(\pi/2)=1$이므로 $u_t=-\pi^2e^{-0.1\pi^2}$, $u_{xx}=-\pi^2e^{-0.1\pi^2}$ → $r=0$. 정답은 모든 점에서 잔차 0이고, PINN은 이 잔차를 0에 가깝게 만드는 방향으로 학습한다.</details>
+
+<!-- ====================== 4 ====================== -->
+<h2 id="s5">5. Burgers 방정식 따라가기</h2>
+<div class="card">$$u_t+u\,u_x=\nu\,u_{xx}$$
+<b>읽는 법</b>: 높이가 $u$인 부분은 속도 $u$로 오른쪽으로 움직인다($u\,u_x$ 항). 높은 곳이 빨리 가서 낮은 곳을 따라잡으면 벽처럼 가파른 <b>충격파</b>가 생긴다. $\nu u_{xx}$는 그 벽을 살짝 뭉개는 확산 항이다($\nu$가 작을수록 벽이 날카롭다).</div>
+
+<h3>① 경계조건</h3>
+<p>물이 들어오는 쪽(inflow)에만 값을 준다. 나가는 쪽 값까지 정하면 조건이 너무 많아져 식이 서로 부딪친다. 또는 양 끝을 이어 붙이는 주기 경계를 쓴다.</p>
+
+<h3>② 특성곡선과 충격파 — 언제 벽이 생기나</h3>
+<p>$\nu=0$이면 처음 위치 $x_0$에 있던 값 $u_0(x_0)$는 그 속도로 그대로 이동한다.</p>
+$$x=x_0+u_0(x_0)\,t$$
+<div class="ex"><b class="q">연습 5-1</b> 처음 모양이 $u_0(x)=1-x$ ($0\le x\le1$)이다. $x_0=0$에서 출발한 값($u=1$)과 $x_0=1$에서 출발한 값($u=0$)은 언제, 어디서 만나나?</div>
+<details><summary>답</summary>첫째: $x=0+1\cdot t=t$. 둘째: $x=1+0\cdot t=1$. $t=1$일 때 둘 다 $x=1$ → 만난다. 사실 모든 점이 $x=x_0(1-t)+t$라서 $t=1$에 전부 $x=1$에 모인다. 공식 $t^*=-1/(\text{처음 모양의 가장 가파른 기울기})=-1/(-1)=1$과 같다.</details>
+<p>벽(충격파)이 생긴 뒤 벽이 움직이는 속도는 양쪽 높이의 평균이다.</p>
+$$s=\frac{u_L+u_R}{2}$$
+<div class="ex"><b class="q">연습 5-2</b> 벽 왼쪽 높이 $u_L=2$, 오른쪽 $u_R=0$이면 벽의 속도는? 반대로 $u_L=0,\ u_R=2$면 벽이 생기나?</div>
+<details><summary>답</summary>$s=(2+0)/2=1$. 두 번째는 왼쪽이 느리고 오른쪽이 빨라 서로 멀어지므로 벽이 생기지 않고 부드럽게 펼쳐진다(엔트로피 조건: 벽은 $u_L&gt;u_R$일 때만).</details>
+
+<h3>③ 메쉬 · 공간 이산화 — 보존형으로 쓰기</h3>
+<p>$u\,u_x$를 $\big(\tfrac{u^2}{2}\big)_x$로 바꿔 쓴다(미분하면 같다). 그러면 각 칸의 변화를 "들어온 양 − 나간 양"으로 계산할 수 있다. 칸 경계를 지나는 양(유속)을 $F$라 하면</p>
+$$U_i^{\text{다음}}=U_i-\frac kh\big(F_{\text{오른쪽 벽}}-F_{\text{왼쪽 벽}}\big),\qquad F=\frac{U^2}{2}\ (\text{흐름이 오른쪽이면 왼쪽 칸 값 사용})$$
+<div class="ex"><b class="q">연습 5-3 (한 스텝 계산)</b> 칸 세 개의 값이 $U=[2,\ 1,\ 0]$이고, 왼쪽에서 들어오는 값도 2이다. $k/h=0.25$. 각 벽의 유속 $F=U^2/2$(왼쪽 칸 값)를 구하고 다음 값을 계산하라.</div>
+<details><summary>답</summary>벽 유속: 맨 왼쪽 벽 $2^2/2=2$, 1·2칸 사이 $2$, 2·3칸 사이 $1^2/2=0.5$, 맨 오른쪽 벽 $0$.<br>1칸: $2-0.25(2-2)=2$ · 2칸: $1-0.25(0.5-2)=1.375$ · 3칸: $0-0.25(0-0.5)=0.125$.<br>합계 $3\to3.5$, 늘어난 $0.5$는 $0.25\times(\text{들어온 }2-\text{나간 }0)$과 같다. 보존형이면 "합계 변화 = 들어온 양 − 나간 양"이 정확히 지켜진다(보존량 지표).</details>
+
+<h3>④ 시간 이산화 · 비선형 처리 — IMEX</h3>
+<p>도감 카드의 방법: 확산($\nu u_{xx}$)은 다음 값으로 계산해서(암시적) 안정하게, 곱셈 항($u u_x$)은 지금 값으로 계산해서(명시적) 간단하게 처리한다.</p>
+$$(I-k\nu K)\,U^{n+1}=U^n-k\,D\big(U^n\odot U^n/2\big)$$
+<p>$\odot$는 "같은 자리끼리 곱하기"이다. 조건은 대류 항을 <b>어떻게</b> 계산하느냐에 따라 다르다.</p>
+<ul>
+<li><b>업윈드 명시적</b>(연습 5-3의 방법): 한 스텝에 한 칸 넘게 움직이면 안 된다(CFL 조건). $\ \max|u|\cdot\dfrac kh\le1$</li>
+<li><b>도감 카드의 IMEX</b>(대류는 중심차분·명시적, 확산은 암시적): 칸 폭 $h$와 상관없이 $\ k\le\dfrac{2\nu}{\max|u|^2}$. 중심차분 대류는 혼자서는 조금씩 커지는 성질이 있고, 그것을 확산 $\nu$가 눌러 준다. 그래서 $\nu=0$이면 어떤 $k$에서도 터진다.</li>
+</ul>
+<p>재실험에서 $\nu=0.05$, $\max|u|=1$이면 한계가 $k=0.1$인데, $k=0.09$는 칸 수 50·200·800 모두 안정(CFL 72에서도), $k=0.12$는 모두 터졌다.</p>
+<div class="ex"><b class="q">연습 5-4</b> 연습 5-3에서 최대 속도는 2, $k/h=0.25$이다. CFL 조건을 만족하나? $k/h=0.6$이면?</div>
+<details><summary>답</summary>$2\times0.25=0.5\le1$ → 만족. $2\times0.6=1.2&gt;1$ → 위반, 값이 한 스텝에 한 칸 넘게 가서 계산이 튄다. (연습 5-3은 업윈드 명시적 방법이라 CFL이 맞는 기준이다.)</details>
+<div class="ex"><b class="q">연습 5-4′ (IMEX 한계)</b> 도감 카드의 IMEX로 $\nu=0.05$, $\max|u|=1$인 문제를 푼다. 시간 스텝 $k$의 한계는? $k=0.09$, 칸 수 $N=800$ ($h=1/800$)이면 CFL 수 $\max|u|\,k/h$는 얼마이고, 계산은 터지나?</div>
+<details><summary>답</summary>$k\le2\times0.05/1^2=0.1$. CFL $=0.09\times800=72$. 그래도 $k=0.09\le0.1$이라 터지지 않는다. IMEX에서는 CFL 수가 기준이 아니다.</details>
+
+<h3>⑤ PINN 결합 — 잔차 확인하기</h3>
+<p>PINN은 신경망이 만든 함수를 방정식에 넣어 "얼마나 어겼나(잔차)"를 잰다. 잔차가 0이면 방정식을 정확히 만족한다.</p>
+$$r=u_t+u\,u_x-\nu u_{xx}$$
+<div class="ex"><b class="q">연습 5-5</b> $\nu=0$일 때 $u=\dfrac{x}{1+t}$가 답인지 확인하라. $x=1,\ t=1$에서 $u,\ u_t,\ u_x$를 구해 잔차를 계산하라.</div>
+<details><summary>답</summary>$u=1/2$, $u_x=1/(1+t)=1/2$, $u_t=-x/(1+t)^2=-1/4$. $r=-1/4+(1/2)(1/2)=0$ → 답이 맞다. 퍼져 나가는(벽이 없는) 해이다.</details>
+<p>AMR(적응 샘플링)은 잔차가 큰 곳에서 채점할 점을 더 많이 뽑는다. 뽑힐 확률은 잔차의 제곱에 비례한다.</p>
+<div class="ex"><b class="q">연습 5-6</b> 후보점 네 개의 잔차가 $0.1,\ 0.1,\ 0.4,\ 0.2$이다. 각 점이 뽑힐 확률은?</div>
+<details><summary>답</summary>제곱: $0.01,0.01,0.16,0.04$ (합 $0.22$). 확률: $0.045,\ 0.045,\ 0.727,\ 0.182$. 잔차가 4배인 점이 16배 자주 뽑힌다.</details>
+
+<!-- ====================== 5 ====================== -->
+<h2 id="s6">6. 1차원 슈뢰딩거 방정식 따라가기</h2>
+<div class="card">$$i\,u_t=-u_{xx}+V(x)\,u$$
+<b>읽는 법</b>: $u$는 입자의 파동함수(복소수 값). $|u|^2$은 그 위치에서 입자가 발견될 확률의 밀도이고, 전체를 더하면 항상 1이어야 한다(<b>노름 보존</b>). $V(x)$는 위치에 따른 에너지 지형이다. 도감은 $\hbar=1,\ 2m=1$ 단위를 쓴다(논문은 $-\tfrac12u_{xx}$ 꼴, 단위만 다르다).</div>
+
+<h3>① 복소수 연습</h3>
+$$(a+bi)(c+di)=(ac-bd)+(ad+bc)i,\qquad |a+bi|=\sqrt{a^2+b^2}$$
+<div class="ex"><b class="q">연습 6-1</b> $(1+2i)(3-i)$와 $|3+4i|$를 계산하라.</div>
+<details><summary>답</summary>$3-i+6i-2i^2=3+5i+2=5+5i$. $|3+4i|=\sqrt{9+16}=5$.</details>
+
+<h3>② 경계조건 · 초기조건 · 메쉬</h3>
+<p>경계에서는 보통 $u=0$(입자가 벽 밖으로 못 나감)이나 주기 경계를 쓴다. 초기조건은 흔히 가우스 모양의 "파동 묶음"이다. 메쉬는 파동의 물결 하나(파장)에 점이 최소 2개, 실제로는 10개 이상 들어가게 한다.</p>
+<div class="ex"><b class="q">연습 6-2</b> 파동이 $e^{2ix}$ 모양이면 파장은 $2\pi/2=\pi\approx3.14$이다. 파장당 점 10개를 넣으려면 $h$는 얼마 이하?</div>
+<details><summary>답</summary>$h\le3.14/10\approx0.31$.</details>
+
+<h3>③ 공간 이산화 — 해밀토니안 행렬</h3>
+<p>$-u_{xx}$를 3-2의 세 점 공식으로 바꾸면 행렬 $H$가 된다. 내부 점 3개, $h=0.25$, $V=0$이면</p>
+$$-u_{xx}\approx\frac{-U_{i-1}+2U_i-U_{i+1}}{h^2}\ \Rightarrow\ H=16\begin{bmatrix}2&-1&0\\-1&2&-1\\0&-1&2\end{bmatrix}=\begin{bmatrix}32&-16&0\\-16&32&-16\\0&-16&32\end{bmatrix}$$
+<p>그러면 방정식은 $U'=-iHU$ (점마다의 ODE 시스템)가 된다.</p>
+
+<h3>④ 시간 이산화 — 왜 Crank–Nicolson인가</h3>
+<p>파동 하나(한 모드)만 보면 $H$는 숫자 $\lambda$로 바뀌고, 한 스텝의 곱하기 수 $R$을 비교할 수 있다. $y=\lambda k$라 하자.</p>
+$$\text{명시적 Euler: }R=1-iy,\qquad \text{Crank–Nicolson: }R=\frac{1-iy/2}{1+iy/2}$$
+<div class="ex"><b class="q">연습 6-3</b> $y=0.1$일 때 두 방법의 $|R|^2$을 구하라. 명시적 Euler로 100스텝 가면 전체 확률은 몇 배가 되나?</div>
+<details><summary>답</summary>Euler: $|1-0.1i|^2=1+0.01=1.01$ → 스텝마다 확률이 1% 늘어난다. 100스텝이면 크기(노름)는 $|R|^{100}=1.01^{50}\approx1.64$배, 확률은 크기의 제곱이라 $|R|^{200}=1.01^{100}\approx2.70$배 → 확률 합이 1을 넘는 비물리적 결과.<br>CN: 분자 $|1-0.05i|^2=1.0025$, 분모 $|1+0.05i|^2=1.0025$ → $|R|=1$ 정확히. 분자와 분모가 "거울상"이라 크기가 같다. 그래서 CN은 확률 합을 정확히 지킨다(논문 명제 7.2).</details>
+<p>도감 카드의 점화식은 이것을 행렬로 쓴 것이다.</p>
+$$\Big(I+i\tfrac k2H\Big)U^{n+1}=\Big(I-i\tfrac k2H\Big)U^n$$
+
+<h3>⑤ 검증 — 오차를 둘로 나누기</h3>
+<p>한 스텝의 $R$이 정답 $e^{-iy}$와 다를 때, 차이는 "크기가 틀린 것(진폭)"과 "각도가 틀린 것(위상)"으로 나뉜다. Euler는 크기가 틀리고, CN은 크기는 맞고 각도만 조금 틀린다. 검증할 때는 오차와 함께 $\sum|U_i|^2h$ (보존량)가 1로 유지되는지 본다.</p>
+
+<h3>⑥ PINN 결합 — 복소수를 실수 두 개로</h3>
+<p>신경망은 실수만 다루므로 $u=u_r+i\,u_i$로 두고 출력을 두 개 만든다. 방정식을 실수부와 허수부로 나누면</p>
+$$\text{실수부: }-u_{i,t}=-u_{r,xx}+Vu_r,\qquad \text{허수부: }u_{r,t}=-u_{i,xx}+Vu_i$$
+<div class="ex"><b class="q">연습 6-4</b> 좌변 $i\,u_t=i(u_{r,t}+i\,u_{i,t})$를 전개해서 위 두 식이 나오는지 확인하라.</div>
+<details><summary>답</summary>$i\,u_{r,t}+i^2u_{i,t}=-u_{i,t}+i\,u_{r,t}$. 우변 $-u_{r,xx}-i\,u_{i,xx}+Vu_r+iVu_i$와 실수는 실수끼리, $i$가 붙은 것끼리 같다고 두면 된다.</details>
+
+<!-- ====================== 6 ====================== -->
+<h2 id="s7">7. PINN 학습 손으로 돌리기</h2>
+<p>문제: $u'(x)=2$, $u(0)=0$ (정답 $u=2x$). 신경망 대신 가장 단순한 "손잡이 두 개짜리 함수" $u_\theta=ax+b$를 쓴다.</p>
+<ol>
+<li><b>잔차</b>: 방정식을 어긴 정도 $u'-2=a-2$, 경계를 어긴 정도 $u(0)=b$.</li>
+<li><b>손실</b>: 둘을 제곱해서 더한다. $\mathcal L=(a-2)^2+b^2$</li>
+<li><b>기울기</b>: 손잡이를 조금 돌리면 손실이 얼마나 변하나. $\partial\mathcal L/\partial a=2(a-2)$, $\partial\mathcal L/\partial b=2b$</li>
+<li><b>손잡이 조정</b>: 기울기 반대로, 학습률 $\eta$만큼. $a\leftarrow a-\eta\cdot2(a-2)$, $b\leftarrow b-\eta\cdot2b$</li>
+</ol>
+<div class="ex"><b class="q">연습 7-1</b> 시작값 $a=0,\ b=1$, $\eta=0.25$로 세 번 반복하며 표를 채워라.</div>
+<details><summary>답</summary>
+<div class="table-wrap"><table>
+<tr><th>반복(epoch)</th><th>$a$</th><th>$b$</th><th>손실 $\mathcal L$</th></tr>
+<tr><td class="n">0</td><td class="n">0</td><td class="n">1</td><td class="n">5</td></tr>
+<tr><td class="n">1</td><td class="n">1</td><td class="n">0.5</td><td class="n">1.25</td></tr>
+<tr><td class="n">2</td><td class="n">1.5</td><td class="n">0.25</td><td class="n">0.3125</td></tr>
+<tr><td class="n">3</td><td class="n">1.75</td><td class="n">0.125</td><td class="n">0.078</td></tr>
+</table></div>
+손실이 매번 1/4로 준다. 계속하면 $a\to2,\ b\to0$, 즉 $u=2x$.</details>
+<div class="ex"><b class="q">연습 7-2 (학습률)</b> 한 번 조정하면 $(a-2)$와 $b$가 $(1-2\eta)$배가 된다. $\eta=0.5,\ 1,\ 1.5$일 때 각각 어떻게 되나?</div>
+<details><summary>답</summary>$\eta=0.5$: $1-1=0$ → 한 번에 정답. $\eta=1$: $-1$배 → 부호만 바뀌며 제자리 진동. $\eta=1.5$: $-2$배 → 점점 커지며 발산. 3-3의 "$|R|\le1$이어야 안정"과 같은 원리다.</details>
+<div class="ex"><b class="q">연습 7-3 (손실 가중치와 hard constraint)</b> 손실을 $\mathcal L=(a-2)^2+\lambda b^2$으로 쓰면 $\lambda$는 무슨 역할일까? 또 $u_\theta=ax$로 두면 경계조건 항이 왜 필요 없나?</div>
+<details><summary>답</summary>$\lambda$는 "경계조건을 얼마나 중요하게 채점할지"의 비중이다. $u_\theta=ax$는 $x=0$에서 자동으로 0이라 경계조건을 구조로 이미 만족한다(hard constraint). 그러면 손실은 $(a-2)^2$ 하나만 남는다.</details>
+
+<!-- ====================== 7 ====================== -->
+<h2 id="s8">8. 지표 계산하기</h2>
+<div class="ex"><b class="q">연습 8-1 (L∞와 L²)</b> 격자 4점에서 오차가 $e=[0.1,\ -0.3,\ 0.2,\ 0]$, $h=0.25$이다. $L^\infty=\max|e_i|$와 $L^2=\sqrt{h\sum e_i^2}$를 구하라.</div>
+<details><summary>답</summary>$L^\infty=0.3$ (가장 크게 틀린 한 점). $L^2=\sqrt{0.25\times(0.01+0.09+0.04+0)}=\sqrt{0.035}\approx0.187$ (전체 평균적인 크기).</details>
+<div class="ex"><b class="q">연습 8-2 (내부/경계 분리)</b> 위에서 첫 점과 마지막 점이 경계라면 경계 오차의 최댓값과 내부 오차의 최댓값은? 무엇을 먼저 고쳐야 하나?</div>
+<details><summary>답</summary>경계: $\max(0.1,0)=0.1$, 내부: $\max(0.3,0.2)=0.3$ → 내부가 문제. 발표 자료의 복사 경계 문제에서는 반대로 경계 오차가 내부의 495배였다. 이럴 때는 경계 처리부터 점검한다. 도감 카드처럼 양 끝 값이 정확히 주어진(Dirichlet) 문제에서는 실험에서도 가장 큰 오차가 가운데(내부)에서 나왔다.</details>
+<div class="ex"><b class="q">연습 8-3 (방법 간 차이)</b> 정답을 모르는데 방법 A는 1.02, B는 0.99를 냈다. 차이는? 정답이 1.00이었다면 두 오차의 합과 비교하라.</div>
+<details><summary>답</summary>차이 $0.03$. 오차 $0.02+0.01=0.03$. 차이는 오차 합을 넘을 수 없으니, 차이가 크면 적어도 한 방법이 틀렸다는 뜻이다. 정답 없이도 버그를 찾을 수 있다.</details>
+<div class="ex"><b class="q">연습 8-4 (보존량)</b> 연습 5-3의 합계 변화와 연습 6-3의 Euler 확률 변화 중 어느 쪽이 "보존 위반"인가?</div>
+<details><summary>답</summary>5-3의 합계 증가 0.5는 들어온 양과 정확히 같으므로 위반이 아니다. 6-3의 Euler는 들어온 것도 없는데 확률 합이 2.70배가 되었으므로 보존 위반이다. 실험에서도 Burgers 보존형의 "합계 변화 − (유입 − 유출)"은 $10^{-14}$ 수준, 슈뢰딩거 CN의 확률 합 변화는 $10^{-13}$ 수준이었다.</details>
+<div class="ex"><b class="q">연습 8-5 (관측 차수)</b> 칸 폭을 반으로 줄일 때마다 오차가 $2.42\times10^{-7}\to1.48\times10^{-8}$로 줄었다. 몇 차 방법인가?</div>
+<details><summary>답</summary>$2.42/0.148\approx16.4\approx2^4$ → 4차 (논문 표의 RK4 결과).</details>
+
+<!-- ====================== 9 ====================== -->
+<h2 id="s9">9. 실험 데이터로 예측 확인하기</h2>
+<p>「도감 알고리즘 재실험」에서 실제로 돌린 결과(사전 예측 26개 모두 적중)와, 그 결과를 정리한 논문 11절(결론)의 식을 손으로 따라가 본다. 요점은 하나다. <b>계산하기 전에 식으로 예측하고, 계산한 뒤 예측과 비교한다.</b></p>
+
+<h3>9-1. 관측 차수 읽기</h3>
+<div class="ex"><b class="q">연습 9-1</b> 도감 카드(암시적 Euler)로 $\Delta t$를 $6.25\times10^{-4}$에서 $3.125\times10^{-4}$로 줄였더니 오차가 $2.916\times10^{-4}$에서 $1.460\times10^{-4}$로 줄었다. 시간 차수는? 공간 쪽은 $h$를 반으로 줄일 때 $3.05\times10^{-6}\to7.61\times10^{-7}$이었다. 공간 차수는?</div>
+<details><summary>답</summary>시간: $2.916/1.460\approx2.00=2^1$ → 1차. 공간: $3.05/0.761\approx4.0=2^2$ → 2차. 둘 다 예측(시간 1, 공간 2)과 맞는다.</details>
+
+<h3>9-2. 오차의 크기까지 예측하기 (논문 명제 11.3)</h3>
+<p>한 스텝의 곱하기 수 $R$에 로그를 씌우면 $\log R=z+C z^{p+1}+\cdots$ 꼴이 된다($z=\lambda\Delta t$). $n$ 스텝이면 로그가 $n$배로 쌓이므로, 정답과의 차이(상대 오차)는 대략</p>
+$$\text{상대 오차}\approx n\,C\,z^{p+1}=C\,T\lambda^{p+1}\Delta t^{p}$$
+<p>이다. 암시적 Euler는 $C=\tfrac12$, $p=1$, Crank–Nicolson은 $C=\tfrac1{12}$, $p=2$이다.</p>
+<div class="ex"><b class="q">연습 9-2</b> 열방정식 $u_t=u_{xx}$, $u_0=\sin\pi x$에서 이 모양의 $\lambda$는 $\pi^2\approx9.87$이다(시간이 정확하면 $e^{-\pi^2t}$로 준다). 암시적 Euler로 $T=0.1$, $\Delta t=0.01$일 때 상대 오차를 예측하라. 실제 값은 $R=1/(1+\pi^2\Delta t)$를 10번 곱해 구한 $0.39014$와 정답 $e^{-\pi^2\times0.1}=0.37271$의 비교이다.</div>
+<details><summary>답</summary>예측: $\tfrac12\times0.1\times9.87^2\times0.01\approx0.0487$ → 4.9%. 실제: $0.39014/0.37271-1\approx0.0468$ → 4.7%. $\Delta t=0.005$로 줄이면 예측 2.44%, 실제 2.39%로 예측과 실제의 차이도 절반이 된다. 실험의 전체 격자 계산에서는 가장 작은 $\Delta t$에서 예측과 측정이 0.13%까지 맞았다. 같은 방식으로 슈뢰딩거(CN, $C=\tfrac1{12}$)는 0.005%, 보(Newmark)는 0.016%까지 맞았다.</details>
+
+<h3>9-3. 노름 변화 예측하기 (논문 명제 11.4)</h3>
+<p>명시적 Euler로 슈뢰딩거를 풀면 한 스텝마다 확률이 $|R|^2=1+\Delta t^2\lambda^2$배가 된다. $n=T/\Delta t$ 스텝이면</p>
+$$(1+\Delta t^2\lambda^2)^{n}-1\approx T\,\Delta t\,\lambda^2 .$$
+<div class="ex"><b class="q">연습 9-3</b> 파동 $e^{2ix}$의 $\lambda$는 $2^2=4$이다. $T=1$, $\Delta t=0.01$이면 확률 합은 몇 % 늘어나나? 근사식과 정확식 $(1+0.0016)^{100}-1$을 모두 계산하라.</div>
+<details><summary>답</summary>근사: $1\times0.01\times16=0.16$ → 16%. 정확: $(1.0016)^{100}-1\approx0.173$ → 17.3%. 실험에서는 여러 파동이 섞인 파속이라 $\lambda^2$ 대신 평균 $\langle\lambda^2\rangle\approx28.4$를 썼고, 정확식과 측정값의 상대차가 $10^{-10}$ 수준이었다. Crank–Nicolson은 $|R|=1$이라 늘어나지 않는다.</details>
+
+<h3>9-4. 차원과 차수가 만나는 곳: $d^*=2p$ (논문 명제 11.1)</h3>
+<p>점 $M$개로 $d$차원 적분을 할 때, $p$차 격자 규칙의 오차는 $M^{-p/d}$, 무작위(몬테카를로)는 $M^{-1/2}$로 준다. 두 지수가 같아지는 차원에서 우열이 바뀐다.</p>
+<div class="ex"><b class="q">연습 9-4</b> (a) 사다리꼴($p=2$)과 왼쪽 직사각형($p=1$)의 교차 차원은? (b) $p=4$인 심프슨 규칙은? (c) 사다리꼴로 $d=4$에서 점을 100배 늘리면 오차는 몇 배 줄고, 몬테카를로는?</div>
+<details><summary>답</summary>(a) $d^*=2p$ → 4와 2. 실험에서 사다리꼴 $d=4$의 오차비는 1.00, 왼쪽 직사각형 $d=2$의 기울기는 $-0.500$ 대 $-0.504$였다. (b) 8. (c) 둘 다 $100^{-1/2}=1/10$ → 10배. 그래서 $d=4$에서 둘이 비긴다.</details>
+
+<h3>9-5. 노름마다 차수가 다르다 (논문 명제 11.5)</h3>
+<div class="ex"><b class="q">연습 9-5</b> 충격파 근처 3칸이 각각 0.5씩 틀리고 나머지는 맞았다. $h=0.01$과 $h=0.005$에서 $L^1=h\sum|e_i|$, $L^2=\sqrt{h\sum e_i^2}$, $L^\infty=\max|e_i|$를 구하고 각각의 차수를 구하라. (칸 수는 3칸 그대로)</div>
+<details><summary>답</summary>$h=0.01$: $L^1=0.015$, $L^2=\sqrt{0.0075}\approx0.0866$, $L^\infty=0.5$. $h=0.005$: $L^1=0.0075$, $L^2\approx0.0612$, $L^\infty=0.5$. 줄어든 배수 2, $\sqrt2$, 1 → 차수 1, 0.5, 0. 실험(업윈드, $N=100\sim3200$)에서도 정확히 1.00, 0.50, 0.00이 나왔다. "몇 차 방법인가"는 노름을 정해야 답할 수 있다.</details>
+
+<h3>9-6. FDM과 FEM을 섞으면 4차 (논문 명제 11.6)</h3>
+<p>파동 하나($\theta=\xi h$)에 대해 $-u_{xx}$의 계산값은 정답 $\xi^2$에 다음 배율을 곱한 것이다.</p>
+$$\text{FDM}=\frac{2-2\cos\theta}{\theta^2},\qquad \text{consistent FEM}=\text{FDM}\times\frac{6}{4+2\cos\theta},\qquad \text{혼합}=\text{FDM}\times\frac{12}{10+2\cos\theta}$$
+<div class="ex"><b class="q">연습 9-6</b> $\theta=0.5$에서 세 배율을 계산하라($\cos0.5\approx0.87758$). 어느 것이 1에 가장 가까운가? FDM과 FEM의 오차 부호는?</div>
+<details><summary>답</summary>FDM $\approx0.97934$ (2.1% 작음), consistent $\approx1.02100$ (2.1% 큼), 혼합 $\approx0.99974$ (0.03%). FDM은 작게, FEM은 크게 틀려서 평균을 내면 거의 상쇄된다. 공식으로는 $1-\theta^2/12$, $1+\theta^2/12$, $1-\theta^4/240$. 실험에서 혼합 질량의 공간 차수는 4.00으로, 계산 전에 적어 둔 예측이 맞았다.</details>
+
+
+<h3>9-7. 틀린 예측에서 배우기</h3>
+<div class="ex"><b class="q">연습 9-7 (기준해 오염)</b> 1차 방법의 오차를 잴 때 "정답" 대신 $\Delta t_{\rm ref}=\rho\,\Delta t_{\min}$으로 푼 기준해를 쓰면 마지막 관측 차수가 $\log_2\frac{2-\rho}{1-\rho}$로 나온다. $\rho=\tfrac15$와 $\rho=\tfrac1{100}$일 때 값은?</div>
+<details><summary>답</summary>$\log_2(1.8/0.8)\approx1.17$, $\log_2(1.99/0.99)\approx1.007$. 1차 실험의 Burgers가 정확히 1.17이 나와 "틀림"으로 판정됐는데, 원인이 기준해였다. 그래서 기준해는 최소 간격의 1/100 이하로 만든다. 이 규칙으로 다시 돌린 재실험에서는 1.01이 나왔다.</details>
+<div class="ex"><b class="q">연습 9-8 (반올림 바닥)</b> 컴퓨터 숫자는 약 16자리까지만 정확하다. 오차가 $1.3\times10^{-12}\to1.0\times10^{-13}$으로 줄었다면 관측 차수는? 4차 방법이라면 원래 몇이 나와야 했나?</div>
+<details><summary>답</summary>$\log_2(13)\approx3.7$. 4차라면 16배 줄어 $8.1\times10^{-14}$가 나와야 한다. 오차가 $10^{-13}$ 근처라 반올림이 섞였다. 50자리로 다시 계산하니 4.00이었다. 차수는 오차가 기계 정밀도보다 충분히 클 때만 잰다.</details>
+<div class="ex"><b class="q">연습 9-9 (PINN 지표)</b> collocation 32점 PINN의 final loss는 $1.4\times10^{-7}$, 기준(1000점)은 $7.5\times10^{-8}$로 비슷한데, final error는 $1.0\times10^{-3}$과 $3.7\times10^{-5}$이다. 몇 배 차이이고, 왜 loss만 보면 안 되나?</div>
+<details><summary>답</summary>$1.0\times10^{-3}/3.7\times10^{-5}\approx27$배. loss는 채점한 32개 점에서만의 점수라, 점 사이에서 틀려도 loss는 작다(점만 외운 과적합). 그래서 도감은 final loss와 final error를 다른 지표로 기록한다.</details>
+
+<h3>9-8. 차원이 들어가는 자리 (논문 명제 11.2)</h3>
+<div class="ex"><b class="q">연습 9-10 (2차원 톱니)</b> 2차원 격자에서 값이 체스판처럼 $+1,-1$로 번갈아 나오면, 한 점의 이웃 4개가 모두 $-U$이다. 5점 공식 $U_{\text{위}}+U_{\text{아래}}+U_{\text{왼}}+U_{\text{오}}-4U$는 얼마이고, 명시적 Euler의 곱하기 수 $R$은? $r=0.25$와 $r=0.26$에서 $R$을 구하라.</div>
+<details><summary>답</summary>$-4U-4U=-8U$ → $R=1-8r$. $r=0.25$: $R=-1$ (경계), $r=0.26$: $R=-1.08$ → 스텝마다 커져 터진다. 안정 조건은 $r\le\tfrac14$로 1차원($\tfrac12$)의 절반이다. $d$차원이면 $r\le\tfrac1{2d}$. 재실험에서 $r=0.25$는 4000스텝 동안 안정, $0.26$은 567스텝 만에 $10^6$을 넘었다.</details>
+<div class="ex"><b class="q">연습 9-11 (차원과 비용)</b> 2차 방법에서 $h$를 반으로 줄이면 오차는 $\tfrac14$이 된다. 1차원에서는 점 수 $M$이 2배, 2차원에서는 4배가 된다. 각각 "점 수를 2배로 늘릴 때 오차가 몇 배 주는가"를 구하고, 로그 기울기 $-p/d$와 비교하라.</div>
+<details><summary>답</summary>1차원: $M$ 2배에 오차 $\tfrac14$ → 기울기 $\log(1/4)/\log2=-2$. 2차원: $M$ 4배에 오차 $\tfrac14$ → $M$ 2배당 $\tfrac12$ → 기울기 $-1$. 공식 $-p/d$: $-2/1$, $-2/2$. 재실험 값은 $-1.99$와 $-0.98$이었다. 차원이 높을수록 같은 정확도에 점이 훨씬 많이 든다(차원의 저주).</details>
+
+<h3>9-9. 보(beam): 4계 미분과 시간 간격 (논문 명제 11.7)</h3>
+<p>Euler–Bernoulli 보 $u_{tt}+u_{xxxx}=0$은 시간으로 두 번, 공간으로 네 번 미분한다. 파동 하나의 진동수는 $\omega=\xi^2$이고, 격자에서는 가장 빠른 진동수가 $\omega_{\max}\approx4/h^2$이다.</p>
+<div class="ex"><b class="q">연습 9-12</b> 명시적 중심차분(leapfrog)은 $k\,\omega_{\max}\le2$일 때만 안정하다. $N=50$ ($h=0.02$)이면 $\omega_{\max}$과 $k$의 한계는? 이것을 열방정식 명시적 Euler의 한계($r\le\tfrac12$, 즉 $k\le h^2/2$)와 비교하라.</div>
+<details><summary>답</summary>$\omega_{\max}\approx4/0.0004=10000$ → $k\le2/10000=2\times10^{-4}=h^2/2$. 열방정식과 같은 $h^2$ 크기다. 공간 미분이 4계라 진동수가 $h^{-2}$로 커지기 때문이다(시간 2계라 제곱근을 한 번 취함). 재실험에서 $k=0.98\cdot h^2/2$는 안정, $1.02\cdot h^2/2$는 133스텝 만에 발산했다.</details>
+<div class="ex"><b class="q">연습 9-13 (Newmark = CN)</b> 도감 카드의 Newmark($\beta=\tfrac14,\gamma=\tfrac12$)는 한 모드에서 곱하기 수가 CN과 같은 $R=\dfrac{1+iy/2}{1-iy/2}$ ($y=\omega k$)이다. $|R|$은? 그렇다면 보의 에너지는 어떻게 되나?</div>
+<details><summary>답</summary>분자와 분모가 거울상이라 $|R|=1$ → 에너지가 늘지도 줄지도 않는다. 재실험에서 에너지 변화는 $10^{-14}$ 수준이었다. 슈뢰딩거의 확률 보존(연습 6-3)과 같은 이유다. 오차는 크기가 아니라 각도(위상)에서만 생기고, 그 크기는 $T\omega^3k^2/12$로 예측된다.</details>
+
+<!-- ====================== 10 ====================== -->
+<h2 id="s10">10. 반례로 가설 시험하기 — 4가지 시간적분과 R(T)</h2>
+<p>「열방정식 이산화 발표판」은 두 가설을 세우고, 4가지 시간적분을 하나씩 대입해 어디서 깨지는지 찾았다. 가설은 "항상 성립한다"는 주장이라서 <b>반례가 하나만 나와도 무너진다.</b> 여기서는 그 반례를 손으로 확인한다.</p>
+<div class="table-wrap"><table>
+<tr><th>가설</th><th>주장</th><th>맞다면 보여야 하는 것</th></tr>
+<tr><td><b>H-M</b> 이산행렬</td><td>lumped 질량행렬을 쓰면 FDM = FEM = FVM이다. 무엇을 골라도 정확도와 안정성이 같다.</td><td>방법 간 차이 ≈ 0, 차수 동일</td></tr>
+<tr><td><b>H-R</b> R(T)</td><td>경계를 R(T)로 풀면 (a) 무조건 안정, (b) 내부 스킴 · 공간이산화와 무관, (c) 비용이 크게 준다.</td><td>큰 $\Delta t$에서도 정확, 어떤 결합에서도 차수 유지</td></tr>
+</table></div>
+
+<h3>10-1. 네 방법의 한 스텝 곱하기 수 $R(z)$</h3>
+<p>모드 하나에서 $z=\lambda\Delta t$라 하면, 정확한 한 스텝 곱하기 수는 $e^z=1+z+\tfrac{z^2}{2}+\tfrac{z^3}{6}+\cdots$이다. 시간 스킴은 이 급수를 <b>자르거나</b>(EE, RK4) 또는 <b>분수로 근사한</b>(IE, CN) 것이다. 열방정식의 톱니 모드는 $z=-4r$이다.</p>
+<div class="table-wrap"><table>
+<tr><th>방법</th><th>$R(z)$</th><th>이론 차수</th><th>안정</th></tr>
+<tr><td>Explicit Euler (EE)</td><td>$1+z$</td><td class="n">1</td><td>조건부 ($r\le\tfrac12$)</td></tr>
+<tr><td>Implicit Euler (IE)</td><td>$\dfrac1{1-z}$</td><td class="n">1</td><td>A · L-안정 ($R(-\infty)=0$)</td></tr>
+<tr><td>Crank–Nicolson (CN)</td><td>$\dfrac{1+z/2}{1-z/2}$</td><td class="n">2</td><td>A-안정 ($R(-\infty)=-1$)</td></tr>
+<tr><td>RK4</td><td>$1+z+\tfrac{z^2}{2}+\tfrac{z^3}{6}+\tfrac{z^4}{24}$</td><td class="n">4</td><td>조건부 ($r\le0.696$)</td></tr>
+</table></div>
+<div class="ex"><b class="q">연습 10-1</b> $r=0.5$ ($z=-2$)와 $r=1$ ($z=-4$)에서 네 방법의 $R$과 정확한 값 $e^z$를 구하라. 어느 방법이 터지나?</div>
+<details><summary>답</summary>
+<div class="table-wrap"><table>
+<tr><th></th><th>EE</th><th>IE</th><th>CN</th><th>RK4</th><th>정확 $e^z$</th></tr>
+<tr><td>$z=-2$ ($r=0.5$)</td><td class="n">−1</td><td class="n">0.333</td><td class="n">0</td><td class="n">0.333</td><td class="n">0.135</td></tr>
+<tr><td>$z=-4$ ($r=1$)</td><td class="n">−3</td><td class="n">0.2</td><td class="n">−0.333</td><td class="n">5</td><td class="n">0.018</td></tr>
+</table></div>
+$r=1$에서 EE($|R|=3$)와 RK4($|R|=5$)가 터진다. IE · CN은 $|R|\le1$이라 안 터진다. 다만 정확한 값 0.018에 비해 IE는 0.2로 너무 천천히 줄고(과감쇠), CN은 $-0.333$으로 부호가 뒤집힌다. 이 두 성질이 뒤의 반례들의 뿌리다. 계산 예: RK4 $z=-4$는 $1-4+8-\tfrac{64}{6}+\tfrac{256}{24}=5$.</details>
+<div class="ex"><b class="q">연습 10-2 (RK4 안정 한계)</b> RK4의 실축 안정 한계는 $z\approx-2.785$이다. $r$의 한계는? EE의 한계 $r\le\tfrac12$와 비교하고, 한 스텝에 기울기를 4번 계산하는 비용까지 감안하면 어떤가?</div>
+<details><summary>답</summary>$z=-4r$이므로 $r\le2.785/4\approx0.696$. EE보다 $0.696/0.5\approx1.39$배 큰 스텝만 허용한다. 기울기 계산 횟수로 나누면 $1.39/4\approx0.35$배이므로 순수 확산에서 RK4는 안정성으로는 이득이 없다. RK4는 정확도(4차)와 비선형 물성(온도의존 $\alpha(T)$, 복사 $T^4$)을 따라가려고 쓴다.</details>
+<div class="ex"><b class="q">연습 10-3 (오차 상수로 크기 예측)</b> 연습 9-2와 같은 조건($\lambda=\pi^2$, $T=0.1$, $\Delta t=0.01$)에서 상대 오차 $\approx C\,T\lambda^{p+1}\Delta t^{p}$를 CN($C=\tfrac1{12},\ p=2$)과 RK4($C=\tfrac1{120},\ p=4$)에 대해 예측하라. 연습 9-2의 IE(4.9%)와 비교하면?</div>
+<details><summary>답</summary>CN: $\tfrac1{12}\times0.1\times\pi^6\times10^{-4}\approx\tfrac1{12}\times0.1\times961.4\times10^{-4}\approx8.0\times10^{-4}$ → 약 0.080%. RK4: $\tfrac1{120}\times0.1\times\pi^{10}\times10^{-8}\approx7.8\times10^{-7}$. 실제로 $R^{10}$을 $e^{-\pi^2\cdot0.1}$과 비교하면 CN은 −0.080%(수치해가 조금 작다), RK4는 $10^{-6}$ 수준으로 예측과 맞는다. 같은 $\Delta t$에서 IE보다 CN은 약 60배, RK4는 약 6만 배 정확하다. 차수가 높으면 스텝을 키워도 되지만, 안정 한계(연습 10-2)와 비용이 따라온다.</details>
+
+<h3>10-2. H-M을 깨는 반례 — EE와 RK4</h3>
+<p>H-M은 "lumped이면 세 방법이 같은 행렬"이라는 사실에서 출발한다. 그런데 안정 한계는 <b>행렬의 가장 큰 고윳값</b>에 묶여 있어서, 질량행렬을 바꾸면 한계도 바뀐다. 조건부 안정인 EE와 RK4가 여기서 깨진다. 무조건 안정인 IE · CN은 질량행렬과 무관하게 안정하므로 H-M이 성립한다.</p>
+<div class="ex"><b class="q">연습 10-4 (질량행렬과 안정 한계)</b> $\alpha=1$, $N=50$ ($h=0.02$)이다. lumped 질량행렬에서 EE($r\le\tfrac12$)와 RK4($r\le0.696$)의 $\Delta t$ 한계를 구하라. consistent 질량행렬이면 EE의 한계가 $\tfrac13$이 된다. 그 값은?</div>
+<details><summary>답</summary>$h^2=4\times10^{-4}$. EE(lumped): $0.5\,h^2/\alpha=2\times10^{-4}$. RK4(lumped): $0.696\,h^2/\alpha\approx2.8\times10^{-4}$. EE(consistent): $2\times10^{-4}/3\approx6.7\times10^{-5}$. 같은 공간 이산화라도 질량행렬 선택 하나로 허용 스텝이 3배 달라진다. "안정성도 같다"는 <b>lumped일 때만</b> 성립한다(DG 요소는 $\tfrac14\sim\tfrac1{50}$까지 줄어든다). 방법 간 차이를 실행 전에 예측하는 데 안정 한계 $\lambda_{\max}$가 쓰이는 이유다.</details>
+
+<h3>10-3. R(T) — 경계를 닫힌 꼴로 갱신하기</h3>
+<p>발표판의 R(T) 문제(구리봉 온도계)는 $L=4$ mm, $N=21$, 처음 온도 $T_0=300$ K, 환경 온도 $T_{env}=4$ K이다. $x=0$은 복사($kT_x=\varepsilon\sigma(T^4-T_{env}^4)$), $x=L$은 단열이다. 복사로 식는 경계 절점은 다음 식을 따른다.</p>
+$$\dot T=-a_{rad}(T)\,(T-T_{env})$$
+<p>$a_{rad}$는 복사 손실을 경계 제어체적(폭 $h/2$)의 열용량으로 나눈 값이다. 한 스텝 동안 $a_{rad}$를 <b>고정</b>(동결)하면 이 식은 정확히 풀린다.</p>
+$$T^{n+1}=R\,T^n+(1-R)\,T_{env},\qquad R=e^{-a_{rad}\Delta t}\in(0,1)$$
+<p>다시 쓰면 $T^{n+1}-T_{env}=R\,(T^n-T_{env})$, 즉 환경과의 온도차에 매 스텝 $R$을 곱하는 3-3의 꼴이다. $e^{z}$를 급수 전체로 쓰므로 시간 절단 오차가 없고, 오차는 계수를 고정한 것에서만 나온다.</p>
+<div class="ex"><b class="q">연습 10-5 (R(T) 한 스텝)</b> $a_{rad}=0.1\ \mathrm{s^{-1}}$, $\Delta t=10$ s, $T^n=300$ K, $T_{env}=4$ K일 때 $T^{n+1}$을 구하라.</div>
+<details><summary>답</summary>$a_{rad}\Delta t=1$, $R=e^{-1}\approx0.3679$. $T^{n+1}=0.3679\times300+0.6321\times4\approx110.36+2.53=112.89$ K. 온도차로 계산해도 $4+0.3679\times296=112.89$ K로 같다.</details>
+<div class="ex"><b class="q">연습 10-6 (왜 수렴하나)</b> (a) $R\in(0,1)$이면 $T^{n+1}$은 $T^n$과 $T_{env}$ 사이 어디에 있나? (b) $\Delta t\to\infty$이면? (c) 이 스텝은 왜 항상 열평형으로 가나?</div>
+<details><summary>답</summary>(a) $T^{n+1}$은 $T^n$과 $T_{env}$의 가중평균이라 그 사이에 있다. 4 K 밑으로 내려가거나 300 K 위로 올라가지 않는다. (b) $R\to0$이라 $T^{n+1}\to T_{env}=4$ K. (c) R(T) 스텝은 복사로 열이 <b>빠져나가는 것만</b> 계산한다. 들어오는 열이 없으니 온도가 $T_{env}$ 쪽으로만 간다. 단, 이것은 경계 한 점만 본 결과이고 내부 전도와 결합한 뒤의 정확도는 별개다(10-4의 반례).</details>
+<div class="ex"><b class="q">연습 10-7 (한 셀에서 다섯 방법 비교)</b> 복사만 있는 경계 한 점에서 $a_{rad}\Delta t=4$(강성), $T^n=300$ K, $T_{env}=4$ K이다. R(T)와 네 시간적분의 $R$을 $z=-4$에서 구하고, $T^{n+1}=T_{env}+R\,(T^n-T_{env})$를 계산하라. 물리적으로 가능한 범위는 4–300 K이다.</div>
+<details><summary>답</summary>
+<div class="table-wrap"><table>
+<tr><th>방법</th><th>$R$</th><th>$T^{n+1}$ (K)</th><th>판정</th></tr>
+<tr><td>R(T) = 정확 ($e^{-4}$)</td><td class="n">0.0183</td><td class="n">9.4</td><td>범위 안, 정확</td></tr>
+<tr><td>IE</td><td class="n">0.2</td><td class="n">63.2</td><td>범위 안, 과감쇠(너무 천천히 식음)</td></tr>
+<tr><td>CN</td><td class="n">−0.333</td><td class="n">−94.7</td><td>부호 뒤집힘 → 범위 밖</td></tr>
+<tr><td>EE</td><td class="n">−3</td><td class="n">−884</td><td>터짐</td></tr>
+<tr><td>RK4</td><td class="n">5</td><td class="n">1484</td><td>터짐</td></tr>
+</table></div>
+이 강성 조건에서 R(T)만 정확하고 물리 범위를 지킨다. 다만 이것은 복사 한 점만 본 계산이다. 발표판의 실제 실패(443.73 K 등)는 전도와 결합한 뒤의 값이라 이 계산으로 재현되지는 않고, 원인의 방향(부호 뒤집힘)만 보여 준다.</details>
+
+<h3>10-4. H-R을 깨는 반례 — 네 방법 하나씩</h3>
+<p>H-R의 세 주장 중 <b>경계 안정성</b>은 R(T)로 지켜진다. 깨지는 것은 "스킴 무관"과 "차수 유지"이다. 발표판이 스킴별로 판정한 결과:</p>
+<div class="table-wrap"><table>
+<tr><th>방법</th><th style="white-space:nowrap">판정</th><th>근거 (발표판 수치)</th></tr>
+<tr><td>Explicit Euler</td><td><span class="badge no">반례</span></td><td>복사 한계($3.33\times10^{-5}$ s)는 R(T)가 없애지만 내부 전도 한계($1.7\times10^{-4}$ s)는 그대로다. $\Delta t=50$ s는 쓸 수 없다. 관측 차수 1.05–1.22</td></tr>
+<tr><td>Implicit Euler</td><td><span class="badge part">부분</span></td><td>이미 무조건 안정이라 R(T)의 안정성 이득과 겹친다. 관측 차수 1.00–1.58로 불규칙. 극단 강성에서 Lie+IE 281.74 K로 물리적 방향 유지</td></tr>
+<tr><td>Crank–Nicolson</td><td><span class="badge no">반례</span></td><td>안정하지만 단조성(최대원리) 위반. Lie면 1차로 떨어지고, 극단 강성에서 Strang+CN이 443.73 K로 비물리적 가열</td></tr>
+<tr><td>RK4</td><td><span class="badge no">반례</span></td><td>단독 3.99, R(T) 문제 4.16–4.40이지만 결합하면 Lie 1.09 · Strang 1.97 → 4차 소실. 첫 스텝 R(T)가 RK4 대비 5.71 K(1.93%) 차이</td></tr>
+</table></div>
+<div class="ex"><b class="q">연습 10-8 (EE · 내부 한계가 남는다)</b> 극단 강성 시험에서 EE의 복사 한계가 $\Delta t\le3.33\times10^{-5}$ s였다. (a) EE 복사 항의 곱하기 수 $1-a\Delta t$가 $|R|\le1$이려면 $\Delta t\le2/a$이다. 이 시험의 $a_{rad}$는? (b) R(T)로 복사를 처리하면 한계는 전도 한계 $1.7\times10^{-4}$ s가 된다. 몇 배 완화되나? (c) $\Delta t=50$ s는 이 한계의 몇 배인가? (d) 상온 구리 물성 · $\varepsilon=1$에서 $a_{rad}\approx4.5\times10^{-3}\ \mathrm{s^{-1}}$이면 복사 한계는?</div>
+<details><summary>답</summary>(a) $a=2/(3.33\times10^{-5})\approx6.0\times10^{4}\ \mathrm{s^{-1}}$ (확대된 복사 계수). (b) $1.7\times10^{-4}/3.33\times10^{-5}\approx5.1$배. (c) $50/(1.7\times10^{-4})\approx2.9\times10^{5}$배라서 EE 내부로는 불가능하다. R(T)가 없앤 것은 복사 한계뿐이다. (d) $2/(4.5\times10^{-3})\approx444$ s(발표판은 ≈445 s, $a$의 반올림 차이). 상온에서는 복사 한계가 전도 한계보다 훨씬 느슨해서 병목은 처음부터 전도다.</details>
+<div class="ex"><b class="q">연습 10-9 (IE는 부분, CN의 뿌리)</b> $a\Delta t=1$과 $a\Delta t=10$에서 IE의 $\dfrac1{1+a\Delta t}$, CN의 $\dfrac{1-a\Delta t/2}{1+a\Delta t/2}$, R(T)의 $e^{-a\Delta t}$를 구하라. 부호가 뒤집히는 것은?</div>
+<details><summary>답</summary>$a\Delta t=1$: IE 0.5, CN 0.333, R(T) 0.368. $a\Delta t=10$: IE 0.0909, CN $-0.667$, R(T) $4.5\times10^{-5}$. IE와 R(T)는 항상 $(0,1)$이라 부호가 안 뒤집히고 둘 다 무조건 안정이라 R(T)의 안정성 이득이 IE와 겹친다(발표판에도 IE 대비 절감 배율은 기록이 없다). CN은 $a\Delta t>2$부터 음수가 되어 온도가 환경 온도를 넘어 반대편으로 튄다. 이것이 CN 반례의 뿌리다.</details>
+<div class="ex"><b class="q">연습 10-10 (CN · 불안정이 아니라 단조성 위반)</b> Strang+CN이 극단 강성에서 443.73 K를 냈다. 물리적으로 가능한 최고 온도는 처음 최고온도 300 K이다. (a) 초과량은? (b) $|R|\le1$인데 왜 터지지 않고 이런 값이 나오나? (c) 같은 조건에서 Lie+IE(281.74 K)는 왜 범위 안에 있나?</div>
+<details><summary>답</summary>(a) $443.73-300=143.73$ K 초과. (b) CN은 $|R|\le1$이라 <b>안정</b>이다(터지지 않는다). 하지만 고주파 성분이 감쇠하지 않고 부호만 뒤집혀 진동하면서 최대원리(값이 처음 범위를 벗어나지 않는다)가 깨진다. 발표판이 "불안정이 아니라 단조성 위반"이라고 구분한 부분이다. (c) IE는 $R(-\infty)=0$이라 고주파를 한 스텝에 지우고 $R>0$이라 부호도 안 뒤집혀 단조성이 유지된다. 그래서 강성 문제에는 L-안정 스킴(IE, TR-BDF2)을 쓴다.</details>
+<div class="ex"><b class="q">연습 10-11 (RK4 · 4차 소실)</b> RK4 단독은 $\Delta t$를 반으로 줄일 때 오차가 15.9배 준다. R(T)와 결합하면 Lie는 2.13배, Strang은 3.92배이다. (a) 각각의 관측 차수는? (b) 왜 4차가 사라지나? (c) 첫 스텝에서 R(T)와 RK4의 온도 차이 5.71 K는 $T_0-T_{env}$의 몇 %인가?</div>
+<details><summary>답</summary>(a) RK4 단독 $\log_2 15.9\approx3.99$, Lie $\log_2 2.13\approx1.09$, Strang $\log_2 3.92\approx1.97$. 16배가 나와야 할 곳에서 4배도 못 된다. (b) 결합 방식의 차수(Lie 1차, Strang 2차)와 R(T)의 계수 동결(1차)이 전체 차수의 상한이 된다. 내부를 아무리 정밀하게 풀어도 이어 붙이는 방식이 정하는 만큼만 나온다. (c) $T_0-T_{env}=300-4=296$ K이므로 $5.71/296\approx1.93\%$.</details>
+<div class="tip"><b>10절 정리</b> H-M은 <b>IE · CN(무조건 안정)과 확산</b>에서 맞고, <b>EE · RK4(조건부 안정)</b>에서 깨진다. H-R은 경계 안정성은 맞지만 <b>CN(비물리적 가열) · RK4(4차 소실) · EE(내부 한계)</b>가 반례다. 전체 정확도를 정하는 것은 R(T)가 아니라 <b>결합 방식</b>이다(같은 $\Delta t$에서 Lie → Strang이 L² 오차를 99배 줄였다).</div>
+
+<!-- ====================== 11 (베르누이) ====================== -->
+<h2 id="s11">11. 베르누이 방정식 따라가기</h2>
+<div class="card">$$\text{(가) 유체: }\ \tfrac12\rho v^2+p+\rho g z=\text{일정},\qquad\text{(나) 미분방정식: }\ u'+P(t)\,u=Q(t)\,u^{n}$$
+<b>읽는 법</b>: 같은 이름의 두 식이다. (가)는 마찰 없는 유체가 흐름선을 따라갈 때 <b>운동에너지 + 압력 + 위치에너지</b>가 보존된다는 식이다(5절 Burgers처럼 "보존"이 핵심). (나)는 미지함수의 $n$제곱이 붙은 비선형 ODE이며, $u^{1-n}$으로 <b>치환하면 선형이 된다</b>. 이 절은 (가)를 먼저 한 번 계산하고, (나)를 도감 파이프라인(방정식 → 조건 → ODE → 시간 이산화 → 점화식 → 검증 → PINN) 순서로 따라간다. 연습에는 $u'=u-u^2$ (즉 $P=-1,\ Q=-1,\ n=2$)를 주로 쓴다.</div>
+
+<h3>① 유체의 베르누이 식 — 한 번 계산해 보기</h3>
+<div class="ex"><b class="q">연습 11-1</b> 넓은 물탱크의 수면에서 $h=1.25$ m 아래 옆구멍으로 물이 나온다. 수면과 구멍 모두 대기압이고 수면은 거의 안 내려간다고 할 때 나오는 속도는? ($g=9.8\ \mathrm{m/s^2}$)</div>
+<details><summary>답</summary>수면($v\approx0$, 높이 $h$)과 구멍($v$, 높이 0)에 베르누이 식을 쓰면 $\rho gh=\tfrac12\rho v^2$ → $v=\sqrt{2gh}=\sqrt{2\times9.8\times1.25}=\sqrt{24.5}\approx4.95$ m/s. 위치에너지가 운동에너지로 바뀌었다.</details>
+
+<h3>② 방정식 풀기 — 치환으로 선형 만들기</h3>
+<p>$u'+Pu=Qu^n$ ($n\neq0,1$)의 양변을 $u^n$으로 나누고 $v=u^{1-n}$이라 두면 $v'=(1-n)u^{-n}u'$이므로</p>
+$$v'+(1-n)P\,v=(1-n)Q\qquad(\text{선형!})$$
+<p>Burgers 방정식이 Cole–Hopf 치환으로 선형 열방정식이 되는 것과 같은 발상이다. $n=2$이고 $P=-a,\ Q=-b$이면 $v=1/u$가 $v'=-av+b$를 만족하고, 이 식의 답은 $v=\tfrac ba+(v_0-\tfrac ba)e^{-at}$이다.</p>
+<div class="ex"><b class="q">연습 11-2</b> $u'=u-u^2$, $u(0)=\tfrac12$의 답을 구하라. $u(0.5)$와 $u(1)$은?</div>
+<details><summary>답</summary>$a=b=1$, $v_0=1/u_0=2$ → $v=1+(2-1)e^{-t}=1+e^{-t}$ → $u=\dfrac1{1+e^{-t}}$ (시그모이드). $u(0.5)=1/(1+0.6065)=0.6225$, $u(1)=1/(1+0.3679)=0.7311$. 이 값들이 뒤의 <b>정답 기준</b>이다.</details>
+<div class="ex"><b class="q">연습 11-3</b> $n=3$인 $u'+2u=u^3$, $u(0)=1$을 풀고 $u(0.25)$를 구하라.</div>
+<details><summary>답</summary>$v=u^{-2}$, $v'=-2u^{-3}u'=-2u^{-3}(-2u+u^3)=4v-2$. 답은 $v=\tfrac12+(v_0-\tfrac12)e^{4t}$, $v_0=1$ → $v=\tfrac12(1+e^{4t})$ → $u=\sqrt{\dfrac2{1+e^{4t}}}$. $t=0.25$: $e^1=2.718$, $u=\sqrt{2/3.718}=\sqrt{0.5379}\approx0.7334$. 검산: 처음 $u=1$에서 $u'=-2+1=-1$이라 줄어드는 방향이 맞다.</details>
+
+<h3>③ 조건과 평형점 — 답이 어디로 가나</h3>
+<p>공간이 없으므로 경계조건은 없고 <b>초기조건 $u(0)=u_0$</b>만 필요하다. $u'=f(u)=u-u^2$에서 $f(u)=0$인 점이 <b>평형점</b>이고, 그 점에서의 기울기 $f'(u^*)$의 부호가 안정성을 정한다.</p>
+<div class="ex"><b class="q">연습 11-4</b> $u'=u-u^2$의 평형점을 구하고 $f'(u)=1-2u$로 각각 안정한지 판정하라. $u_0=0.5$, $u_0=2$, $u_0=-0.1$이면 답은 어디로 가나?</div>
+<details><summary>답</summary>$u(1-u)=0$ → $u^*=0,\ 1$. $f'(0)=+1$ → 불안정(멀어짐), $f'(1)=-1$ → 안정(끌어당김). $u_0=0.5$는 위로 올라 1로, $u_0=2$는 내려와 1로, $u_0=-0.1$은 0에서 더 멀어져 $-\infty$ 쪽으로 간다(공식 $u=1/(1+(1/u_0-1)e^{-t})$의 분모가 0이 되는 유한 시간에 터진다). 4절에서 $R$의 크기로 안정을 본 것처럼, 여기서는 $f'$의 부호로 본다.</details>
+<p>공간 항을 붙인 $u_t=u-u^2+\nu u_{xx}$이면 4절의 방법으로 $u_{xx}$를 이산화해 점마다 ODE $\dot U_i=U_i-U_i^2+\nu\,\dfrac{U_{i-1}-2U_i+U_{i+1}}{h^2}$를 얻는다. 아래 시간 이산화는 이 시스템의 반응 항을 그대로 보는 것이다.</p>
+
+<h3>④ 시간 이산화 — 네 방법의 한 스텝</h3>
+<p>$u'=f(u)=u-u^2$를 $k=\Delta t$ 간격으로 자른다. 비선형이라 암시적 방법은 매 스텝 <b>이차방정식</b>을 풀어야 한다.</p>
+<ul>
+<li><b>EE</b>: $u^{n+1}=u^n+k\,f(u^n)$</li>
+<li><b>IE</b>: $u^{n+1}=u^n+k\,f(u^{n+1})$ → $k(u^{n+1})^2+(1-k)u^{n+1}-u^n=0$의 양의 근</li>
+<li><b>CN</b>: $u^{n+1}=u^n+\tfrac k2\big(f(u^n)+f(u^{n+1})\big)$</li>
+<li><b>RK4</b>: $u^{n+1}=u^n+\tfrac k6(k_1+2k_2+2k_3+k_4)$, $k_1=f(u^n)$, $k_2=f(u^n+\tfrac k2k_1)$, $k_3=f(u^n+\tfrac k2k_2)$, $k_4=f(u^n+kk_3)$</li>
+</ul>
+<div class="ex"><b class="q">연습 11-5 (한 스텝)</b> $u^0=0.5$, $k=0.5$일 때 네 방법의 $u^1$을 구하고 정답 $u(0.5)=0.6225$와 비교하라.</div>
+<details><summary>답</summary>
+<div class="table-wrap"><table>
+<tr><th>방법</th><th>계산</th><th>$u^1$</th><th>오차</th></tr>
+<tr><td>EE</td><td>$0.5+0.5\times0.25$</td><td class="n">0.6250</td><td class="n">$+2.5\times10^{-3}$</td></tr>
+<tr><td>IE</td><td>$0.5u^2+0.5u-0.5=0$ → $u^2+u-1=0$ → $u=\tfrac{-1+\sqrt5}2$</td><td class="n">0.6180</td><td class="n">$-4.4\times10^{-3}$</td></tr>
+<tr><td>CN</td><td>$u^2+3u-2.25=0$ → $u=\tfrac{-3+\sqrt{18}}2$</td><td class="n">0.6213</td><td class="n">$-1.1\times10^{-3}$</td></tr>
+<tr><td>RK4</td><td>$k_1=0.25,\ k_2=0.2461,\ k_3=0.2462,\ k_4=0.2348$</td><td class="n">0.62246</td><td class="n">$\approx10^{-6}$</td></tr>
+</table></div>
+EE는 정답보다 크고 IE는 작다(오차 부호가 반대). 열방정식(연습 9-2)에서 EE와 IE의 오차 상수가 $\mp\tfrac12$로 부호가 반대인 것과 같은 현상이다.</details>
+
+<h3>⑤ 점화식 · 안정 한계 — 비선형에서는 어떻게 되나</h3>
+<p>평형점 $u^*=1$ 근처를 선형화하면 $f'(1)=-1$이라 $z=-k$이고, 4절 · 10절의 $R(z)$를 그대로 쓸 수 있다: EE $R=1-k$, IE $R=\tfrac1{1+k}$, CN $R=\tfrac{1-k/2}{1+k/2}$. 그러나 실제 답은 비선형이라 <b>1을 넘거나 진동</b>하는 일이 선형 분석보다 먼저 나타난다.</p>
+<div class="ex"><b class="q">연습 11-6 (EE의 한계)</b> $|R|=|1-k|\le1$이면 $k\le2$이다. $u^0=0.5$에서 EE로 (a) $k=1.5$, (b) $k=2.5$일 때 처음 네 값을 구하라. 정답은 $0.5\to1$로 단조 증가하며 1을 넘지 않는다.</div>
+<details><summary>답</summary>(a) $k=1.5$: $0.5,\ 0.875,\ 1.039,\ 0.978,\ \dots$ → 두 번째 스텝에 <b>1을 넘는다</b>(정답에는 없는 오버슈트). $|R|=0.5<1$이라 결국 1로 가라앉지만 단조성이 깨진다. (b) $k=2.5$: $0.5,\ 1.125,\ 0.773,\ 1.212,\ 0.571,\ \dots$ → $|R|=1.5>1$이라 진동이 <b>커진다</b>(4절의 $r>\tfrac12$와 같은 현상). $k$를 더 키우면(예: 3) 로지스틱 사상의 혼돈에 가까운 불규칙한 값이 나온다. 선형 분석의 $k\le2$가 안정의 <b>필요</b>조건이지만 단조성까지 지키는 조건은 아니다.</details>
+<div class="ex"><b class="q">연습 11-7 (IE와 CN, 큰 스텝)</b> $u^0=0.5$에서 (a) IE $k=4$ 두 스텝, (b) CN $k=10$ 두 스텝을 구하라. 정답은 항상 1 이하이다. $\big(\text{CN 점화식: }\tfrac k2(u^{n+1})^2+(1-\tfrac k2)u^{n+1}-\big(u^n+\tfrac k2f(u^n)\big)=0\big)$</div>
+<details><summary>답</summary>(a) IE $k=4$: $4u^2-3u-0.5=0$ → $u^1=0.8904$, 다음 $0.9777$ → 1 아래에서 <b>단조롭게</b> 접근(정답 $u(4)\approx0.982$와 비슷). (b) CN $k=10$: $u^1=1.1141,\ u^2=0.9056$ → <b>1을 넘었다가 내려오는 진동</b>. 선형 $R=\tfrac{1-5}{1+5}=-0.667$의 부호 뒤집힘이 비선형에서도 나타난 것이다. IE는 단조, CN은 진동 — 10절의 "CN은 안정하지만 단조성을 잃는다"의 비선형 판이다.</details>
+
+<h3>⑥ 검증 — 정답과 비교해 차수 확인</h3>
+<p>정답 $u(1)=0.73106$과 비교해 $k$를 반씩 줄이며 $T=1$에서의 오차를 잰다.</p>
+<div class="table-wrap"><table>
+<tr><th>$k$</th><th>EE</th><th>IE</th><th>CN</th><th>RK4</th></tr>
+<tr><td class="n">0.5</td><td class="n">$1.11\times10^{-2}$</td><td class="n">$1.20\times10^{-2}$</td><td class="n">$1.58\times10^{-3}$</td><td class="n">$1.12\times10^{-5}$</td></tr>
+<tr><td class="n">0.25</td><td class="n">$5.78\times10^{-3}$</td><td class="n">$5.98\times10^{-3}$</td><td class="n">$3.96\times10^{-4}$</td><td class="n">$7.18\times10^{-7}$</td></tr>
+<tr><td class="n">0.125</td><td class="n">$2.92\times10^{-3}$</td><td class="n">$2.97\times10^{-3}$</td><td class="n">$9.89\times10^{-5}$</td><td class="n">$4.51\times10^{-8}$</td></tr>
+</table></div>
+<div class="ex"><b class="q">연습 11-8 (관측 차수)</b> 표에서 $k=0.25\to0.125$로 줄일 때 각 방법의 오차 감소 배수와 차수를 구하라.</div>
+<details><summary>답</summary>EE $5.78/2.92\approx1.98\Rightarrow$ 1차. IE $5.98/2.97\approx2.01\Rightarrow$ 1차. CN $3.96/0.989\approx4.00\Rightarrow$ 2차. RK4 $7.18\times10^{-7}/4.51\times10^{-8}\approx15.9\Rightarrow$ 4차. 비선형 ODE에서도 이론 차수(1, 1, 2, 4)가 그대로 나온다. 이 정도 수렴이 확인되어야 점화식 구현이 맞다고 말할 수 있다(3-4, 9-1과 같은 방법).</details>
+
+<h3>⑦ PINN 결합 — 시그모이드가 정답이다</h3>
+<p>잔차는 $r=u_\theta'-u_\theta+u_\theta^2$이다. 1계 미분만 필요하므로 tanh · 시그모이드처럼 매끈한 활성화함수면 된다. 이 문제는 특별해서 정답이 시그모이드 $\sigma(t)=\tfrac1{1+e^{-t}}$이다. 손잡이 하나짜리 $u_\theta=\sigma(wt)$로 두면 $u_\theta(0)=\tfrac12$은 구조로 이미 만족한다(7절의 hard constraint).</p>
+<div class="ex"><b class="q">연습 11-9 (잔차)</b> $u_\theta=\sigma(wt)$일 때 잔차 $r$를 $w$로 나타내라. 정답 $w=1$에서는? ($\sigma'=\sigma(1-\sigma)$이고 $\sigma-\sigma^2=\sigma(1-\sigma)$)</div>
+<details><summary>답</summary>$u_\theta'=w\,\sigma(1-\sigma)$, $-u_\theta+u_\theta^2=-\sigma(1-\sigma)$ → $r=(w-1)\,\sigma(wt)\,\big(1-\sigma(wt)\big)$. $w=1$이면 모든 $t$에서 $r=0$, 정확한 답이다. $w\neq1$이면 잔차가 $(w-1)$에 비례해 생긴다.</details>
+<div class="ex"><b class="q">연습 11-10 (학습 세 번)</b> 채점점을 $t=0$ 하나만 두면 $\sigma(0)(1-\sigma(0))=\tfrac14$이므로 손실은 $\mathcal L=\big[(w-1)/4\big]^2=(w-1)^2/16$이다. $w=0$에서 시작해 $\eta=4$로 세 번 갱신하라.</div>
+<details><summary>답</summary>기울기 $\partial\mathcal L/\partial w=(w-1)/8$, 갱신 $w\leftarrow w-4\cdot(w-1)/8=w-(w-1)/2$. $w$: $0\to0.5\to0.75\to0.875$, 손실: $0.0625\to0.0156\to0.0039\to0.0010$. 매번 $(w-1)$이 $\tfrac12$배가 된다(7-2의 $(1-2\eta\cdot\text{곡률})$ 꼴). 다만 채점점이 $t=0$ 하나뿐이라 실제로는 점 사이의 정확도를 보장하지 못한다(9-9). 여러 $t$에 점을 뽑아야 한다.</details>
+<div class="tip"><b>11절 정리</b> 베르누이 ODE는 <b>치환으로 선형화</b>해 닫힌 꼴로 풀린다. 그 답을 기준으로 삼으면 네 시간적분의 <b>차수(1 · 1 · 2 · 4)</b>, EE의 <b>스텝 한계와 오버슈트</b>, CN의 <b>큰 스텝 진동</b>, IE의 <b>단조성</b>이 비선형 문제에서도 그대로 확인된다. 정답이 있는 문제에서 방법을 검증하고, 정답이 없는 문제에 쓴다.</div>
+
+</main>
+</body>
+</html>

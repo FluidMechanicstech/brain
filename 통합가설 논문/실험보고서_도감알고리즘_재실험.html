@@ -1,0 +1,2055 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>도감 알고리즘 재실험</title>
+<style>
+:root{--bg:#fbfaf7;--fg:#1d1d1b;--mute:#66645e;--line:#dcd9d0;--card:#f2f0ea;--acc:#2a78d6;
+--c0:#2a78d6;--c1:#eb6834;--c2:#1baf7a;--c3:#eda100;--ok:#1a8a5f;--no:#c4432a;--na:#9a7400}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17181a;--fg:#e8e6e1;--mute:#a09d96;--line:#34363a;--card:#202226;--acc:#3987e5;
+--c0:#3987e5;--c1:#d95926;--c2:#199e70;--c3:#c98500;--ok:#3cc08a;--no:#ef6a50;--na:#d9a92a}}
+:root[data-theme="dark"]{--bg:#17181a;--fg:#e8e6e1;--mute:#a09d96;--line:#34363a;--card:#202226;--acc:#3987e5;
+--c0:#3987e5;--c1:#d95926;--c2:#199e70;--c3:#c98500;--ok:#3cc08a;--no:#ef6a50;--na:#d9a92a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.75 "Noto Serif KR","Apple SD Gothic Neo",serif}
+main{max-width:900px;margin:0 auto;padding:40px 16px 80px}
+h1{font-size:1.7rem;line-height:1.35;margin:0 0 .3em}
+h2{font-size:1.25rem;margin:2.4em 0 .6em;padding-top:.6em;border-top:1px solid var(--line)}
+h3{font-size:1.05rem;margin:1.6em 0 .4em}
+.meta{color:var(--mute);font-size:.9rem}
+.abstract{background:var(--card);padding:16px 18px;border-radius:6px;margin:1.4em 0}
+.run{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin:1.2em 0;font:14px system-ui,sans-serif}
+.run button{font:inherit;padding:6px 14px;border-radius:6px;border:1px solid var(--acc);background:var(--acc);color:#fff;cursor:pointer}
+.run button:disabled{opacity:.5;cursor:default}
+#status{color:var(--mute)}
+.tw{overflow-x:auto;margin:.8em 0}
+table{border-collapse:collapse;font:13.5px/1.45 system-ui,sans-serif;min-width:100%}
+th,td{border-bottom:1px solid var(--line);padding:5px 8px;text-align:right;white-space:nowrap}
+th{color:var(--mute);font-weight:600}
+td:first-child,th:first-child{text-align:left}
+table.wide td{white-space:normal;text-align:left}
+.ok{color:var(--ok);font-weight:600}.no{color:var(--no);font-weight:600}.na{color:var(--na);font-weight:600}
+figure{margin:1.4em 0}figure svg{width:100%;height:auto;display:block}
+figcaption{font-size:.88rem;color:var(--mute);margin-top:.4em}
+.legend{display:flex;flex-wrap:wrap;gap:4px 16px;font:13px system-ui,sans-serif;margin-bottom:4px}
+.lg{display:inline-flex;align-items:center;gap:6px}.sw{width:12px;height:12px;border-radius:2px;display:inline-block}
+.note{border-left:3px solid var(--acc);padding:4px 14px;margin:1.2em 0;background:var(--card)}
+.warn{border-left-color:var(--no)}
+code,pre{font-family:ui-monospace,Menlo,monospace;font-size:12.5px}
+pre{background:var(--card);padding:12px;border-radius:6px;overflow-x:auto;max-height:520px}
+details summary{cursor:pointer;font:14px system-ui,sans-serif;color:var(--acc)}
+</style>
+</head>
+<body><main>
+<h1>도감 알고리즘 재실험 — 다섯 실험군의 사전 예측과 판정</h1>
+<div class="meta">「차원과 차수의 이산화론」 부속 실험 보고 · v4 재실험 · 2026-09-29 · 실험 코드는 이 문서 안의 JavaScript 엔진(부록)이다</div>
+
+<div class="abstract" id="abstract"></div>
+
+<div class="run"><button id="runBtn">브라우저에서 재실험 실행</button><span id="status">아래 수치는 이 엔진을 Node.js로 실행한 기록이다. 버튼을 누르면 같은 엔진을 이 브라우저에서 다시 돌려(약 10초) 표와 그림을 새 결과로 바꾸고 기록과 비교한다.</span></div>
+
+<h2>1. 설계</h2>
+<p><b>실험군.</b> 1차원 열방정식, 2차원 열방정식, Burgers 방정식, 1차원 슈뢰딩거 방정식, Euler–Bernoulli 보 방정식, 그리고 차원과 차수의 교차(적분). 알고리즘은 도감 카드 그대로이다.</p>
+<div class="tw"><table class="wide">
+<tr><th>실험군</th><th>방정식</th><th>알고리즘 (도감 카드)</th><th>도감 지표</th></tr>
+<tr><td>H1</td><td>u<sub>t</sub> = u<sub>xx</sub>, (0,1), 양 끝 0, u<sub>0</sub> = x(1−x), T = 0.1</td><td>2차 중심차분 + 암시적 Euler; P1 FEM(lumped·consistent·혼합 질량)</td><td>N, Δt, L∞, L², 관측 차수, 시간·공간 분리, 내부/경계 오차, 방법 간 차이</td></tr>
+<tr><td>H2</td><td>u<sub>t</sub> = u<sub>xx</sub> + u<sub>yy</sub>, (0,1)², 경계 0, u<sub>0</sub> = x(1−x)y(1−y), T = 0.05</td><td>5점 라플라시안 + 명시적 Euler</td><td>N, 미지수 M, L∞, 관측 차수, 안정 한계, runtime</td></tr>
+<tr><td>B</td><td>u<sub>t</sub> + uu<sub>x</sub> = νu<sub>xx</sub> (ν = 0.05, T = 0.5) / ν = 0 리만 문제</td><td>보존형 IMEX / 1차 업윈드 FVM</td><td>L∞, L², L¹, 관측 차수, 보존량 오차, 충격파 속도, 안정 한계</td></tr>
+<tr><td>S</td><td>i u<sub>t</sub> = −u<sub>xx</sub>, [−20, 20], 가우스 파속 σ = 1, k<sub>0</sub> = 2, T = 1</td><td>Crank–Nicolson; P1 FEM; 명시적 Euler(대조)</td><td>L², 관측 차수, 노름(보존량) 오차, 방법 간 차이</td></tr>
+<tr><td>EB</td><td>u<sub>tt</sub> + u<sub>xxxx</sub> = 0, 단순지지, u<sub>0</sub> = sin πx + 0.3 sin 2πx, T = 0.25</td><td>5점 4계 차분 + Newmark(β = ¼, γ = ½); leapfrog(대조)</td><td>L², 관측 차수, 에너지(보존량) 오차, 안정 한계</td></tr>
+<tr><td>D</td><td>∫<sub>[0,1]<sup>d</sup></sub> ∏ cos x<sub>i</sub> = sin<sup>d</sup>1</td><td>사다리꼴(p = 2), 왼쪽 직사각형(p = 1), 몬테카를로(seed 10)</td><td>미지수 M, 기울기, 오차비</td></tr>
+</table></div>
+<p><b>판정 규칙.</b> 관측 차수는 마지막 두 정련값이 이론값 ±0.15 안이면 맞음, 부등식 예측은 부등호가 성립하면 맞음. 예측은 실행 전에 <code>predictions_v4.md</code>에 기록했다.</p>
+<p><b>설계 규칙.</b> 앞선 실험에서 틀린 예측 두 개는 모두 측정 설계의 결함이었다(§10). 그 교훈을 규칙으로 고정했다. (1) 참조해의 Δt·h는 최소 측정값의 1/100 이하. (2) 오차가 2.2×10⁻¹³(기계 정밀도의 10³배) 미만인 격자는 차수 계산에서 뺀다. (3) 편차 예측에는 지표를 적는다.</p>
+<p><b>시간·공간 분리.</b> 공간 차수는 반이산계를 사인 변환으로 대각화해 시간에 대해 정확히 풀어 재고, 시간 차수는 N을 고정하고 같은 격자의 반이산 정확해를 기준으로 잰다.</p>
+
+<h2>2. 판정</h2>
+<div id="verdicts"></div>
+
+<h2>3. 1차원 열방정식 (H1)</h2>
+<div id="H1"></div>
+<h2>4. 2차원 열방정식 (H2) — 차원이 안정 한계와 비용에 들어가는 자리</h2>
+<div id="H2"></div>
+<h2>5. Burgers (B)</h2>
+<div id="B"></div>
+<h2>6. 1차원 슈뢰딩거 (S)</h2>
+<div id="S"></div>
+<h2>7. Euler–Bernoulli 보 (EB)</h2>
+<div id="EB"></div>
+<h2>8. 차원과 차수의 교차 (D)</h2>
+<div id="D"></div>
+<h2>9. 하나의 결손 법칙, 세 방정식</h2>
+<div id="law"></div>
+<h2>10. 실험 이력 — 틀린 예측을 포함한 전체 기록</h2>
+<div class="tw"><table class="wide">
+<tr><th>차수</th><th>내용</th><th>사전 예측 판정</th><th>틀린 예측과 원인</th></tr>
+<tr><td>v1</td><td>열·Burgers·슈뢰딩거·교차 차원·열 PINN (Python)</td><td>맞음 18 · 틀림 1 · 판정 불가 1</td><td>Burgers 시간 차수 1.17 — 참조해 Δt가 최소 Δt의 1/5뿐이라 겉보기 차수가 log₂(1.8/0.8) = 1.17로 올라감(식과 정확히 일치). seed 편차 — 지표를 미리 정하지 않음</td></tr>
+<tr><td>v2</td><td>혼합 질량행렬(새 예측), IMEX 안정 한계 (Python)</td><td>맞음 4 · 틀림 1</td><td>혼합 질량 열방정식 3.71 — N = 320의 오차 1.0×10⁻¹³이 반올림 바닥. 50자리 계산으로 4.00</td></tr>
+<tr><td>v3</td><td>스토크스(Taylor–Hood, P1–P1) — 사용자 요청으로 중단</td><td>판정하지 않음</td><td>중간 결과: 속도 L² 3.00, H¹ 2.00, 발산 2.00, inf-sup β ≈ 0.365(유계), P1–P1은 선형계 특이. 압력 차수는 2.63, 2.12로 전점근 구간이었다. 판정 전에 중단되어 결과에 넣지 않는다</td></tr>
+<tr><td>v4</td><td>다섯 실험군 재실험 (JavaScript, 이 문서)</td><td id="v4count"></td><td>설계 규칙 (1)–(3)을 적용한 뒤의 결과. 앞선 틀린 예측이 사라진 것은 알고리즘이 바뀌어서가 아니라 측정 설계를 고쳤기 때문이다</td></tr>
+</table></div>
+<p>v1·v2의 틀린 예측은 판정을 바꾸지 않고 그대로 둔다. v4의 전부 맞음은 “이론이 틀린 적이 없다”가 아니라 “측정을 제대로 설계하면 이론의 예측대로 나온다”는 뜻으로 읽어야 한다.</p>
+
+<h2>11. PINN (기록 — 브라우저에서 재학습하지 않음)</h2>
+<p>열방정식 u<sub>t</sub> = 0.1u<sub>xx</sub>, u<sub>0</sub> = sin πx의 PyTorch(CPU, float64) 실행 기록이다. 학습은 설정당 10–170초가 걸려 이 문서의 엔진에 넣지 않았다. 오차는 101×101 격자의 엄밀해 기준.</p>
+<div id="pinn"></div>
+<p>tanh가 ReLU보다 2700배 정확(명제 9.1), Adam 뒤 L-BFGS가 14배 개선, hard constraint가 soft보다 20배 정확, collocation은 128점 이상에서 포화, 32점은 final loss가 기준과 비슷해도 final error가 27배 컸다(명제 9.2: 손실은 적분의 구적). 같은 정확도에서 FDM 0.31초, PINN 33–53초.</p>
+
+<h2>12. 한계</h2>
+<ul>
+<li>모든 실험군은 엄밀해를 아는 1·2차원 데모 문제이다. 맞은 예측은 수치해석에서 알려진 결과이며, 이 보고의 의미는 원 착상을 재구성한 대수적 명제가 측정 전에 수치를 예측하고 기록된 규칙으로 판정된다는 데 있다.</li>
+<li>결손 예측(H1-6, S-5, EB-5)은 v1·v2에서 식을 먼저 확인한 뒤 v4에서 예측으로 기록했다. 완전히 결과를 모르는 예측은 v2의 혼합 질량행렬이었다.</li>
+<li>PINN은 기록값이며 재현하려면 부록의 PyTorch 코드가 필요하다(<code>e5_pinn.py</code>, 이전 전달본).</li>
+</ul>
+
+<h2>부록. 실험 코드 (이 문서가 실행하는 엔진)</h2>
+<details><summary>engine_v4.js 펼치기</summary><pre id="src"></pre></details>
+
+<script id="engine">
+/* 재실험 v4 수치 엔진 — 1D·2D 열방정식, Burgers, 슈뢰딩거, Euler–Bernoulli 보, 교차 차원.
+   브라우저와 Node 모두에서 동작. 외부 라이브러리 없음. 사전 예측: predictions_v4.md */
+const ENGINE = (function () {
+  'use strict';
+  const PI = Math.PI, EPS_FLOOR = 2.2e-13;
+  // ---------- 공통 도구
+  const linspace = (a, b, n) => Array.from({ length: n }, (_, i) => a + (b - a) * i / (n - 1));
+  const maxAbs = v => { let m = 0; for (const x of v) { const a = Math.abs(x); if (a > m) m = a; } return m; };
+  const l2 = (v, h) => { let s = 0; for (const x of v) s += x * x; return Math.sqrt(s * h); };
+  const order = (e, h) => e.slice(1).map((x, i) => (e[i] >= EPS_FLOOR && x >= EPS_FLOOR) ? Math.log(e[i] / x) / Math.log(h[i] / h[i + 1]) : null);
+  const slopeFit = (xs, ys) => { const lx = xs.map(Math.log), ly = ys.map(Math.log), n = xs.length; const mx = lx.reduce((a, b) => a + b) / n, my = ly.reduce((a, b) => a + b) / n; let sxy = 0, sxx = 0; for (let i = 0; i < n; i++) { sxy += (lx[i] - mx) * (ly[i] - my); sxx += (lx[i] - mx) ** 2; } return sxy / sxx; };
+  function thomas(a, b, c, d) { // 부대각 a[i](i≥1), 대각 b, 초대각 c, 우변 d
+    const n = d.length, cp = new Float64Array(n), dp = new Float64Array(n), x = new Float64Array(n);
+    cp[0] = c[0] / b[0]; dp[0] = d[0] / b[0];
+    for (let i = 1; i < n; i++) { const m = b[i] - a[i] * cp[i - 1]; cp[i] = c[i] / m; dp[i] = (d[i] - a[i] * dp[i - 1]) / m; }
+    x[n - 1] = dp[n - 1]; for (let i = n - 2; i >= 0; i--) x[i] = dp[i] - cp[i] * x[i + 1];
+    return x;
+  }
+  function constTri(n, lo, di, up) { // 상수 계수 삼중대각 LU를 한 번 계산해 재사용
+    const cp = new Float64Array(n), m = new Float64Array(n);
+    m[0] = di; cp[0] = up / di;
+    for (let i = 1; i < n; i++) { m[i] = di - lo * cp[i - 1]; cp[i] = up / m[i]; }
+    return d => { const x = new Float64Array(n); x[0] = d[0] / m[0]; for (let i = 1; i < n; i++) x[i] = (d[i] - lo * x[i - 1]) / m[i]; for (let i = n - 2; i >= 0; i--) x[i] -= cp[i] * x[i + 1]; return x; };
+  }
+  function constTriC(n, lo, di, up) { // 복소수 상수 계수 (lo,di,up = [re,im])
+    const mul = (a, b) => [a[0] * b[0] - a[1] * b[1], a[0] * b[1] + a[1] * b[0]], div = (a, b) => { const q = b[0] * b[0] + b[1] * b[1]; return [(a[0] * b[0] + a[1] * b[1]) / q, (a[1] * b[0] - a[0] * b[1]) / q]; }, sub = (a, b) => [a[0] - b[0], a[1] - b[1]];
+    const m = [di], cp = [div(up, di)];
+    for (let i = 1; i < n; i++) { m[i] = sub(di, mul(lo, cp[i - 1])); cp[i] = div(up, m[i]); }
+    return (dr, di_) => { const xr = new Float64Array(n), xi = new Float64Array(n); let t = div([dr[0], di_[0]], m[0]); xr[0] = t[0]; xi[0] = t[1];
+      for (let i = 1; i < n; i++) { const p = mul(lo, [xr[i - 1], xi[i - 1]]); t = div([dr[i] - p[0], di_[i] - p[1]], m[i]); xr[i] = t[0]; xi[i] = t[1]; }
+      for (let i = n - 2; i >= 0; i--) { const p = mul(cp[i], [xr[i + 1], xi[i + 1]]); xr[i] -= p[0]; xi[i] -= p[1]; }
+      return [xr, xi]; };
+  }
+  function cyclicTri(n, lo, di, up) { // 주기 경계 상수 계수 (셔먼-모리슨)
+    const gam = -di, bb = new Float64Array(n).fill(di); bb[0] = di - gam; bb[n - 1] = di - lo * up / gam;
+    const a = new Float64Array(n).fill(lo), c = new Float64Array(n).fill(up);
+    const u = new Float64Array(n); u[0] = gam; u[n - 1] = up;
+    const z = thomas(a, bb, c, u);
+    return d => { const y = thomas(a, bb, c, d); const f = (y[0] + lo * y[n - 1] / gam) / (1 + z[0] + lo * z[n - 1] / gam); return y.map((v, i) => v - f * z[i]); };
+  }
+  function dstTable(N) { const s = new Float64Array(2 * N); for (let j = 0; j < 2 * N; j++) s[j] = Math.sin(PI * j / N); return s; }
+  function dst(x, N, S) { // DST-I: X_k = Σ_n x_n sin(πkn/N), k,n = 1..N-1 (O(N²))
+    const m = N - 1, X = new Float64Array(m), M2 = 2 * N;
+    for (let k = 1; k <= m; k++) { let s = 0, idx = 0; for (let n = 1; n <= m; n++) { idx += k; if (idx >= M2) idx -= M2; s += x[n - 1] * S[idx]; } X[k - 1] = s; }
+    return X;
+  }
+  const idst = (X, N, S) => dst(X, N, S).map(v => v * 2 / N);
+  function rng(seed) { let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+  // ================= H1: 1차원 열방정식
+  function heatSeries(x, t, nterm = 400) { let u = 0; for (let n = 1; n < 2 * nterm; n += 2) u += 8 / (n * PI) ** 3 * Math.sin(n * PI * x) * Math.exp(-((n * PI) ** 2) * t); return u; }
+  function H1() {
+    const T = 0.1, out = { space: [], time: [], fem: [], explicit: [], deficit: [] };
+    // 공간 (시간 정확) + FEM 질량행렬 세 가지
+    for (const N of [10, 20, 40, 80, 160, 320]) {
+      const h = 1 / N, S = dstTable(N), x = linspace(0, 1, N + 1).slice(1, -1), U0 = x.map(v => v * (1 - v)), c = dst(U0, N, S), ex = x.map(v => heatSeries(v, T));
+      const run = f => idst(c.map((v, j) => { const th = (j + 1) * PI / N, lS = (2 - 2 * Math.cos(th)) / h ** 2; return v * Math.exp(-lS * f(th) * T); }), N, S);
+      const Uf = run(() => 1), Uc = run(th => 6 / (4 + 2 * Math.cos(th))), Um = run(th => 12 / (10 + 2 * Math.cos(th)));
+      const err = Uf.map((v, i) => v - ex[i]); const inner = x.map(v => v > 0.1 && v < 0.9);
+      out.space.push({ N, h, Linf: maxAbs(err), L2: l2(err, h), LinfInterior: maxAbs(err.filter((_, i) => inner[i])), LinfNearBdry: maxAbs(err.filter((_, i) => !inner[i])) });
+      out.fem.push({ N, h, diffConsistent: maxAbs(Uc.map((v, i) => v - Uf[i])), errConsistent: maxAbs(Uc.map((v, i) => v - ex[i])), errMixed: maxAbs(Um.map((v, i) => v - ex[i])) });
+    }
+    ['Linf', 'L2'].forEach(k => order(out.space.map(r => r[k]), out.space.map(r => r.h)).forEach((p, i) => out.space[i + 1]['p_' + k] = p));
+    ['diffConsistent', 'errConsistent', 'errMixed'].forEach(k => order(out.fem.map(r => r[k]), out.fem.map(r => r.h)).forEach((p, i) => out.fem[i + 1]['p_' + k] = p));
+    // lumped FEM (M=hI, K=(1/h)[-1,2,-1]) 시간전진 vs FDM 시간전진
+    { const N = 50, h = 1 / N, k = 1e-3, m = N - 1, x = linspace(0, 1, N + 1).slice(1, -1);
+      const sF = constTri(m, -k / h ** 2, 1 + 2 * k / h ** 2, -k / h ** 2), sE = constTri(m, -k / h, h + 2 * k / h, -k / h);
+      let Uf = Float64Array.from(x, v => v * (1 - v)), Ue = Float64Array.from(Uf);
+      for (let n = 0; n < Math.round(T / k); n++) { Uf = sF(Uf); Ue = sE(Ue.map(v => v * h)); }
+      out.lumpedStepDiff = maxAbs(Uf.map((v, i) => v - Ue[i])); }
+    // 반이산 공간 lumped = FDM 은 정의상 같은 행렬 → 차이 0 (위 시간전진 비교가 실측)
+    // 시간 (N=100, 반이산 정확해 기준) + 결손 예측
+    { const N = 100, h = 1 / N, m = N - 1, S = dstTable(N), x = linspace(0, 1, N + 1).slice(1, -1), U0 = x.map(v => v * (1 - v)), c = dst(U0, N, S);
+      const lam = c.map((_, j) => -4 / h ** 2 * Math.sin((j + 1) * PI / (2 * N)) ** 2), ref = idst(c.map((v, j) => v * Math.exp(lam[j] * T)), N, S);
+      for (const nst of [10, 20, 40, 80, 160, 320]) {
+        const k = T / nst, sol = constTri(m, -k / h ** 2, 1 + 2 * k / h ** 2, -k / h ** 2); let U = Float64Array.from(U0);
+        for (let n = 0; n < nst; n++) U = sol(U);
+        const meas = maxAbs(U.map((v, i) => v - ref[i]));
+        const pred = maxAbs(idst(c.map((v, j) => v * Math.exp(lam[j] * T) * nst * 0.5 * (lam[j] * k) ** 2), N, S));
+        out.time.push({ N, dt: k, r: k / h ** 2, Linf: meas });
+        out.deficit.push({ dt: k, measured: meas, predicted: pred, rel: Math.abs(pred / meas - 1) });
+      }
+      order(out.time.map(r => r.Linf), out.time.map(r => r.dt)).forEach((p, i) => out.time[i + 1].p_Linf = p);
+      order(out.deficit.map(r => r.rel), out.deficit.map(r => r.dt)).forEach((p, i) => out.deficit[i + 1].p_rel = p);
+    }
+    // 명시적 Euler 안정성
+    for (const r of [0.4, 0.5, 0.51, 0.6]) {
+      const N = 50, x = linspace(0, 1, N + 1); let U = x.map(v => v * (1 - v)), mx = 0, n = 0; const nst = Math.round(0.5 / (r / N ** 2));
+      for (n = 0; n < nst; n++) { const V = U.slice(); for (let i = 1; i < N; i++) V[i] = U[i] + r * (U[i - 1] - 2 * U[i] + U[i + 1]); U = V; mx = Math.max(mx, maxAbs(U)); if (mx > 1e6 || !isFinite(mx)) break; }
+      out.explicit.push({ r, steps: Math.min(n + 1, nst), maxAbs: mx, stable: mx <= 0.25 + 1e-12, Rsaw: 1 - 4 * r * Math.sin((N - 1) * PI / (2 * N)) ** 2 });
+    }
+    return out;
+  }
+
+  // ================= H2: 2차원 열방정식 (5점 + 명시적 Euler)
+  function H2() {
+    const T = 0.05, out = { refine: [], stability: [] };
+    const v = (x, t) => heatSeries(x, t);   // u = v(x,t)·v(y,t)
+    for (const N of [10, 20, 40, 80]) {
+      const h = 1 / N, r = 0.2, k = r * h * h, nst = Math.round(T / k), n1 = N + 1; let U = new Float64Array(n1 * n1), V = new Float64Array(n1 * n1);
+      for (let i = 0; i <= N; i++) for (let j = 0; j <= N; j++) { const x = i * h, y = j * h; U[i * n1 + j] = x * (1 - x) * y * (1 - y); }
+      const t0 = Date.now();
+      for (let n = 0; n < nst; n++) { for (let i = 1; i < N; i++) for (let j = 1; j < N; j++) { const q = i * n1 + j; V[q] = U[q] + r * (U[q - n1] + U[q + n1] + U[q - 1] + U[q + 1] - 4 * U[q]); } [U, V] = [V, U]; }
+      const Tn = nst * k, vx = Array.from({ length: n1 }, (_, i) => v(i * h, Tn)); let e = 0;
+      for (let i = 1; i < N; i++) for (let j = 1; j < N; j++) e = Math.max(e, Math.abs(U[i * n1 + j] - vx[i] * vx[j]));
+      out.refine.push({ N, h, M: (N - 1) ** 2, r, dt: k, steps: nst, Linf: e, runtimeMs: Date.now() - t0 });
+    }
+    order(out.refine.map(r => r.Linf), out.refine.map(r => r.h)).forEach((p, i) => out.refine[i + 1].p_Linf = p);
+    for (const r of [0.24, 0.25, 0.26, 0.3]) {
+      const N = 20, n1 = N + 1, h = 1 / N; let U = new Float64Array(n1 * n1), V = new Float64Array(n1 * n1);
+      for (let i = 0; i <= N; i++) for (let j = 0; j <= N; j++) { const x = i * h, y = j * h; U[i * n1 + j] = x * (1 - x) * y * (1 - y); }
+      const m0 = maxAbs(U); let n = 0, mx = m0;
+      for (n = 0; n < 4000; n++) { for (let i = 1; i < N; i++) for (let j = 1; j < N; j++) { const q = i * n1 + j; V[q] = U[q] + r * (U[q - n1] + U[q + n1] + U[q - 1] + U[q + 1] - 4 * U[q]); } [U, V] = [V, U]; mx = Math.max(mx, maxAbs(U)); if (mx > 1e6) break; }
+      out.stability.push({ r, N, steps: Math.min(n + 1, 4000), maxAbs: mx, stable: mx <= m0 + 1e-12, Rsaw: 1 - 8 * r * Math.sin((N - 1) * PI / (2 * N)) ** 2 });
+    }
+    return out;
+  }
+
+  // ================= B: Burgers
+  function burgersIMEX(N, k, T, nu = 0.05) {
+    const h = 1 / N, m = N - 1, s = nu * k / h ** 2, sol = constTri(m, -s, 1 + 2 * s, -s), U = Float64Array.from(linspace(0, 1, N + 1), x => Math.sin(PI * x)); let cfl = 0;
+    const nst = Math.round(T / k), rhs = new Float64Array(m);
+    for (let n = 0; n < nst; n++) { let mu = 0; for (let i = 0; i <= N; i++) mu = Math.max(mu, Math.abs(U[i])); cfl = Math.max(cfl, mu * k / h);
+      for (let i = 1; i < N; i++) rhs[i - 1] = U[i] - k * (U[i + 1] ** 2 / 2 - U[i - 1] ** 2 / 2) / (2 * h);
+      const x = sol(rhs); for (let i = 1; i < N; i++) U[i] = x[i - 1]; }
+    return { U, cfl };
+  }
+  function B() {
+    const out = { space: [], time: [], shock: [], imex: [] }, T = 0.5, k = 1e-4, NR = 2560;
+    const ref = burgersIMEX(NR, k, T).U;
+    for (const N of [20, 40, 80, 160, 320]) { const { U, cfl } = burgersIMEX(N, k, T), st = NR / N; const e = []; for (let i = 0; i <= N; i++) e.push(U[i] - ref[i * st]); out.space.push({ N, h: 1 / N, dt: k, Linf: maxAbs(e), L2: l2(e, 1 / N), CFL: cfl }); }
+    ['Linf', 'L2'].forEach(key => order(out.space.map(r => r[key]), out.space.map(r => r.h)).forEach((p, i) => out.space[i + 1]['p_' + key] = p));
+    const Nt = 200, nsts = [50, 100, 200, 400, 800, 1600], refT = burgersIMEX(Nt, T / (1600 * 200), T).U;
+    for (const nst of nsts) { const { U, cfl } = burgersIMEX(Nt, T / nst, T); out.time.push({ N: Nt, dt: T / nst, Linf: maxAbs(U.map((v, i) => v - refT[i])), CFL: cfl }); }
+    out.timeRefDt = T / (1600 * 200);
+    order(out.time.map(r => r.Linf), out.time.map(r => r.dt)).forEach((p, i) => out.time[i + 1].p_Linf = p);
+    for (const N of [100, 200, 400, 800, 1600, 3200]) {
+      const h = 1 / N, cflT = 0.5, nst = Math.ceil(T / (cflT * h)), kk = T / nst; let U = new Float64Array(N), m0 = 0, fin = 0, fout = 0; const xc = Array.from({ length: N }, (_, i) => (i + 0.5) * h);
+      for (let i = 0; i < N; i++) { U[i] = xc[i] < 0.25 ? 1 : 0; m0 += U[i] * h; }
+      const tr = [];
+      for (let n = 0; n < nst; n++) { const f = U.map(v => v * v / 2), V = new Float64Array(N); V[0] = U[0] - kk / h * (f[0] - 0.5); for (let i = 1; i < N; i++) V[i] = U[i] - kk / h * (f[i] - f[i - 1]); fin += kk * 0.5; fout += kk * f[N - 1]; U = V;
+        if ((n + 1) % Math.max(1, Math.floor(nst / 20)) === 0) { let pos = null; for (let i = N - 1; i > 0; i--) if (U[i - 1] >= 0.5 && U[i] < 0.5) { pos = xc[i - 1] + (U[i - 1] - 0.5) / (U[i - 1] - U[i]) * h; break; } tr.push([(n + 1) * kk, pos]); } }
+      const e = U.map((v, i) => v - (xc[i] < 0.25 + 0.5 * T ? 1 : 0)); let mass = 0; for (const v of U) mass += v * h;
+      const tt = tr.slice(Math.floor(tr.length / 4)); const speed = slopeLin(tt.map(a => a[0]), tt.map(a => a[1]));
+      out.shock.push({ N, h, Linf: maxAbs(e), L2: l2(e, h), L1: e.reduce((a, b) => a + Math.abs(b), 0) * h, massChange: mass - m0, inMinusOut: fin - fout, conservationErr: Math.abs(mass - m0 - (fin - fout)), speed });
+    }
+    ['Linf', 'L2', 'L1'].forEach(key => order(out.shock.map(r => r[key]), out.shock.map(r => r.h)).forEach((p, i) => out.shock[i + 1]['p_' + key] = p));
+    for (const [nu, k2, Ns] of [[0.05, 0.09, [50, 200, 800]], [0.05, 0.12, [50, 200, 800]], [0.0, null, [200]]]) for (const N of Ns) {
+      const h = 1 / N, kk = k2 ?? 0.5 * h, mu = nu * kk / h ** 2, sol = cyclicTri(N, -mu, 1 + 2 * mu, -mu), R = rng(0); let U = Float64Array.from({ length: N }, (_, i) => Math.sin(2 * PI * i * h) + 1e-6 * (2 * R() - 1)); const m0 = maxAbs(U); let n;
+      for (n = 0; n < 5000; n++) { const rhs = U.map((v, i) => v - kk * (U[(i + 1) % N] - U[(i - 1 + N) % N]) / (2 * h)); U = sol(rhs); if (maxAbs(U) > 1e8) break; }
+      let G = 0; const C = kk / h; for (let q = 0; q <= 2000; q++) { const th = PI * q / 2000; G = Math.max(G, Math.sqrt(1 + C * C * Math.sin(th) ** 2) / (1 + 4 * mu * Math.sin(th / 2) ** 2)); }
+      out.imex.push({ nu, k: kk, N, CFL: kk / h, Gmax: G, maxT: maxAbs(U), steps: Math.min(n + 1, 5000), stable: maxAbs(U) <= m0 });
+    }
+    return out;
+  }
+  function slopeLin(x, y) { const n = x.length, mx = x.reduce((a, b) => a + b) / n, my = y.reduce((a, b) => a + b) / n; let a = 0, b = 0; for (let i = 0; i < n; i++) { a += (x[i] - mx) * (y[i] - my); b += (x[i] - mx) ** 2; } return a / b; }
+
+  // ================= S: 1차원 슈뢰딩거
+  function psiEx(x, t) { // i u_t = -u_xx 의 가우스 해 (σ=1, k0=2): 표준해의 t→2t
+    const s = 2 * t, ar = 1, ai = s, k0 = 2; // a = 1 + i s
+    const q = ar * ar + ai * ai, invr = ar / q, invi = -ai / q;         // 1/a
+    const d = x - k0 * s, er = -d * d / 2 * invr, ei = -d * d / 2 * invi + k0 * x - k0 * k0 * s / 2;
+    const mod = Math.pow(q, -0.25), arg = -0.5 * Math.atan2(ai, ar);   // a^{-1/2}
+    const A = Math.pow(PI, -0.25) * mod * Math.exp(er); return [A * Math.cos(ei + arg), A * Math.sin(ei + arg)];
+  }
+  function S() {
+    const L = 20, T = 1, out = { space: [], time: [], eeNorm: [], deficit: [] };
+    const semi = (N, h, Sx, U0r, U0i, t, fac) => { const cr = dst(U0r, N, Sx), ci = dst(U0i, N, Sx), vr = new Float64Array(N - 1), vi = new Float64Array(N - 1);
+      for (let j = 0; j < N - 1; j++) { const th = (j + 1) * PI / N, lam = (2 - 2 * Math.cos(th)) / h ** 2 * fac(th), co = Math.cos(lam * t), si = Math.sin(lam * t); vr[j] = cr[j] * co + ci[j] * si; vi[j] = ci[j] * co - cr[j] * si; }
+      return [idst(vr, N, Sx), idst(vi, N, Sx), cr, ci]; };
+    const grid = N => { const x = linspace(-L, L, N + 1).slice(1, -1); return [x, 2 * L / N]; };
+    for (const N of [400, 800, 1600, 3200]) {
+      const [x, h] = grid(N), Sx = dstTable(N), U0 = x.map(v => psiEx(v, 0)), ex = x.map(v => psiEx(v, T)), U0r = U0.map(z => z[0]), U0i = U0.map(z => z[1]);
+      const row = { N, h, k0h: 2 * h };
+      for (const [name, f] of [['fdm', () => 1], ['consistent', th => 6 / (4 + 2 * Math.cos(th))], ['mixed', th => 12 / (10 + 2 * Math.cos(th))]]) {
+        const [Ur, Ui] = semi(N, h, Sx, U0r, U0i, T, f); row[name] = l2(Ur.map((v, i) => Math.hypot(v - ex[i][0], Ui[i] - ex[i][1])), h);
+      }
+      out.space.push(row);
+    }
+    ['fdm', 'consistent', 'mixed'].forEach(k => order(out.space.map(r => r[k]), out.space.map(r => r.h)).forEach((p, i) => out.space[i + 1]['p_' + k] = p));
+    { const N = 1600, [x, h] = grid(N), m = N - 1, Sx = dstTable(N), U0 = x.map(v => psiEx(v, 0)), U0r = Float64Array.from(U0, z => z[0]), U0i = Float64Array.from(U0, z => z[1]);
+      const [Rr, Ri, cr, ci] = semi(N, h, Sx, U0r, U0i, T, () => 1);
+      for (const nst of [25, 50, 100, 200, 400, 800]) {
+        const k = T / nst, a = k / 2 / h ** 2, sol = constTriC(m, [0, -a], [1, 2 * a], [0, -a]); let ur = Float64Array.from(U0r), ui = Float64Array.from(U0i); const n0 = l2(Array.from(ur, (v, i) => Math.hypot(v, ui[i])), h); let drift = 0;
+        for (let n = 0; n < nst; n++) { const br = new Float64Array(m), bi = new Float64Array(m); // (I - i k/2 H)U, H = -D2
+          for (let i = 0; i < m; i++) { const Hr = (2 * ur[i] - (i > 0 ? ur[i - 1] : 0) - (i < m - 1 ? ur[i + 1] : 0)) / h ** 2, Hi = (2 * ui[i] - (i > 0 ? ui[i - 1] : 0) - (i < m - 1 ? ui[i + 1] : 0)) / h ** 2; br[i] = ur[i] + k / 2 * Hi; bi[i] = ui[i] - k / 2 * Hr; }
+          [ur, ui] = sol(br, bi); drift = Math.max(drift, Math.abs(l2(Array.from(ur, (v, i) => Math.hypot(v, ui[i])), h) ** 2 / n0 ** 2 - 1)); }
+        const meas = l2(Array.from(ur, (v, i) => Math.hypot(v - Rr[i], ui[i] - Ri[i])), h);
+        // 결손 예측: 모드 j 위상 결손 i·T·λ³·Δt²/12
+        const pr = new Float64Array(m), pi_ = new Float64Array(m);
+        for (let j = 0; j < m; j++) { const lam = (2 - 2 * Math.cos((j + 1) * PI / N)) / h ** 2, co = Math.cos(lam * T), si = Math.sin(lam * T), er = cr[j] * co + ci[j] * si, ei = ci[j] * co - cr[j] * si, D = T * lam ** 3 * k * k / 12; pr[j] = -ei * D; pi_[j] = er * D; }
+        const Er = idst(pr, N, Sx), Ei = idst(pi_, N, Sx), pred = l2(Array.from(Er, (v, i) => Math.hypot(v, Ei[i])), h);
+        out.time.push({ N, dt: k, L2: meas, normDrift: drift }); out.deficit.push({ dt: k, measured: meas, predicted: pred, rel: Math.abs(pred / meas - 1) });
+      }
+      order(out.time.map(r => r.L2), out.time.map(r => r.dt)).forEach((p, i) => out.time[i + 1].p_L2 = p);
+      order(out.deficit.map(r => r.rel), out.deficit.map(r => r.dt)).forEach((p, i) => out.deficit[i + 1].p_rel = p);
+    }
+    { const N = 400, [x, h] = grid(N), m = N - 1, Sx = dstTable(N), U0 = x.map(v => psiEx(v, 0)), cr = dst(U0.map(z => z[0]), N, Sx), ci = dst(U0.map(z => z[1]), N, Sx);
+      let W = 0; const w = cr.map((v, j) => { const q = v * v + ci[j] * ci[j]; W += q; return q; }).map(q => q / W), lam = cr.map((_, j) => (2 - 2 * Math.cos((j + 1) * PI / N)) / h ** 2);
+      let m2 = 0; w.forEach((q, j) => m2 += q * lam[j] ** 2); out.meanLambda2 = m2;
+      for (const k of [4e-4, 2e-4, 1e-4, 5e-5, 2.5e-5]) {
+        const nst = Math.round(T / k); let ur = Float64Array.from(U0, z => z[0]), ui = Float64Array.from(U0, z => z[1]); const n0 = ur.reduce((a, v, i) => a + v * v + ui[i] * ui[i], 0);
+        for (let n = 0; n < nst; n++) { const vr = new Float64Array(m), vi = new Float64Array(m); // U += i k D2 U
+          for (let i = 0; i < m; i++) { const Dr = ((i > 0 ? ur[i - 1] : 0) - 2 * ur[i] + (i < m - 1 ? ur[i + 1] : 0)) / h ** 2, Di = ((i > 0 ? ui[i - 1] : 0) - 2 * ui[i] + (i < m - 1 ? ui[i + 1] : 0)) / h ** 2; vr[i] = ur[i] - k * Di; vi[i] = ui[i] + k * Dr; } ur = vr; ui = vi; }
+        const meas = ur.reduce((a, v, i) => a + v * v + ui[i] * ui[i], 0) / n0 - 1;
+        let exact = 0; w.forEach((q, j) => exact += q * (Math.pow(1 + k * k * lam[j] ** 2, nst) - 1));
+        out.eeNorm.push({ dt: k, measured: meas, exact, leading: T * k * m2, relDiff: Math.abs(meas / exact - 1), ampTop: Math.exp(T * k * lam[m - 1] ** 2 / 2) });
+      }
+    }
+    return out;
+  }
+
+  // ================= EB: Euler–Bernoulli 보 (u_tt + u_xxxx = 0, 단순지지)
+  function penta(n, e, d, c, rhs) { // 대칭 5대각 [e,d,c,d,e] 가우스 소거 (상수 계수 + 첫/끝 행 보정은 호출자가 d 배열로)
+    const A = Array.from({ length: n }, (_, i) => [i > 1 ? e : 0, i > 0 ? d[i][0] : 0, d[i][1], i < n - 1 ? d[i][2] : 0, i < n - 2 ? e : 0]);
+    const b = Float64Array.from(rhs);
+    for (let k = 0; k < n - 1; k++) for (let r = 1; r <= 2 && k + r < n; r++) { const f = A[k + r][2 - r] / A[k][2]; for (let s = 0; s <= 2; s++) if (2 - r + s <= 4) A[k + r][2 - r + s] -= f * A[k][2 + s]; b[k + r] -= f * b[k]; }
+    const x = new Float64Array(n); for (let k = n - 1; k >= 0; k--) { let s = b[k]; for (let s2 = 1; s2 <= 2; s2++) if (k + s2 < n) s -= A[k][2 + s2] * x[k + s2]; x[k] = s / A[k][2]; }
+    return x;
+  }
+  function EB() {
+    const T = 0.25, out = { space: [], time: [], leapfrog: [], deficit: [] };
+    const u0 = x => Math.sin(PI * x) + 0.3 * Math.sin(2 * PI * x), exact = (x, t) => Math.cos(PI ** 2 * t) * Math.sin(PI * x) + 0.3 * Math.cos(4 * PI ** 2 * t) * Math.sin(2 * PI * x);
+    const K4 = (U, h) => { const m = U.length, D = new Float64Array(m), R = new Float64Array(m); for (let i = 0; i < m; i++) D[i] = ((i > 0 ? U[i - 1] : 0) - 2 * U[i] + (i < m - 1 ? U[i + 1] : 0)) / h ** 2; for (let i = 0; i < m; i++) R[i] = ((i > 0 ? D[i - 1] : 0) - 2 * D[i] + (i < m - 1 ? D[i + 1] : 0)) / h ** 2; return R; }; // D2² (양정부호)
+    const semi = (N, t) => { const h = 1 / N, Sx = dstTable(N), x = linspace(0, 1, N + 1).slice(1, -1), c = dst(x.map(u0), N, Sx); return [idst(c.map((v, j) => v * Math.cos(4 / h ** 2 * Math.sin((j + 1) * PI / (2 * N)) ** 2 * t)), N, Sx), c, x, Sx]; };
+    for (const N of [10, 20, 40, 80, 160]) { const h = 1 / N, [U, , x] = semi(N, T); const e = U.map((v, i) => v - exact(x[i], T)); out.space.push({ N, h, L2: l2(e, h), Linf: maxAbs(e) }); }
+    ['L2', 'Linf'].forEach(k => order(out.space.map(r => r[k]), out.space.map(r => r.h)).forEach((p, i) => out.space[i + 1]['p_' + k] = p));
+    { const N = 50, h = 1 / N, m = N - 1, [ref, c, x, Sx] = semi(N, T);
+      for (const nst of [25, 50, 100, 200, 400, 800]) {
+        const k = T / nst, beta = 0.25, gam = 0.5, q = beta * k * k / h ** 4;
+        const d = Array.from({ length: m }, (_, i) => [-4 * q, 1 + (i === 0 || i === m - 1 ? 5 : 6) * q, -4 * q]); // I + βk²K4
+        let U = Float64Array.from(x, u0), V = new Float64Array(m), Acc = K4(U, h).map(v => -v);
+        const energy = () => { const KU = K4(U, h); let s = 0; for (let i = 0; i < m; i++) s += 0.5 * V[i] * V[i] + 0.5 * U[i] * KU[i]; return s * h; };
+        const E0 = energy(); let drift = 0;
+        for (let n = 0; n < nst; n++) { const pred = U.map((u, i) => u + k * V[i] + (0.5 - beta) * k * k * Acc[i]); const An = penta(m, q, d, null, K4(pred, h).map(v => -v));
+          U = pred.map((p, i) => p + beta * k * k * An[i]); V = V.map((v, i) => v + k * ((1 - gam) * Acc[i] + gam * An[i])); Acc = An; drift = Math.max(drift, Math.abs(energy() / E0 - 1)); }
+        const meas = l2(U.map((v, i) => v - ref[i]), h);
+        const pv = c.map((v, j) => { const w = 4 / h ** 2 * Math.sin((j + 1) * PI / (2 * N)) ** 2; return v * Math.sin(w * T) * T * w ** 3 * k * k / 12; });
+        const pred = l2(idst(pv, N, Sx), h);
+        out.time.push({ N, dt: k, L2: meas, energyDrift: drift }); out.deficit.push({ dt: k, measured: meas, predicted: pred, rel: Math.abs(pred / meas - 1) });
+      }
+      order(out.time.map(r => r.L2), out.time.map(r => r.dt)).forEach((p, i) => out.time[i + 1].p_L2 = p);
+      order(out.deficit.map(r => r.rel), out.deficit.map(r => r.dt)).forEach((p, i) => out.deficit[i + 1].p_rel = p);
+    }
+    for (const cfac of [0.98, 1.02]) {
+      const N = 50, h = 1 / N, m = N - 1, k = cfac * h * h / 2, x = linspace(0, 1, N + 1).slice(1, -1); let Up = Float64Array.from(x, u0); const m0 = maxAbs(Up);
+      let U = Up.map((v, i) => v - k * k / 2 * K4(Up, h)[i]), n, mx = m0;
+      for (n = 0; n < 20000; n++) { const KU = K4(U, h), Un = U.map((v, i) => 2 * v - Up[i] - k * k * KU[i]); Up = U; U = Un; mx = Math.max(mx, maxAbs(U)); if (mx > 1e6) break; }
+      const wmax = 4 / h ** 2 * Math.sin((N - 1) * PI / (2 * N)) ** 2;
+      out.leapfrog.push({ N, factor: cfac, dt: k, kwmax: k * wmax, steps: Math.min(n + 1, 20000), maxAbs: mx, stable: mx <= 2 * m0 });
+    }
+    return out;
+  }
+
+  // ================= D: 교차 차원
+  function D() {
+    const out = { trap: [], left: [] }, ex = d => Math.sin(1) ** d, SEEDS = 10, cache = {};
+    for (const rule of ['trap', 'left']) for (let d = 1; d <= 6; d++) {
+      const nmax = Math.pow(2.6e5, 1 / d), ns = [...new Set(Array.from({ length: 6 }, (_, i) => Math.round(Math.exp(Math.log(3) + (Math.log(nmax) - Math.log(3)) * i / 5))))].filter(n => n >= 2);
+      const pts = ns.map(n => { const M = n ** d; let s1 = 0;
+        if (rule === 'trap') { for (let i = 0; i < n; i++) s1 += (i === 0 || i === n - 1 ? 0.5 : 1) * Math.cos(i / (n - 1)); s1 /= (n - 1); } else { for (let i = 0; i < n; i++) s1 += Math.cos(i / n); s1 /= n; }
+        const g = Math.abs(s1 ** d - ex(d)); let se = 0; const ck = d + ':' + M;
+        if (cache[ck] != null) return { M, grid: g, mc: cache[ck] };
+        for (let sd = 0; sd < SEEDS; sd++) { const R = rng(1000 * d + sd + 1); let acc = 0; for (let q = 0; q < M; q++) { let p = 1; for (let c = 0; c < d; c++) p *= Math.cos(R()); acc += p; } se += (acc / M - ex(d)) ** 2; }
+        cache[ck] = Math.sqrt(se / SEEDS); return { M, grid: g, mc: cache[ck] }; });
+      const L3 = pts.slice(-3);
+      out[rule].push({ d, points: pts, slopeGrid: slopeFit(L3.map(p => p.M), L3.map(p => p.grid)), slopeMC: slopeFit(L3.map(p => p.M), L3.map(p => p.mc)), ratio: pts[pts.length - 1].grid / pts[pts.length - 1].mc });
+    }
+    return out;
+  }
+
+  // ================= 판정
+  const within = (p, th, tol = 0.15) => p != null && Math.abs(p - th) <= tol;
+  const last2 = (rows, k) => rows.slice(-2).map(r => r[k]);
+  const lastValid = (rows, k) => rows.filter(r => r[k] != null).slice(-2).map(r => r[k]);
+  function judge(R) {
+    const v = [], add = (id, text, meas, ok) => v.push({ id, text, meas, ok });
+    const f2 = a => a.map(x => x == null ? '–' : x.toFixed(2)).join(', ');
+    const { H1: h1, H2: h2, B: b, S: s, EB: eb, D: d } = R;
+    add('H1-1', '1D 열 공간 차수 2 (L∞·L²)', f2(last2(h1.space, 'p_Linf')) + ' / ' + f2(last2(h1.space, 'p_L2')), last2(h1.space, 'p_Linf').every(p => within(p, 2)) && last2(h1.space, 'p_L2').every(p => within(p, 2)));
+    add('H1-2', '1D 열 시간 차수 1', f2(last2(h1.time, 'p_Linf')), last2(h1.time, 'p_Linf').every(p => within(p, 1)));
+    add('H1-3', 'lumped FEM = FDM (≤10⁻¹²)', h1.lumpedStepDiff.toExponential(1), h1.lumpedStepDiff <= 1e-12);
+    const mix = lastValid(h1.fem, 'p_errMixed');
+    add('H1-4', 'consistent 차이 차수 2, 혼합 질량 차수 4', f2(last2(h1.fem, 'p_diffConsistent')) + ' / ' + f2(mix), last2(h1.fem, 'p_diffConsistent').every(p => within(p, 2)) && mix.length === 2 && mix.every(p => within(p, 4)));
+    add('H1-5', '명시적 Euler r=0.5 안정, 0.51 발산', h1.explicit.map(r => r.r + (r.stable ? ' 안정' : ' 발산')).join(' · '), h1.explicit.find(r => r.r === 0.5).stable && !h1.explicit.find(r => r.r === 0.51).stable);
+    add('H1-6', '결손 예측 상대차의 차수 1', f2(last2(h1.deficit, 'p_rel')), last2(h1.deficit, 'p_rel').every(p => within(p, 1)));
+    add('H2-1', '2D 열 (r=0.2 고정) L∞ 차수 2', f2(last2(h2.refine, 'p_Linf')), last2(h2.refine, 'p_Linf').every(p => within(p, 2)));
+    add('H2-2', '2D 안정 한계 r=1/4 (0.25 안정, 0.26 발산)', h2.stability.map(r => r.r + (r.stable ? ' 안정' : ' 발산')).join(' · '), h2.stability.find(r => r.r === 0.25).stable && !h2.stability.find(r => r.r === 0.26).stable);
+    const s1 = slopeFit(h1.space.slice(-2).map(r => r.N - 1), h1.space.slice(-2).map(r => r.Linf)), s2 = slopeFit(h2.refine.slice(-2).map(r => r.M), h2.refine.slice(-2).map(r => r.Linf));
+    R.H2.slope1D = s1; R.H2.slope2D = s2;
+    add('H2-3', '오차–미지수 기울기 −p/d: 1D −2, 2D −1', s1.toFixed(3) + ' / ' + s2.toFixed(3), Math.abs(s1 + 2) <= 0.1 && Math.abs(s2 + 1) <= 0.1);
+    add('B-1', 'Burgers 공간 차수 2', f2(last2(b.space, 'p_Linf')), last2(b.space, 'p_Linf').every(p => within(p, 2)));
+    add('B-2', 'Burgers 시간 차수 1 (참조 Δt/200)', f2(last2(b.time, 'p_Linf')), last2(b.time, 'p_Linf').every(p => within(p, 1)));
+    const sh = b.shock[b.shock.length - 1];
+    add('B-3', '충격파 차수 L∞ 0, L² ½, L¹ 1', f2([sh.p_Linf, sh.p_L2, sh.p_L1]), last2(b.shock, 'p_Linf').every(p => within(p, 0)) && last2(b.shock, 'p_L2').every(p => within(p, 0.5)) && last2(b.shock, 'p_L1').every(p => within(p, 1)));
+    const ce = Math.max(...b.shock.map(r => r.conservationErr));
+    add('B-4', '보존량 오차 ≤10⁻¹², 속도 0.5±10⁻³', ce.toExponential(1) + ', ' + sh.speed.toFixed(6), ce <= 1e-12 && Math.abs(sh.speed - 0.5) <= 1e-3);
+    add('B-5', 'IMEX 한계 k≤2ν/a² (h 무관), ν=0 불안정', b.imex.map(r => `ν=${r.nu} k=${+r.k.toFixed(4)} N=${r.N}: ${r.stable ? '안정' : '불안정'}`).join(' · '), b.imex.filter(r => r.nu > 0 && r.k === 0.09).every(r => r.stable) && b.imex.filter(r => r.k === 0.12).every(r => !r.stable) && b.imex.filter(r => r.nu === 0).every(r => !r.stable));
+    add('S-1', '슈뢰딩거 공간 차수 2 (FDM, FEM)', f2(last2(s.space, 'p_fdm')) + ' / ' + f2(last2(s.space, 'p_consistent')), ['p_fdm', 'p_consistent'].every(k => last2(s.space, k).every(p => within(p, 2))));
+    add('S-2', '혼합 질량 공간 차수 4', f2(lastValid(s.space, 'p_mixed')), lastValid(s.space, 'p_mixed').every(p => within(p, 4)));
+    const nd = Math.max(...s.time.map(r => r.normDrift));
+    add('S-3', 'CN 시간 차수 2, 노름 변화 ≤10⁻¹²', f2(last2(s.time, 'p_L2')) + ', ' + nd.toExponential(1), last2(s.time, 'p_L2').every(p => within(p, 2)) && nd <= 1e-12);
+    const ee = s.eeNorm.filter(r => r.dt <= 2e-4);
+    add('S-4', 'EE 노름 정확식 상대차 ≤10⁻⁸ (Δt≤2×10⁻⁴)', Math.max(...ee.map(r => r.relDiff)).toExponential(1), ee.every(r => r.relDiff <= 1e-8));
+    add('S-5', 'CN 결손 예측 상대차의 차수 2', f2(last2(s.deficit, 'p_rel')), last2(s.deficit, 'p_rel').every(p => within(p, 2)));
+    add('EB-1', '보 공간 차수 2', f2(last2(eb.space, 'p_L2')), last2(eb.space, 'p_L2').every(p => within(p, 2)));
+    add('EB-2', 'Newmark 시간 차수 2', f2(last2(eb.time, 'p_L2')), last2(eb.time, 'p_L2').every(p => within(p, 2)));
+    const ed = Math.max(...eb.time.map(r => r.energyDrift));
+    add('EB-3', 'Newmark 에너지 변화 ≤10⁻¹²', ed.toExponential(1), ed <= 1e-12);
+    add('EB-4', 'leapfrog 한계 k≈h²/2 (0.98 안정, 1.02 발산)', eb.leapfrog.map(r => r.factor + (r.stable ? ' 안정' : ' 발산')).join(' · '), eb.leapfrog[0].stable && !eb.leapfrog[1].stable);
+    add('EB-5', 'Newmark 결손 예측 상대차의 차수 2', f2(last2(eb.deficit, 'p_rel')), last2(eb.deficit, 'p_rel').every(p => within(p, 2)));
+    const t = d.trap, l = d.left;
+    add('D-1', '사다리꼴 d*=4 (d=3 격자, d=5 MC, d=4 기울기 차 ≤0.1)', `d=3 ${t[2].ratio < 1 ? '격자' : 'MC'} · d=5 ${t[4].ratio < 1 ? '격자' : 'MC'} · d=4 차 ${Math.abs(t[3].slopeGrid - t[3].slopeMC).toFixed(3)}`, t[2].ratio < 1 && t[4].ratio > 1 && Math.abs(t[3].slopeGrid - t[3].slopeMC) <= 0.1);
+    add('D-2', '직사각형 d*=2 (d=1 격자, d=3 MC, d=2 기울기 차 ≤0.1)', `d=1 ${l[0].ratio < 1 ? '격자' : 'MC'} · d=3 ${l[2].ratio < 1 ? '격자' : 'MC'} · d=2 차 ${Math.abs(l[1].slopeGrid - l[1].slopeMC).toFixed(3)}`, l[0].ratio < 1 && l[2].ratio > 1 && Math.abs(l[1].slopeGrid - l[1].slopeMC) <= 0.1);
+    return v;
+  }
+  const STEPS = [['H1', '1차원 열방정식', H1], ['H2', '2차원 열방정식', H2], ['B', 'Burgers', B], ['S', '슈뢰딩거', S], ['EB', 'Euler–Bernoulli 보', EB], ['D', '교차 차원', D]];
+  async function runAll(onProgress) {
+    const R = {}, ms = {};
+    for (const [key, name, fn] of STEPS) { if (onProgress) await onProgress(name); const t0 = Date.now(); R[key] = fn(); ms[key] = Date.now() - t0; }
+    R.verdicts = judge(R); R.runtimeMs = ms; return R;
+  }
+  return { runAll, judge, STEPS };
+})();
+if (typeof module !== 'undefined') module.exports = ENGINE;
+
+</script>
+<script>
+const RECORD = {
+ "H1": {
+  "space": [
+   {
+    "N": 10,
+    "h": 0.1,
+    "Linf": 0.0007760483546642022,
+    "L2": 0.0005495811361998582,
+    "LinfInterior": 0.0007760483546642022,
+    "LinfNearBdry": 0.00024112678027351023
+   },
+   {
+    "N": 20,
+    "h": 0.05,
+    "Linf": 0.0001947071357985275,
+    "L2": 0.00013784480098260157,
+    "LinfInterior": 0.0001947071357985275,
+    "LinfNearBdry": 0.000060430227775264134,
+    "p_Linf": 1.9948407896665592,
+    "p_L2": 1.9952876309711465
+   },
+   {
+    "N": 40,
+    "h": 0.025,
+    "Linf": 0.000048718913277234766,
+    "L2": 0.000034488747760358325,
+    "LinfInterior": 0.000048718913277234766,
+    "LinfNearBdry": 0.000015117034206479918,
+    "p_Linf": 1.9987519001859422,
+    "p_L2": 1.9988472024672417
+   },
+   {
+    "N": 80,
+    "h": 0.0125,
+    "Linf": 0.000012182341722719037,
+    "L2": 0.000008623900154562993,
+    "LinfInterior": 0.000012182341722719037,
+    "LinfNearBdry": 0.000003779853335265926,
+    "p_Linf": 1.9996904742373776,
+    "p_L2": 1.9997133673256622
+   },
+   {
+    "N": 160,
+    "h": 0.00625,
+    "Linf": 0.0000030457484466728246,
+    "L2": 0.000002156081969604499,
+    "LinfInterior": 0.0000030457484466728246,
+    "LinfNearBdry": 9.450005386199556e-7,
+    "p_Linf": 1.9999227813252163,
+    "p_L2": 1.999928447712608
+   },
+   {
+    "N": 320,
+    "h": 0.003125,
+    "Linf": 7.614472812556006e-7,
+    "L2": 5.390271634954072e-7,
+    "LinfInterior": 7.614472812556006e-7,
+    "LinfNearBdry": 2.3625245613653756e-7,
+    "p_Linf": 1.9999807318094924,
+    "p_L2": 1.9999821448438089
+   }
+  ],
+  "time": [
+   {
+    "N": 100,
+    "dt": 0.01,
+    "r": 100,
+    "Linf": 0.004482952483508884
+   },
+   {
+    "N": 100,
+    "dt": 0.005,
+    "r": 50,
+    "Linf": 0.002289416446956141,
+    "p_Linf": 0.969469293486506
+   },
+   {
+    "N": 100,
+    "dt": 0.0025,
+    "r": 25,
+    "Linf": 0.001156998009887722,
+    "p_Linf": 0.9845935314007965
+   },
+   {
+    "N": 100,
+    "dt": 0.00125,
+    "r": 12.5,
+    "Linf": 0.0005816083342942979,
+    "p_Linf": 0.9922665349593174
+   },
+   {
+    "N": 100,
+    "dt": 0.000625,
+    "r": 6.25,
+    "Linf": 0.00029158606648047036,
+    "p_Linf": 0.9961261611088698
+   },
+   {
+    "N": 100,
+    "dt": 0.0003125,
+    "r": 3.125,
+    "Linf": 0.0001459890781849993,
+    "p_Linf": 0.9980613402872359
+   }
+  ],
+  "fem": [
+   {
+    "N": 10,
+    "h": 0.1,
+    "diffConsistent": 0.001559256057721406,
+    "errConsistent": 0.0007832077030572038,
+    "errMixed": 1.0250635684716514e-7
+   },
+   {
+    "N": 20,
+    "h": 0.05,
+    "diffConsistent": 0.00038985973223985837,
+    "errConsistent": 0.00019515259644133087,
+    "errMixed": 5.5899139761450556e-9,
+    "p_diffConsistent": 1.9998308090854333,
+    "p_errConsistent": 2.0047922968137124,
+    "p_errMixed": 4.196743488389898
+   },
+   {
+    "N": 40,
+    "h": 0.025,
+    "diffConsistent": 0.00009746564188461981,
+    "errConsistent": 0.00004874672860738505,
+    "errMixed": 3.3709640634427274e-10,
+    "p_diffConsistent": 1.9999895078766865,
+    "p_errConsistent": 2.00122534951977,
+    "p_errMixed": 4.0515929289354515
+   },
+   {
+    "N": 80,
+    "h": 0.0125,
+    "diffConsistent": 0.000024366421526478277,
+    "errConsistent": 0.00001218407980375924,
+    "errMixed": 2.0882739981686882e-11,
+    "p_diffConsistent": 1.9999993454326588,
+    "p_errConsistent": 2.000308106467982,
+    "p_errMixed": 4.012778324873255
+   },
+   {
+    "N": 160,
+    "h": 0.00625,
+    "diffConsistent": 0.000006091605554273127,
+    "errConsistent": 0.0000030458571076003027,
+    "errMixed": 1.3206102877916237e-12,
+    "p_diffConsistent": 1.9999999591098876,
+    "p_errConsistent": 2.0000771300130147,
+    "p_errMixed": 3.9830343223252473
+   },
+   {
+    "N": 320,
+    "h": 0.003125,
+    "diffConsistent": 0.0000015229013912432254,
+    "errConsistent": 7.614541099876249e-7,
+    "errMixed": 1.0125233984581428e-13,
+    "p_diffConsistent": 1.9999999974659373,
+    "p_errConsistent": 2.0000192626923416,
+    "p_errMixed": null
+   }
+  ],
+  "explicit": [
+   {
+    "r": 0.4,
+    "steps": 3125,
+    "maxAbs": 0.24967999999999999,
+    "stable": true,
+    "Rsaw": -0.5984213827426175
+   },
+   {
+    "r": 0.5,
+    "steps": 2500,
+    "maxAbs": 0.2496,
+    "stable": true,
+    "Rsaw": -0.9980267284282718
+   },
+   {
+    "r": 0.51,
+    "steps": 779,
+    "maxAbs": 1033692.6390668254,
+    "stable": false,
+    "Rsaw": -1.0379872629968374
+   },
+   {
+    "r": 0.6,
+    "steps": 86,
+    "maxAbs": 1213259.967042048,
+    "stable": false,
+    "Rsaw": -1.3976320741139259
+   }
+  ],
+  "deficit": [
+   {
+    "dt": 0.01,
+    "measured": 0.004482952483508884,
+    "predicted": 0.004677936111040675,
+    "rel": 0.04349446670449053
+   },
+   {
+    "dt": 0.005,
+    "measured": 0.002289416446956141,
+    "predicted": 0.0023389680555203373,
+    "rel": 0.021643772425098406,
+    "p_rel": 1.0068798981132112
+   },
+   {
+    "dt": 0.0025,
+    "measured": 0.001156998009887722,
+    "predicted": 0.0011694840277601687,
+    "rel": 0.010791736689035769,
+    "p_rel": 1.0040249241386743
+   },
+   {
+    "dt": 0.00125,
+    "measured": 0.0005816083342942979,
+    "predicted": 0.0005847420138800843,
+    "rel": 0.005387955091098684,
+    "p_rel": 1.0021173220393464
+   },
+   {
+    "dt": 0.000625,
+    "measured": 0.00029158606648047036,
+    "predicted": 0.00029237100694004217,
+    "rel": 0.002691968340758688,
+    "p_rel": 1.0010763828613423
+   },
+   {
+    "dt": 0.0003125,
+    "measured": 0.0001459890781849993,
+    "predicted": 0.00014618550347002108,
+    "rel": 0.0013454793157394729,
+    "p_rel": 1.0005412306706822
+   }
+  ],
+  "lumpedStepDiff": 5.828670879282072e-16
+ },
+ "H2": {
+  "refine": [
+   {
+    "N": 10,
+    "h": 0.1,
+    "M": 81,
+    "r": 0.2,
+    "dt": 0.0020000000000000005,
+    "steps": 25,
+    "Linf": 0.0002824396527531699,
+    "runtimeMs": 1
+   },
+   {
+    "N": 20,
+    "h": 0.05,
+    "M": 361,
+    "r": 0.2,
+    "dt": 0.0005000000000000001,
+    "steps": 100,
+    "Linf": 0.00006949448753920326,
+    "runtimeMs": 6,
+    "p_Linf": 2.0229721985146276
+   },
+   {
+    "N": 40,
+    "h": 0.025,
+    "M": 1521,
+    "r": 0.2,
+    "dt": 0.00012500000000000003,
+    "steps": 400,
+    "Linf": 0.000017304727717132318,
+    "runtimeMs": 33,
+    "p_Linf": 2.0057323030620213
+   },
+   {
+    "N": 80,
+    "h": 0.0125,
+    "M": 6241,
+    "r": 0.2,
+    "dt": 0.00003125000000000001,
+    "steps": 1600,
+    "Linf": 0.000004321888614208097,
+    "runtimeMs": 69,
+    "p_Linf": 2.0014324455022323
+   }
+  ],
+  "stability": [
+   {
+    "r": 0.24,
+    "N": 20,
+    "steps": 4000,
+    "maxAbs": 0.0625,
+    "stable": true,
+    "Rsaw": -0.9081808069713322
+   },
+   {
+    "r": 0.25,
+    "N": 20,
+    "steps": 4000,
+    "maxAbs": 0.0625,
+    "stable": true,
+    "Rsaw": -0.9876883405951378
+   },
+   {
+    "r": 0.26,
+    "N": 20,
+    "steps": 567,
+    "maxAbs": 1012926.0829326039,
+    "stable": false,
+    "Rsaw": -1.0671958742189434
+   },
+   {
+    "r": 0.3,
+    "N": 20,
+    "steps": 114,
+    "maxAbs": 1267545.8242799102,
+    "stable": false,
+    "Rsaw": -1.3852260087141652
+   }
+  ],
+  "slope1D": -1.9909623523059836,
+  "slope2D": -0.9826564425159062
+ },
+ "B": {
+  "space": [
+   {
+    "N": 20,
+    "h": 0.05,
+    "dt": 0.0001,
+    "Linf": 0.009226593830514163,
+    "L2": 0.0032691225895635197,
+    "CFL": 0.002
+   },
+   {
+    "N": 40,
+    "h": 0.025,
+    "dt": 0.0001,
+    "Linf": 0.002310400121023626,
+    "L2": 0.0008053517568321244,
+    "CFL": 0.004,
+    "p_Linf": 1.997655425419853,
+    "p_L2": 2.0212125201671363
+   },
+   {
+    "N": 80,
+    "h": 0.0125,
+    "dt": 0.0001,
+    "Linf": 0.0005960262153381635,
+    "L2": 0.0002004346853049756,
+    "CFL": 0.008,
+    "p_Linf": 1.954695030889916,
+    "p_L2": 2.0064868636763435
+   },
+   {
+    "N": 160,
+    "h": 0.00625,
+    "dt": 0.0001,
+    "Linf": 0.00014846043115318563,
+    "L2": 0.00004991437728188673,
+    "CFL": 0.016,
+    "p_Linf": 2.005297323125473,
+    "p_L2": 2.0056048562951956
+   },
+   {
+    "N": 320,
+    "h": 0.003125,
+    "dt": 0.0001,
+    "Linf": 0.00003669622180213494,
+    "L2": 0.000012328860081741068,
+    "CFL": 0.032,
+    "p_Linf": 2.0163750260609294,
+    "p_L2": 2.017416012425028
+   }
+  ],
+  "time": [
+   {
+    "N": 200,
+    "dt": 0.01,
+    "Linf": 0.006695878393208732,
+    "CFL": 2
+   },
+   {
+    "N": 200,
+    "dt": 0.005,
+    "Linf": 0.0032791677450300094,
+    "CFL": 1,
+    "p_Linf": 1.0299436223739964
+   },
+   {
+    "N": 200,
+    "dt": 0.0025,
+    "Linf": 0.0016226144229618544,
+    "CFL": 0.5,
+    "p_Linf": 1.015009487052439
+   },
+   {
+    "N": 200,
+    "dt": 0.00125,
+    "Linf": 0.000806754437408741,
+    "CFL": 0.25,
+    "p_Linf": 1.008118704147679
+   },
+   {
+    "N": 200,
+    "dt": 0.000625,
+    "Linf": 0.0004018704951299634,
+    "CFL": 0.125,
+    "p_Linf": 1.0053989477481249
+   },
+   {
+    "N": 200,
+    "dt": 0.0003125,
+    "Linf": 0.00020018283213008026,
+    "CFL": 0.0625,
+    "p_Linf": 1.005412407691049
+   }
+  ],
+  "shock": [
+   {
+    "N": 100,
+    "h": 0.01,
+    "Linf": 0.23184320404631042,
+    "L2": 0.03141367891957945,
+    "L1": 0.004727240159542895,
+    "massChange": 0.25000000000000017,
+    "inMinusOut": 0.25000000000000017,
+    "conservationErr": 0,
+    "speed": 0.49976250864156985
+   },
+   {
+    "N": 200,
+    "h": 0.005,
+    "Linf": 0.23184320962038407,
+    "L2": 0.022212825695625087,
+    "L1": 0.0023636201396841647,
+    "massChange": 0.25000000000000033,
+    "inMinusOut": 0.25000000000000017,
+    "conservationErr": 1.6653345369377348e-16,
+    "speed": 0.5000000128749402,
+    "p_Linf": -3.468589181302634e-8,
+    "p_L2": 0.49999997989358713,
+    "p_L1": 0.9999999634307647
+   },
+   {
+    "N": 400,
+    "h": 0.0025,
+    "Linf": 0.23184320962040544,
+    "L2": 0.015706839678691624,
+    "L1": 0.0011818100698421088,
+    "massChange": 0.2500000000000003,
+    "inMinusOut": 0.24999999999999742,
+    "conservationErr": 2.858824288409778e-15,
+    "speed": 0.5000000000007813,
+    "p_Linf": -1.3294219990832522e-13,
+    "p_L2": 0.4999999999999693,
+    "p_L1": 0.9999999999999677
+   },
+   {
+    "N": 800,
+    "h": 0.00125,
+    "Linf": 0.23184320962043825,
+    "L2": 0.01110641284781303,
+    "L1": 0.0005909050349210613,
+    "massChange": 0.24999999999999512,
+    "inMinusOut": 0.24999999999999606,
+    "conservationErr": 9.43689570931383e-16,
+    "speed": 0.5000000000000002,
+    "p_Linf": -2.0421843961821547e-13,
+    "p_L2": 0.49999999999996775,
+    "p_L1": 0.999999999999983
+   },
+   {
+    "N": 1600,
+    "h": 0.000625,
+    "Linf": 0.23184320962049626,
+    "L2": 0.007853419839346301,
+    "L1": 0.0002954525174605369,
+    "massChange": 0.24999999999999503,
+    "inMinusOut": 0.24999999999999536,
+    "conservationErr": 3.3306690738754696e-16,
+    "speed": 0.5000000000000002,
+    "p_Linf": -3.610261669799864e-13,
+    "p_L2": 0.4999999999999426,
+    "p_L1": 0.9999999999999696
+   },
+   {
+    "N": 3200,
+    "h": 0.0003125,
+    "Linf": 0.23184320962060467,
+    "L2": 0.005553206423907141,
+    "L1": 0.00014772625873027393,
+    "massChange": 0.249999999999995,
+    "inMinusOut": 0.2500000000000172,
+    "conservationErr": 2.220446049250313e-14,
+    "speed": 0.5000000000000002,
+    "p_Linf": -6.746416217035794e-13,
+    "p_L2": 0.49999999999989475,
+    "p_L1": 0.9999999999999465
+   }
+  ],
+  "imex": [
+   {
+    "nu": 0.05,
+    "k": 0.09,
+    "N": 50,
+    "CFL": 4.5,
+    "Gmax": 1,
+    "maxT": 7.647202380956503e-8,
+    "steps": 5000,
+    "stable": true
+   },
+   {
+    "nu": 0.05,
+    "k": 0.09,
+    "N": 200,
+    "CFL": 18,
+    "Gmax": 1,
+    "maxT": 5.958241184263497e-8,
+    "steps": 5000,
+    "stable": true
+   },
+   {
+    "nu": 0.05,
+    "k": 0.09,
+    "N": 800,
+    "CFL": 72,
+    "Gmax": 1,
+    "maxT": 1.3666519228554298e-8,
+    "steps": 5000,
+    "stable": true
+   },
+   {
+    "nu": 0.05,
+    "k": 0.12,
+    "N": 50,
+    "CFL": 6,
+    "Gmax": 1.013793737045545,
+    "maxT": 101192124.28604011,
+    "steps": 1566,
+    "stable": false
+   },
+   {
+    "nu": 0.05,
+    "k": 0.12,
+    "N": 200,
+    "CFL": 24,
+    "Gmax": 1.0141514271809804,
+    "maxT": 101034340.66546677,
+    "steps": 1483,
+    "stable": false
+   },
+   {
+    "nu": 0.05,
+    "k": 0.12,
+    "N": 800,
+    "CFL": 96,
+    "Gmax": 1.014096927820481,
+    "maxT": 100897002.58480911,
+    "steps": 1478,
+    "stable": false
+   },
+   {
+    "nu": 0,
+    "k": 0.0025,
+    "N": 200,
+    "CFL": 0.5,
+    "Gmax": 1.118033988749895,
+    "maxT": 106441046.20012808,
+    "steps": 297,
+    "stable": false
+   }
+  ],
+  "timeRefDt": 0.0000015625
+ },
+ "S": {
+  "space": [
+   {
+    "N": 400,
+    "h": 0.1,
+    "k0h": 0.2,
+    "fdm": 0.03898689247888972,
+    "consistent": 0.03927166274283967,
+    "mixed": 0.0002308853797599013
+   },
+   {
+    "N": 800,
+    "h": 0.05,
+    "k0h": 0.1,
+    "fdm": 0.009781187156099868,
+    "consistent": 0.009799158016192501,
+    "mixed": 0.000014371953490270322,
+    "p_fdm": 1.99490768389539,
+    "p_consistent": 2.0027589848975564,
+    "p_mixed": 4.005848744141466
+   },
+   {
+    "N": 1600,
+    "h": 0.025,
+    "k0h": 0.05,
+    "fdm": 0.0024471035362795776,
+    "consistent": 0.0024482285676155403,
+    "mixed": 8.973256047822005e-7,
+    "p_fdm": 1.9989344349400928,
+    "p_consistent": 2.0009195373694917,
+    "p_mixed": 4.001480783044895
+   },
+   {
+    "N": 3200,
+    "h": 0.0125,
+    "k0h": 0.025,
+    "fdm": 0.0006118832633224772,
+    "consistent": 0.0006119536034008554,
+    "mixed": 5.606842354495265e-8,
+    "p_fdm": 1.9997467995627323,
+    "p_consistent": 2.0002440738135534,
+    "p_mixed": 4.0003711666530295
+   }
+  ],
+  "time": [
+   {
+    "N": 1600,
+    "dt": 0.04,
+    "L2": 0.06907792938730035,
+    "normDrift": 1.2878587085651816e-14
+   },
+   {
+    "N": 1600,
+    "dt": 0.02,
+    "L2": 0.0180867969039659,
+    "normDrift": 4.1300296516055823e-14,
+    "p_L2": 1.9332879033678803
+   },
+   {
+    "N": 1600,
+    "dt": 0.01,
+    "L2": 0.004568122442751563,
+    "normDrift": 1.84297022087776e-14,
+    "p_L2": 1.985263709376551
+   },
+   {
+    "N": 1600,
+    "dt": 0.005,
+    "L2": 0.0011447936909170023,
+    "normDrift": 1.270095140171179e-13,
+    "p_L2": 1.9965136944878783
+   },
+   {
+    "N": 1600,
+    "dt": 0.0025,
+    "L2": 0.0002863686272508468,
+    "normDrift": 9.281464485866309e-14,
+    "p_L2": 1.9991422725897858
+   },
+   {
+    "N": 1600,
+    "dt": 0.00125,
+    "L2": 0.00007160275437160462,
+    "normDrift": 1.8474111129762605e-13,
+    "p_L2": 1.999786458253833
+   }
+  ],
+  "eeNorm": [
+   {
+    "dt": 0.0004,
+    "measured": 0.011616746221450924,
+    "exact": 0.011637915678627455,
+    "leading": 0.011347182154177007,
+    "relDiff": 0.0018190076093614893,
+    "ampTop": 78885066311176.83
+   },
+   {
+    "dt": 0.0002,
+    "measured": 0.005716542027555782,
+    "exact": 0.005716542027485114,
+    "leading": 0.0056735910770885035,
+    "relDiff": 1.2362111334596193e-11,
+    "ampTop": 8881726.538864886
+   },
+   {
+    "dt": 0.0001,
+    "measured": 0.0028474864146492695,
+    "exact": 0.0028474864147091327,
+    "leading": 0.0028367955385442518,
+    "relDiff": 2.1023183194301964e-11,
+    "ampTop": 2980.222565323752
+   },
+   {
+    "dt": 0.00005,
+    "measured": 0.001421064673557293,
+    "exact": 0.0014210646737115211,
+    "leading": 0.0014183977692721259,
+    "relDiff": 1.085300738168371e-10,
+    "ampTop": 54.5914147584009
+   },
+   {
+    "dt": 0.000025,
+    "measured": 0.0007098648865233592,
+    "exact": 0.0007098648865191106,
+    "leading": 0.0007091988846360629,
+    "relDiff": 5.985212325754219e-12,
+    "ampTop": 7.388600324716509
+   }
+  ],
+  "deficit": [
+   {
+    "dt": 0.04,
+    "measured": 0.06907792938730035,
+    "predicted": 0.07332483411856122,
+    "rel": 0.061479907821927915
+   },
+   {
+    "dt": 0.02,
+    "measured": 0.0180867969039659,
+    "predicted": 0.018331208529640305,
+    "rel": 0.013513262020474759,
+    "p_rel": 2.18573902732668
+   },
+   {
+    "dt": 0.01,
+    "measured": 0.004568122442751563,
+    "predicted": 0.004582802132410076,
+    "rel": 0.003213506170747671,
+    "p_rel": 2.0721558268111364
+   },
+   {
+    "dt": 0.005,
+    "measured": 0.0011447936909170023,
+    "predicted": 0.001145700533102519,
+    "rel": 0.0007921446394332232,
+    "p_rel": 2.020312458384933
+   },
+   {
+    "dt": 0.0025,
+    "measured": 0.0002863686272508468,
+    "predicted": 0.00028642513327562977,
+    "rel": 0.00019731918724974484,
+    "p_rel": 2.0052326291692846
+   },
+   {
+    "dt": 0.00125,
+    "measured": 0.00007160275437160462,
+    "predicted": 0.00007160628331890744,
+    "rel": 0.00004928507756152278,
+    "p_rel": 2.001308448575471
+   }
+  ],
+  "meanLambda2": 28.367955385442517
+ },
+ "EB": {
+  "space": [
+   {
+    "N": 10,
+    "h": 0.1,
+    "L2": 0.021045886391156905,
+    "Linf": 0.03590567348023738
+   },
+   {
+    "N": 20,
+    "h": 0.05,
+    "L2": 0.007114271167750014,
+    "Linf": 0.011791894459256103,
+    "p_L2": 1.5647504026893546,
+    "p_Linf": 1.606416306218629
+   },
+   {
+    "N": 40,
+    "h": 0.025,
+    "L2": 0.0018960450603180774,
+    "Linf": 0.0031325947475539517,
+    "p_L2": 1.9077227143450826,
+    "p_Linf": 1.9123654664241831
+   },
+   {
+    "N": 80,
+    "h": 0.0125,
+    "L2": 0.00048134812480009933,
+    "Linf": 0.0007946748116059998,
+    "p_L2": 1.9778406757840574,
+    "p_Linf": 1.9789216236316216
+   },
+   {
+    "N": 160,
+    "h": 0.00625,
+    "L2": 0.00012079539112111645,
+    "Linf": 0.00019936487500787914,
+    "p_L2": 1.9945152594977171,
+    "p_Linf": 1.994953365116049
+   }
+  ],
+  "time": [
+   {
+    "N": 50,
+    "dt": 0.01,
+    "L2": 0.00959327963291708,
+    "energyDrift": 1.0880185641326534e-14
+   },
+   {
+    "N": 50,
+    "dt": 0.005,
+    "L2": 0.002729172142038162,
+    "energyDrift": 2.55351295663786e-15,
+    "p_L2": 1.813560715265513
+   },
+   {
+    "N": 50,
+    "dt": 0.0025,
+    "L2": 0.0007035423034635872,
+    "energyDrift": 1.9984014443252818e-15,
+    "p_L2": 1.9557543158721207
+   },
+   {
+    "N": 50,
+    "dt": 0.00125,
+    "L2": 0.00017722239491836233,
+    "energyDrift": 2.6645352591003757e-15,
+    "p_L2": 1.9890762509409146
+   },
+   {
+    "N": 50,
+    "dt": 0.000625,
+    "L2": 0.00004438928567442157,
+    "energyDrift": 2.9976021664879227e-15,
+    "p_L2": 1.9972775255994826
+   },
+   {
+    "N": 50,
+    "dt": 0.0003125,
+    "L2": 0.000011102553970667434,
+    "energyDrift": 2.6645352591003757e-15,
+    "p_L2": 1.9993199081599762
+   }
+  ],
+  "leapfrog": [
+   {
+    "N": 50,
+    "factor": 0.98,
+    "dt": 0.000196,
+    "kwmax": 1.9580661938597061,
+    "steps": 20000,
+    "maxAbs": 1.1359810252987563,
+    "stable": true
+   },
+   {
+    "N": 50,
+    "factor": 1.02,
+    "dt": 0.00020400000000000003,
+    "kwmax": 2.0379872629968374,
+    "steps": 133,
+    "maxAbs": 1287354.532110508,
+    "stable": false
+   }
+  ],
+  "deficit": [
+   {
+    "dt": 0.01,
+    "measured": 0.00959327963291708,
+    "predicted": 0.011370801502995883,
+    "rel": 0.1852882369841129
+   },
+   {
+    "dt": 0.005,
+    "measured": 0.002729172142038162,
+    "predicted": 0.0028427003757489707,
+    "rel": 0.04159804798022937,
+    "p_rel": 2.1551835593240387
+   },
+   {
+    "dt": 0.0025,
+    "measured": 0.0007035423034635872,
+    "predicted": 0.0007106750939372427,
+    "rel": 0.010138395997710825,
+    "p_rel": 2.0366864097367996
+   },
+   {
+    "dt": 0.00125,
+    "measured": 0.00017722239491836233,
+    "predicted": 0.00017766877348431067,
+    "rel": 0.0025187480744404134,
+    "p_rel": 2.0090506848385514
+   },
+   {
+    "dt": 0.000625,
+    "measured": 0.00004438928567442157,
+    "predicted": 0.000044417193371077666,
+    "rel": 0.000628703441204026,
+    "p_rel": 2.002255265881871
+   },
+   {
+    "dt": 0.0003125,
+    "measured": 0.000011102553970667434,
+    "predicted": 0.000011104298342769417,
+    "rel": 0.0001571144897463128,
+    "p_rel": 2.000563421664236
+   }
+  ]
+ },
+ "D": {
+  "trap": [
+   {
+    "d": 1,
+    "points": [
+     {
+      "M": 3,
+      "grid": 0.017604127395675184,
+      "mc": 0.06913418201694049
+     },
+     {
+      "M": 29,
+      "grid": 0.00008944397042565111,
+      "mc": 0.02907661245558369
+     },
+     {
+      "M": 283,
+      "grid": 8.817790452253504e-7,
+      "mc": 0.007628024300267928
+     },
+     {
+      "M": 2753,
+      "grid": 9.258934507982985e-9,
+      "mc": 0.003203094370946415
+     },
+     {
+      "M": 26755,
+      "grid": 9.796674582673859e-11,
+      "mc": 0.0009472740246761476
+     },
+     {
+      "M": 260000,
+      "grid": 1.0187406473960436e-12,
+      "mc": 0.00019613219338895284
+     }
+    ],
+    "slopeGrid": -2.0041328479358187,
+    "slopeMC": -0.6141353981743864,
+    "ratio": 5.194153136174656e-9
+   },
+   {
+    "d": 2,
+    "points": [
+     {
+      "M": 9,
+      "grid": 0.029316819531281735,
+      "mc": 0.06238244051468959
+     },
+     {
+      "M": 64,
+      "grid": 0.0024071832093509604,
+      "mc": 0.017684390851522333
+     },
+     {
+      "M": 529,
+      "grid": 0.0002438143392683445,
+      "mc": 0.006874141100578237
+     },
+     {
+      "M": 4225,
+      "grid": 0.000028811405293871495,
+      "mc": 0.0032535236115952357
+     },
+     {
+      "M": 33489,
+      "grid": 0.0000035627384166181386,
+      "mc": 0.0009769602083186896
+     },
+     {
+      "M": 260100,
+      "grid": 4.555032023789707e-7,
+      "mc": 0.00040431559743370085
+     }
+    ],
+    "slopeGrid": -1.006577145082,
+    "slopeMC": -0.5062586273785465,
+    "ratio": 0.0011266030924114016
+   },
+   {
+    "d": 3,
+    "points": [
+     {
+      "M": 27,
+      "grid": 0.03661817063733752,
+      "mc": 0.03391165639814614
+     },
+     {
+      "M": 216,
+      "grid": 0.00594234312967068,
+      "mc": 0.01511414050307032
+     },
+     {
+      "M": 1000,
+      "grid": 0.00183744704052613,
+      "mc": 0.006843361217843998
+     },
+     {
+      "M": 6859,
+      "grid": 0.0004596455546622691,
+      "mc": 0.0020822708046906715
+     },
+     {
+      "M": 42875,
+      "grid": 0.00012884707512117455,
+      "mc": 0.0007694392535129847
+     },
+     {
+      "M": 262144,
+      "grid": 0.00003752917791988164,
+      "mc": 0.00024710285586270245
+     }
+    ],
+    "slopeGrid": -0.6876626968981872,
+    "slopeMC": -0.5849314009596336,
+    "ratio": 0.15187674698803943
+   },
+   {
+    "d": 4,
+    "points": [
+     {
+      "M": 81,
+      "grid": 0.040657445329418396,
+      "mc": 0.017496707032188048
+     },
+     {
+      "M": 256,
+      "grid": 0.018346395736219323,
+      "mc": 0.012094807745482775
+     },
+     {
+      "M": 2401,
+      "grid": 0.004628337485531542,
+      "mc": 0.0024156231988840867
+     },
+     {
+      "M": 10000,
+      "grid": 0.002060484174764954,
+      "mc": 0.0013641082867203941
+     },
+     {
+      "M": 50625,
+      "grid": 0.000852195391929933,
+      "mc": 0.0004497712266756613
+     },
+     {
+      "M": 279841,
+      "grid": 0.0003452174598277402,
+      "mc": 0.0002557147083446914
+     }
+    ],
+    "slopeGrid": -0.5361598523712018,
+    "slopeMC": -0.5009592104554974,
+    "ratio": 1.3500101815121377
+   },
+   {
+    "d": 5,
+    "points": [
+     {
+      "M": 243,
+      "grid": 0.042322467253645246,
+      "mc": 0.010634850261374677
+     },
+     {
+      "M": 1024,
+      "grid": 0.019208360757851872,
+      "mc": 0.006315593896984599
+     },
+     {
+      "M": 3125,
+      "grid": 0.01088400496741343,
+      "mc": 0.0033107480197543497
+     },
+     {
+      "M": 16807,
+      "grid": 0.00486263398669623,
+      "mc": 0.0012051294392680272
+     },
+     {
+      "M": 59049,
+      "grid": 0.002740225899927451,
+      "mc": 0.0006121576078595352
+     },
+     {
+      "M": 248832,
+      "grid": 0.0014509774361509131,
+      "mc": 0.0003269480578489943
+     }
+    ],
+    "slopeGrid": -0.4485775471520042,
+    "slopeMC": -0.482911386585679,
+    "ratio": 4.437944809022442
+   },
+   {
+    "d": 6,
+    "points": [
+     {
+      "M": 729,
+      "grid": 0.04229502347353142,
+      "mc": 0.006082299215724547
+     },
+     {
+      "M": 4096,
+      "grid": 0.019306530103973707,
+      "mc": 0.0026750520797699574
+     },
+     {
+      "M": 15625,
+      "grid": 0.010961738695537682,
+      "mc": 0.000905825511320198
+     },
+     {
+      "M": 117649,
+      "grid": 0.00490444163953907,
+      "mc": 0.00044190819276256104
+     },
+     {
+      "M": 262144,
+      "grid": 0.003608358734343342,
+      "mc": 0.00029581690451802235
+     }
+    ],
+    "slopeGrid": -0.3948702574853046,
+    "slopeMC": -0.38882650062375557,
+    "ratio": 12.197946362201577
+   }
+  ],
+  "left": [
+   {
+    "d": 1,
+    "points": [
+     {
+      "M": 3,
+      "grid": 0.0688104175559986,
+      "mc": 0.06913418201694049
+     },
+     {
+      "M": 29,
+      "grid": 0.007842440657715555,
+      "mc": 0.02907661245558369
+     },
+     {
+      "M": 283,
+      "grid": 0.0008113111803492723,
+      "mc": 0.007628024300267928
+     },
+     {
+      "M": 2753,
+      "grid": 0.00008348106637412478,
+      "mc": 0.003203094370946415
+     },
+     {
+      "M": 26755,
+      "grid": 0.000008590776529149302,
+      "mc": 0.0009472740246761476
+     },
+     {
+      "M": 260000,
+      "grid": 8.840329723813767e-7,
+      "mc": 0.00019613219338895284
+     }
+    ],
+    "slopeGrid": -0.9999758945816832,
+    "slopeMC": -0.6141353981743864,
+    "ratio": 0.0045073323104496
+   },
+   {
+    "d": 2,
+    "points": [
+     {
+      "M": 9,
+      "grid": 0.12053881321600834,
+      "mc": 0.06238244051468959
+     },
+     {
+      "M": 64,
+      "grid": 0.04727206415678109,
+      "mc": 0.017684390851522333
+     },
+     {
+      "M": 529,
+      "grid": 0.0166925037838066,
+      "mc": 0.006874141100578237
+     },
+     {
+      "M": 4225,
+      "grid": 0.005935567021812083,
+      "mc": 0.0032535236115952357
+     },
+     {
+      "M": 33489,
+      "grid": 0.002111831283729493,
+      "mc": 0.0009769602083186896
+     },
+     {
+      "M": 260100,
+      "grid": 0.0007582241963578484,
+      "mc": 0.00040431559743370085
+     }
+    ],
+    "slopeGrid": -0.49944502557662834,
+    "slopeMC": -0.5062586273785465,
+    "ratio": 1.8753275935197653
+   },
+   {
+    "d": 3,
+    "points": [
+     {
+      "M": 27,
+      "grid": 0.15844706750525528,
+      "mc": 0.03391165639814614
+     },
+     {
+      "M": 216,
+      "grid": 0.0806207055260203,
+      "mc": 0.01511414050307032
+     },
+     {
+      "M": 1000,
+      "grid": 0.048599729283751,
+      "mc": 0.006843361217843998
+     },
+     {
+      "M": 6859,
+      "grid": 0.025644059159169896,
+      "mc": 0.0020822708046906715
+     },
+     {
+      "M": 42875,
+      "grid": 0.01393564601990882,
+      "mc": 0.0007694392535129847
+     },
+     {
+      "M": 262144,
+      "grid": 0.0076248293544621815,
+      "mc": 0.00024710285586270245
+     }
+    ],
+    "slopeGrid": -0.332909761661199,
+    "slopeMC": -0.5849314009596336,
+    "ratio": 30.856905023787984
+   },
+   {
+    "d": 4,
+    "points": [
+     {
+      "M": 81,
+      "grid": 0.18523026450852076,
+      "mc": 0.017496707032188048
+     },
+     {
+      "M": 256,
+      "grid": 0.13897204769335436,
+      "mc": 0.012094807745482775
+     },
+     {
+      "M": 2401,
+      "grid": 0.07913998071330264,
+      "mc": 0.0024156231988840867
+     },
+     {
+      "M": 10000,
+      "grid": 0.05525528827932613,
+      "mc": 0.0013641082867203941
+     },
+     {
+      "M": 50625,
+      "grid": 0.036745798913348726,
+      "mc": 0.0004497712266756613
+     },
+     {
+      "M": 279841,
+      "grid": 0.023917676110061348,
+      "mc": 0.0002557147083446914
+     }
+    ],
+    "slopeGrid": -0.25133016200076314,
+    "slopeMC": -0.5009592104554974,
+    "ratio": 93.53265701799774
+   },
+   {
+    "d": 5,
+    "points": [
+     {
+      "M": 243,
+      "grid": 0.20311100400370435,
+      "mc": 0.010634850261374677
+     },
+     {
+      "M": 1024,
+      "grid": 0.15092697815387018,
+      "mc": 0.006315593896984599
+     },
+     {
+      "M": 3125,
+      "grid": 0.11988731047722662,
+      "mc": 0.0033107480197543497
+     },
+     {
+      "M": 16807,
+      "grid": 0.084824262950356,
+      "mc": 0.0012051294392680272
+     },
+     {
+      "M": 59049,
+      "grid": 0.06558593327761408,
+      "mc": 0.0006121576078595352
+     },
+     {
+      "M": 248832,
+      "grid": 0.04891807886567634,
+      "mc": 0.0003269480578489943
+     }
+    ],
+    "slopeGrid": -0.20423466775788404,
+    "slopeMC": -0.482911386585679,
+    "ratio": 149.62033782219274
+   },
+   {
+    "d": 6,
+    "points": [
+     {
+      "M": 729,
+      "grid": 0.21391836237966866,
+      "mc": 0.006082299215724547
+     },
+     {
+      "M": 4096,
+      "grid": 0.15740274095600792,
+      "mc": 0.0026750520797699574
+     },
+     {
+      "M": 15625,
+      "grid": 0.12426627730346829,
+      "mc": 0.000905825511320198
+     },
+     {
+      "M": 117649,
+      "grid": 0.08728989855928343,
+      "mc": 0.00044190819276256104
+     },
+     {
+      "M": 262144,
+      "grid": 0.0759546169927175,
+      "mc": 0.00029581690451802235
+     }
+    ],
+    "slopeGrid": -0.1746432796527427,
+    "slopeMC": -0.38882650062375557,
+    "ratio": 256.76226014355456
+   }
+  ]
+ },
+ "verdicts": [
+  {
+   "id": "H1-1",
+   "text": "1D 열 공간 차수 2 (L∞·L²)",
+   "meas": "2.00, 2.00 / 2.00, 2.00",
+   "ok": true
+  },
+  {
+   "id": "H1-2",
+   "text": "1D 열 시간 차수 1",
+   "meas": "1.00, 1.00",
+   "ok": true
+  },
+  {
+   "id": "H1-3",
+   "text": "lumped FEM = FDM (≤10⁻¹²)",
+   "meas": "5.8e-16",
+   "ok": true
+  },
+  {
+   "id": "H1-4",
+   "text": "consistent 차이 차수 2, 혼합 질량 차수 4",
+   "meas": "2.00, 2.00 / 4.01, 3.98",
+   "ok": true
+  },
+  {
+   "id": "H1-5",
+   "text": "명시적 Euler r=0.5 안정, 0.51 발산",
+   "meas": "0.4 안정 · 0.5 안정 · 0.51 발산 · 0.6 발산",
+   "ok": true
+  },
+  {
+   "id": "H1-6",
+   "text": "결손 예측 상대차의 차수 1",
+   "meas": "1.00, 1.00",
+   "ok": true
+  },
+  {
+   "id": "H2-1",
+   "text": "2D 열 (r=0.2 고정) L∞ 차수 2",
+   "meas": "2.01, 2.00",
+   "ok": true
+  },
+  {
+   "id": "H2-2",
+   "text": "2D 안정 한계 r=1/4 (0.25 안정, 0.26 발산)",
+   "meas": "0.24 안정 · 0.25 안정 · 0.26 발산 · 0.3 발산",
+   "ok": true
+  },
+  {
+   "id": "H2-3",
+   "text": "오차–미지수 기울기 −p/d: 1D −2, 2D −1",
+   "meas": "-1.991 / -0.983",
+   "ok": true
+  },
+  {
+   "id": "B-1",
+   "text": "Burgers 공간 차수 2",
+   "meas": "2.01, 2.02",
+   "ok": true
+  },
+  {
+   "id": "B-2",
+   "text": "Burgers 시간 차수 1 (참조 Δt/200)",
+   "meas": "1.01, 1.01",
+   "ok": true
+  },
+  {
+   "id": "B-3",
+   "text": "충격파 차수 L∞ 0, L² ½, L¹ 1",
+   "meas": "-0.00, 0.50, 1.00",
+   "ok": true
+  },
+  {
+   "id": "B-4",
+   "text": "보존량 오차 ≤10⁻¹², 속도 0.5±10⁻³",
+   "meas": "2.2e-14, 0.500000",
+   "ok": true
+  },
+  {
+   "id": "B-5",
+   "text": "IMEX 한계 k≤2ν/a² (h 무관), ν=0 불안정",
+   "meas": "ν=0.05 k=0.09 N=50: 안정 · ν=0.05 k=0.09 N=200: 안정 · ν=0.05 k=0.09 N=800: 안정 · ν=0.05 k=0.12 N=50: 불안정 · ν=0.05 k=0.12 N=200: 불안정 · ν=0.05 k=0.12 N=800: 불안정 · ν=0 k=0.0025 N=200: 불안정",
+   "ok": true
+  },
+  {
+   "id": "S-1",
+   "text": "슈뢰딩거 공간 차수 2 (FDM, FEM)",
+   "meas": "2.00, 2.00 / 2.00, 2.00",
+   "ok": true
+  },
+  {
+   "id": "S-2",
+   "text": "혼합 질량 공간 차수 4",
+   "meas": "4.00, 4.00",
+   "ok": true
+  },
+  {
+   "id": "S-3",
+   "text": "CN 시간 차수 2, 노름 변화 ≤10⁻¹²",
+   "meas": "2.00, 2.00, 1.8e-13",
+   "ok": true
+  },
+  {
+   "id": "S-4",
+   "text": "EE 노름 정확식 상대차 ≤10⁻⁸ (Δt≤2×10⁻⁴)",
+   "meas": "1.1e-10",
+   "ok": true
+  },
+  {
+   "id": "S-5",
+   "text": "CN 결손 예측 상대차의 차수 2",
+   "meas": "2.01, 2.00",
+   "ok": true
+  },
+  {
+   "id": "EB-1",
+   "text": "보 공간 차수 2",
+   "meas": "1.98, 1.99",
+   "ok": true
+  },
+  {
+   "id": "EB-2",
+   "text": "Newmark 시간 차수 2",
+   "meas": "2.00, 2.00",
+   "ok": true
+  },
+  {
+   "id": "EB-3",
+   "text": "Newmark 에너지 변화 ≤10⁻¹²",
+   "meas": "1.1e-14",
+   "ok": true
+  },
+  {
+   "id": "EB-4",
+   "text": "leapfrog 한계 k≈h²/2 (0.98 안정, 1.02 발산)",
+   "meas": "0.98 안정 · 1.02 발산",
+   "ok": true
+  },
+  {
+   "id": "EB-5",
+   "text": "Newmark 결손 예측 상대차의 차수 2",
+   "meas": "2.00, 2.00",
+   "ok": true
+  },
+  {
+   "id": "D-1",
+   "text": "사다리꼴 d*=4 (d=3 격자, d=5 MC, d=4 기울기 차 ≤0.1)",
+   "meas": "d=3 격자 · d=5 MC · d=4 차 0.035",
+   "ok": true
+  },
+  {
+   "id": "D-2",
+   "text": "직사각형 d*=2 (d=1 격자, d=3 MC, d=2 기울기 차 ≤0.1)",
+   "meas": "d=1 격자 · d=3 MC · d=2 차 0.007",
+   "ok": true
+  }
+ ],
+ "runtimeMs": {
+  "H1": 94,
+  "H2": 270,
+  "B": 3639,
+  "S": 1628,
+  "EB": 163,
+  "D": 1511
+ }
+};
+const PINN = [{"name": "adamonly", "layers": 3, "nodes": 32, "act": "tanh", "lr": 0.001, "adam": 2000, "lbfgs": 0, "ncol": 1000, "seed": 0, "hard": true, "final_loss": 9.438759069662068e-06, "Linf": 0.0005308457539368039, "relL2": 0.0003918526059374852, "runtime": 25.11881266799992, "lbfgs_iters": 0}, {"name": "adamonly_long", "layers": 3, "nodes": 32, "act": "tanh", "lr": 0.001, "adam": 6000, "lbfgs": 0, "ncol": 1000, "seed": 0, "hard": true, "final_loss": 3.8607213893517016e-07, "Linf": 0.00011101176282091174, "relL2": 6.200588912785028e-05, "runtime": 73.44443619899994, "lbfgs_iters": 0}, {"name": "base", "layers": 3, "nodes": 32, "act": "tanh", "lr": 0.001, "adam": 2000, "lbfgs": 500, "ncol": 1000, "seed": 0, "hard": true, "final_loss": 7.498331915758872e-08, "Linf": 3.6840032469592776e-05, "relL2": 2.608938403819489e-05, "runtime": 53.16672844200002, "lbfgs_iters": 492}, {"name": "col128", "layers": 3, "nodes": 32, "act": "tanh", "lr": 0.001, "adam": 2000, "lbfgs": 500, "ncol": 128, "seed": 0, "hard": true, "final_loss": 2.5919244007871716e-08, "Linf": 3.848328551325775e-05, "relL2": 2.856160668328915e-05, "runtime": 14.781309945999965, "lbfgs_iters": 500}, {"name": "col250", "layers": 3, "nodes": 32, "act": "tanh", "lr": 0.001, "adam": 2000, "lbfgs": 500, "ncol": 250, "seed": 0, "hard": true, "final_loss": 5.0020963033259596e-08, "Linf": 6.552452954106114e-05, "relL2": 4.119164866617752e-05, "runtime": 17.044993350999903, "lbfgs_iters": 500}, {"name": "col32", "layers": 3, "nodes": 32, "act": "tanh", "lr": 0.001, "adam": 2000, "lbfgs": 500, "ncol": 32, "seed": 0, "hard": true, "final_loss": 1.4116925953651943e-07, "Linf": 0.0010065113744706644, "relL2": 0.0003210686105177332, "runtime": 10.230897980999998, "lbfgs_iters": 500}, {"name": "col4000", "layers": 3, "nodes": 32, "act": "tanh", "lr": 0.001, "adam": 2000, "lbfgs": 500, "ncol": 4000, "seed": 0, "hard": true, "final_loss": 6.708924935964717e-08, "Linf": 3.905547281696231e-05, "relL2": 2.9161034477185993e-05, "runtime": 166.86917110999957, "lbfgs_iters": 500}, {"name": "relu", "layers": 3, "nodes": 32, "act": "relu", "lr": 0.001, "adam": 2000, "lbfgs": 500, "ncol": 1000, "seed": 0, "hard": true, "final_loss": 0.0010769781824839868, "Linf": 0.09919907287275898, "relL2": 0.04585158655483153, "runtime": 19.027727428000162, "lbfgs_iters": 7}, {"name": "seed1", "layers": 3, "nodes": 32, "act": "tanh", "lr": 0.001, "adam": 2000, "lbfgs": 500, "ncol": 1000, "seed": 1, "hard": true, "final_loss": 5.369141970118037e-08, "Linf": 3.6488174017246244e-05, "relL2": 2.416740251191873e-05, "runtime": 32.48385293899992, "lbfgs_iters": 438}, {"name": "seed2", "layers": 3, "nodes": 32, "act": "tanh", "lr": 0.001, "adam": 2000, "lbfgs": 500, "ncol": 1000, "seed": 2, "hard": true, "final_loss": 5.4383734830985505e-08, "Linf": 3.817628632005188e-05, "relL2": 2.686953680888459e-05, "runtime": 33.83692879599994, "lbfgs_iters": 495}, {"name": "soft", "layers": 3, "nodes": 32, "act": "tanh", "lr": 0.001, "adam": 2000, "lbfgs": 500, "ncol": 1000, "seed": 0, "hard": false, "final_loss": 3.135317509408525e-07, "Linf": 0.0007232046534753622, "relL2": 0.00011984875545825747, "runtime": 51.926917714999945, "lbfgs_iters": 500}];
+</script>
+<script>
+(function(){
+const $ = id => document.getElementById(id);
+const fmt = (v, d = 3) => v == null || !isFinite(v) ? '–' : (v === 0 ? '0' : (Math.abs(v) >= 1e-2 && Math.abs(v) < 1e4 ? (+v.toPrecision(d)).toString() : v.toExponential(d - 1).replace(/e([+-])(\d+)/, (m, s, e) => '×10' + sup((s === '-' ? '-' : '') + e))));
+const sup = s => s.split('').map(c => '⁰¹²³⁴⁵⁶⁷⁸⁹'['0123456789'.indexOf(c)] || (c === '-' ? '⁻' : c)).join('');
+const o = v => v == null ? '–' : v.toFixed(2);
+const table = (head, rows) => '<div class="tw"><table><tr>' + head.map(h => `<th>${h}</th>`).join('') + '</tr>' + rows.map(r => '<tr>' + r.map(c => `<td>${c}</td>`).join('') + '</tr>').join('') + '</table></div>';
+const COLORS = ['var(--c0)', 'var(--c1)', 'var(--c2)', 'var(--c3)'];
+function loglog(series, xl, yl, refs = []) {
+  const w = 620, H = 320, L = 62, R = 16, T = 12, B = 46;
+  const xs = series.flatMap(s => s.pts.map(p => p[0])), ys = series.flatMap(s => s.pts.map(p => p[1])).concat(refs.flatMap(r => r.pts.map(p => p[1])));
+  let lx0 = Math.log10(Math.min(...xs)), lx1 = Math.log10(Math.max(...xs)); const pad = (lx1 - lx0) * .06 || .3; lx0 -= pad; lx1 += pad;
+  const ly0 = Math.floor(Math.log10(Math.min(...ys))), ly1 = Math.ceil(Math.log10(Math.max(...ys)));
+  const X = v => L + (Math.log10(v) - lx0) / (lx1 - lx0) * (w - L - R), Y = v => T + (ly1 - Math.log10(v)) / (ly1 - ly0) * (H - T - B);
+  let g = ''; const step = ly1 - ly0 > 8 ? 2 : 1;
+  for (let e = ly0; e <= ly1; e += step) { const y = Y(10 ** e); g += `<line x1="${L}" x2="${w - R}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${L - 6}" y="${y + 4}" text-anchor="end" font-size="11" fill="var(--mute)">10${sup(String(e))}</text>`; }
+  const wide = lx1 - lx0 > 3.5;
+  for (let e = Math.ceil(lx0); e <= Math.floor(lx1); e++) for (const m of (wide ? [1] : [1, 2, 5])) { const v = m * 10 ** e; if (Math.log10(v) >= lx0 && Math.log10(v) <= lx1) g += `<text x="${X(v)}" y="${H - B + 16}" text-anchor="middle" font-size="11" fill="var(--mute)">${wide ? '10' + sup(String(e)) : +v.toPrecision(3)}</text>`; }
+  g += `<line x1="${L}" x2="${w - R}" y1="${H - B}" y2="${H - B}" stroke="var(--mute)"/>`;
+  refs.forEach(r => { g += `<polyline fill="none" stroke="var(--mute)" stroke-dasharray="5 4" points="${r.pts.map(p => X(p[0]) + ',' + Y(p[1])).join(' ')}"/><text x="${X(r.pts[1][0]) + 4}" y="${Y(r.pts[1][1]) + 4}" font-size="11" fill="var(--mute)">${r.label}</text>`; });
+  series.forEach((s, i) => { const c = COLORS[i % 4]; g += `<polyline fill="none" stroke-width="2" stroke="${c}" points="${s.pts.map(p => X(p[0]) + ',' + Y(p[1])).join(' ')}"/>` + s.pts.map(p => `<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="3.5" fill="${c}" stroke="var(--bg)"><title>${s.label}: ${fmt(p[0])}, ${fmt(p[1])}</title></circle>`).join(''); });
+  g += `<text x="${(L + w - R) / 2}" y="${H - 8}" text-anchor="middle" font-size="12" fill="var(--fg)">${xl}</text><text transform="translate(14,${(T + H - B) / 2}) rotate(-90)" text-anchor="middle" font-size="12" fill="var(--fg)">${yl}</text>`;
+  const leg = series.map((s, i) => `<span class="lg"><i class="sw" style="background:${COLORS[i % 4]}"></i>${s.label}</span>`).join('');
+  return `<div class="legend">${leg}</div><svg viewBox="0 0 ${w} ${H}" role="img">${g}</svg>`;
+}
+const ref = (x0, x1, y0, p, label) => ({ label, pts: [[x0, y0], [x1, y0 * (x1 / x0) ** p]] });
+const fig = (svg, cap) => `<figure>${svg}<figcaption>${cap}</figcaption></figure>`;
+const V = (R, id) => R.verdicts.find(v => v.id === id);
+const mark = (R, id) => { const v = V(R, id); return v ? (v.ok ? '<span class="ok">맞음</span>' : '<span class="no">틀림</span>') : ''; };
+
+function render(R, note) {
+  const ok = R.verdicts.filter(v => v.ok).length, n = R.verdicts.length, h1 = R.H1, h2 = R.H2, b = R.B, s = R.S, eb = R.EB, d = R.D;
+  $('abstract').innerHTML = `<b>요약.</b> 도감 카드의 알고리즘과 지표로 다섯 실험군(1·2차원 열방정식, Burgers, 슈뢰딩거, Euler–Bernoulli 보)과 교차 차원을 JavaScript로 다시 구현해 돌렸다. 실행 전에 기록한 예측 ${n}개 중 <b class="ok">${ok}개가 맞았다</b>${ok < n ? `, <b class="no">${n - ok}개가 틀렸다</b>` : ''}. 핵심 결과는 세 가지다. (1) 스텝의 차수를 로그의 접촉 차수 log R = z + Cz<sup>p+1</sup>로 읽으면 암시적 Euler(열), Crank–Nicolson(슈뢰딩거), Newmark(보)라는 서로 다른 방정식에서 오차의 <b>크기</b>가 예측되고, 예측의 불일치마저 정해진 차수(1, 2, 2)로 준다(§9). (2) 차원은 안정 한계(명시적 Euler r ≤ 1/(2d))와 비용(오차 ∝ M<sup>−p/d</sup>: 1차원 기울기 ${h2.slope1D.toFixed(2)}, 2차원 ${h2.slope2D.toFixed(2)})에 들어간다(§4). (3) 공간 미분의 차수는 명시적 스킴의 시간 간격을 Δt ∝ h<sup>차수/2</sup>로 묶는다(보의 4계 미분 → Δt ≈ h²/2, §7). 앞선 실험의 틀린 예측 2개와 판정 불가 1개는 이력으로 남겼다(§10). ${note || ''}`;
+  $('v4count').innerHTML = `맞음 ${ok} · 틀림 ${n - ok}`;
+  $('verdicts').innerHTML = table(['ID', '사전 예측', '측정', '판정'], R.verdicts.map(v => [v.id, v.text, v.meas, v.ok ? '<span class="ok">맞음</span>' : '<span class="no">틀림</span>']));
+  // H1
+  $('H1').innerHTML = '<h3>공간 차수 (시간 정확) ' + mark(R, 'H1-1') + '</h3>' + table(['N', 'L∞', 'L²', '내부 L∞', '경계 부근 L∞', '차수 L∞', '차수 L²'], h1.space.map(r => [r.N, fmt(r.Linf), fmt(r.L2), fmt(r.LinfInterior), fmt(r.LinfNearBdry), o(r.p_Linf), o(r.p_L2)]))
+    + '<p>최대 오차는 경계 부근이 아니라 내부(x ≈ ½)에 있다. Dirichlet 경계값이 정확하므로 오차는 절단오차 (h²/12)u<sub>xxxx</sub>가 큰 곳을 따른다.</p>'
+    + '<h3>시간 차수와 결손 예측 ' + mark(R, 'H1-2') + ' ' + mark(R, 'H1-6') + '</h3>' + table(['Δt', 'r = Δt/h²', 'L∞ 측정', '차수', '결손 예측', '상대차', '상대차의 차수'], h1.time.map((r, i) => [fmt(r.dt), fmt(r.r), fmt(r.Linf, 4), o(r.p_Linf), fmt(h1.deficit[i].predicted, 4), (h1.deficit[i].rel * 100).toFixed(3) + '%', o(h1.deficit[i].p_rel)]))
+    + '<p>암시적 Euler는 log R = −log(1−z) = z + ½z² + ⅓z³ + …이므로 C = +½, p = 1이다. 모드마다 e<sup>λT</sup>·CTλ²Δt를 더한 예측이 측정과 맞고, 상대차가 Δt에 비례해 준다(다음 항 z³).</p>'
+    + '<h3>FEM 질량행렬과 방법 간 차이 ' + mark(R, 'H1-3') + ' ' + mark(R, 'H1-4') + '</h3>' + table(['N', 'consistent − FDM', '차수', 'consistent 오차', '혼합 질량 오차', '차수'], h1.fem.map(r => [r.N, fmt(r.diffConsistent), o(r.p_diffConsistent), fmt(r.errConsistent), fmt(r.errMixed), o(r.p_errMixed)]))
+    + `<p>lumped FEM(M = hI)을 시간전진한 결과와 FDM의 차이는 ${fmt(h1.lumpedStepDiff)}(같은 행렬). consistent FEM과 FDM의 차이는 각 오차의 두 배 — 두 방법은 참값을 반대쪽에서 감싼다(고윳값 ξ²(1 ∓ θ²/12)). 평균 질량 ½(M<sub>L</sub>+M<sub>C</sub>)은 θ² 항이 상쇄되어 4차이다. N = 320의 혼합 오차는 반올림 바닥(설계 규칙 2)이라 차수를 계산하지 않았다.</p>`
+    + '<h3>명시적 Euler 안정 한계 ' + mark(R, 'H1-5') + '</h3>' + table(['r', '톱니 모드 R', '진행 스텝', '최대 |U|', '결과'], h1.explicit.map(r => [r.r, r.Rsaw.toFixed(3), r.steps, fmt(r.maxAbs), r.stable ? '안정' : '발산']));
+  // H2
+  $('H2').innerHTML = '<h3>정련 (r = 0.2 고정) ' + mark(R, 'H2-1') + '</h3>' + table(['N', '미지수 M', 'Δt', '스텝', 'L∞', '차수', 'runtime (ms)'], h2.refine.map(r => [r.N, r.M, fmt(r.dt), r.steps, fmt(r.Linf), o(r.p_Linf), r.runtimeMs]))
+    + '<p>r을 고정하면 Δt ∝ h²이므로 시간 오차 O(Δt)와 공간 오차 O(h²)가 같은 차수로 줄어 전체가 2차이다.</p>'
+    + '<h3>안정 한계는 차원에 반비례한다 ' + mark(R, 'H2-2') + '</h3>' + table(['r', '톱니 모드 R = 1 − 8r sin²', '진행 스텝', '최대 |U|', '결과'], h2.stability.map(r => [r.r, r.Rsaw.toFixed(3), r.steps, fmt(r.maxAbs), r.stable ? '안정' : '발산']))
+    + '<p>d차원 톱니 모드에서 이웃 2d개가 모두 부호가 반대이므로 한 스텝의 곱하기 수는 R = 1 − 4dr이고, |R| ≤ 1은 r ≤ 1/(2d)이다. 1차원 ½, 2차원 ¼. 차원이 오차의 지수뿐 아니라 <b>안정 한계</b>에도 들어간다.</p>'
+    + '<h3>오차–미지수 기울기 −p/d ' + mark(R, 'H2-3') + '</h3>'
+    + fig(loglog([{ label: '1차원 (공간 오차)', pts: h1.space.map(r => [r.N - 1, r.Linf]) }, { label: '2차원 (r 고정)', pts: h2.refine.map(r => [r.M, r.Linf]) }], '미지수 M', 'L∞ 오차', [ref(9, 319, 1.6e-3, -2, '−2'), ref(81, 6241, 2e-4, -1, '−1')]),
+      `그림 1. 같은 2차 방법에서 미지수 M에 대한 오차 기울기. 1차원 ${h2.slope1D.toFixed(3)}, 2차원 ${h2.slope2D.toFixed(3)} — 명제 2.7의 −p/d.`);
+  // B
+  $('B').innerHTML = '<h3>매끄러운 해 — 공간 ' + mark(R, 'B-1') + '</h3>' + table(['N', 'L∞', 'L²', '차수 L∞', '차수 L²', '최대 CFL'], b.space.map(r => [r.N, fmt(r.Linf), fmt(r.L2), o(r.p_Linf), o(r.p_L2), fmt(r.CFL)]))
+    + `<h3>매끄러운 해 — 시간 (참조 Δt = ${fmt(b.timeRefDt)}) ` + mark(R, 'B-2') + '</h3>' + table(['Δt', 'L∞', '차수', '최대 CFL'], b.time.map(r => [fmt(r.dt), fmt(r.Linf, 4), o(r.p_Linf), fmt(r.CFL)]))
+    + '<p>v1에서 1.17로 틀렸던 예측이다. 참조해를 최소 Δt의 1/200로 만들자(설계 규칙 1) 1차가 그대로 나온다. CFL 2에서도 안정하다(아래 안정 한계).</p>'
+    + '<h3>충격파 — 노름마다 다른 차수 ' + mark(R, 'B-3') + ' ' + mark(R, 'B-4') + '</h3>' + table(['N', 'L∞', 'L²', 'L¹', '차수 L∞/L²/L¹', '보존량 오차', '충격파 속도'], b.shock.map(r => [r.N, fmt(r.Linf), fmt(r.L2), fmt(r.L1), `${o(r.p_Linf)} / ${o(r.p_L2)} / ${o(r.p_L1)}`, fmt(r.conservationErr, 2), r.speed.toFixed(6)]))
+    + fig(loglog([{ label: 'L∞', pts: b.shock.map(r => [r.h, r.Linf]) }, { label: 'L²', pts: b.shock.map(r => [r.h, r.L2]) }, { label: 'L¹', pts: b.shock.map(r => [r.h, r.L1]) }], 'h', '충격파 오차', [ref(0.01, 1 / 3200, 0.1, 0.5, '½'), ref(0.01, 1 / 3200, 1.3e-2, 1, '1')]),
+      '그림 2. 같은 계산의 오차 벡터가 L∞로 0차, L²로 ½차, L¹로 1차. 번짐 폭이 h와 무관한 w칸이면 ‖e‖<sub>q</sub> ≍ (wh)<sup>1/q</sup>.')
+    + '<h3>IMEX 카드의 안정 한계 ' + mark(R, 'B-5') + '</h3>' + table(['ν', 'k', 'N', 'CFL', 'G<sub>max</sub>', '최종 max|U|', '결과'], b.imex.map(r => [r.nu, +r.k.toFixed(4), r.N, fmt(r.CFL), r.Gmax.toFixed(4), fmt(r.maxT), r.stable ? '안정' : `불안정 (${r.steps}스텝)`]))
+    + '<p>선형화 u<sub>t</sub> + au<sub>x</sub> = νu<sub>xx</sub>의 증폭률 |G|² = (1 + C²sin²θ)/(1 + 4μ sin²(θ/2))²에서 C² ≤ 2μ, 곧 k ≤ 2ν/a²가 조건이고 h와 무관하다. CFL 72에서도 안정하고, ν = 0이면 CFL 0.5에서도 불안정하다.</p>';
+  // S
+  $('S').innerHTML = '<h3>공간 차수와 질량행렬 ' + mark(R, 'S-1') + ' ' + mark(R, 'S-2') + '</h3>' + table(['N', 'h', 'FDM L²', '차수', 'consistent L²', '차수', '혼합 L²', '차수'], s.space.map(r => [r.N, fmt(r.h), fmt(r.fdm), o(r.p_fdm), fmt(r.consistent), o(r.p_consistent), fmt(r.mixed), o(r.p_mixed)]))
+    + '<h3>CN 시간 차수·노름·결손 예측 ' + mark(R, 'S-3') + ' ' + mark(R, 'S-5') + '</h3>' + table(['Δt', 'L² 측정', '차수', '노름 변화', '결손 예측', '상대차', '상대차의 차수'], s.time.map((r, i) => [fmt(r.dt), fmt(r.L2, 4), o(r.p_L2), fmt(r.normDrift, 2), fmt(s.deficit[i].predicted, 4), (s.deficit[i].rel * 100).toFixed(4) + '%', o(s.deficit[i].p_rel)]))
+    + '<p>CN은 log R = 2 artanh(z/2) = z + z³/12 + z⁵/80 + …이므로 C = 1/12, p = 2이고 로그가 홀함수라 다음 항이 z⁵이다. 순허수 z에서 결손은 순수한 위상 오차이며 노름은 반올림 수준으로 보존된다.</p>'
+    + '<h3>명시적 Euler의 노름 — 전역 규칙 ' + mark(R, 'S-4') + '</h3>' + table(['Δt', '측정', '정확식 Σw<sub>j</sub>[(1+Δt²λ<sub>j</sub>²)<sup>n</sup>−1]', '선도항 TΔt⟨λ²⟩', '상대차', '최고 모드 진폭 증폭'], s.eeNorm.map(r => [fmt(r.dt), fmt(r.measured, 6), fmt(r.exact, 6), fmt(r.leading, 4), fmt(r.relDiff, 2), fmt(r.ampTop, 2)]))
+    + `<p>⟨λ²⟩ = ${s.meanLambda2.toFixed(2)} (연속 파속의 ⟨ξ⁴⟩ = 28.75보다 조금 작다 — 2차 중심차분의 고윳값이 참값보다 작기 때문). Δt = 4×10⁻⁴에서만 차이가 커지는 것은 최고 모드 증폭(10¹³ 이상)이 반올림 성분을 키우기 때문이다.</p>`;
+  // EB
+  $('EB').innerHTML = '<h3>공간 차수 (시간 정확) ' + mark(R, 'EB-1') + '</h3>' + table(['N', 'L²', 'L∞', '차수 L²', '차수 L∞'], eb.space.map(r => [r.N, fmt(r.L2), fmt(r.Linf), o(r.p_L2), o(r.p_Linf)]))
+    + '<p>단순지지(u = u<sub>xx</sub> = 0)에서 4계 차분 행렬은 차분 라플라시안의 제곱 D₂²이다(가상점 u<sub>−1</sub> = −u<sub>1</sub>). 고유진동수 ω<sub>h</sub> = (4/h²)sin²(θ/2) = ξ²(1 − θ²/12 + …)이므로 위상 오차가 2차이다.</p>'
+    + '<h3>Newmark 시간 차수·에너지·결손 예측 ' + mark(R, 'EB-2') + ' ' + mark(R, 'EB-3') + ' ' + mark(R, 'EB-5') + '</h3>' + table(['Δt', 'L² 측정', '차수', '에너지 변화', '결손 예측', '상대차', '상대차의 차수'], eb.time.map((r, i) => [fmt(r.dt), fmt(r.L2, 4), o(r.p_L2), fmt(r.energyDrift, 2), fmt(eb.deficit[i].predicted, 4), (eb.deficit[i].rel * 100).toFixed(3) + '%', o(eb.deficit[i].p_rel)]))
+    + '<p>평균가속도 Newmark(β = ¼, γ = ½)는 (u, u<sub>t</sub>) 1계계에 대한 사다리꼴 규칙이므로 증폭률이 CN과 같은 R = (1 + z/2)/(1 − z/2), z = iωΔt이다. 따라서 에너지가 보존되고, 모드마다 위상 결손 Tω³Δt²/12가 오차를 예측한다 — 슈뢰딩거와 같은 식이 2계 방정식에서 성립한다.</p>'
+    + '<h3>명시적 중심차분(leapfrog)의 한계 Δt ≈ h²/2 ' + mark(R, 'EB-4') + '</h3>' + table(['N', 'k / (h²/2)', 'k·ω<sub>max</sub>', '진행 스텝', '최대 |U|', '결과'], eb.leapfrog.map(r => [r.N, r.factor, r.kwmax.toFixed(3), r.steps, fmt(r.maxAbs), r.stable ? '안정' : '발산']))
+    + '<p>u<sup>n+1</sup> − 2u<sup>n</sup> + u<sup>n−1</sup> = −k²ω²u<sup>n</sup>은 kω ≤ 2에서만 안정하고, ω<sub>max</sub> ≈ 4/h²이므로 k ≤ h²/2이다. 파동 방정식(2계 공간)의 Δt ∝ h, 열방정식(2계 공간, 1계 시간)의 Δt ∝ h²와 비교하면, 공간 미분의 차수가 명시적 스킴의 시간 간격을 묶는 지수를 정한다.</p>';
+  // D
+  const drows = rule => d[rule].map(r => [r.d, (-(rule === 'trap' ? 2 : 1) / r.d).toFixed(3), r.slopeGrid.toFixed(3), r.slopeMC.toFixed(3), fmt(r.ratio), r.ratio < 1 ? '격자' : '몬테카를로']);
+  $('D').innerHTML = '<h3>사다리꼴 p = 2 → d* = 4 ' + mark(R, 'D-1') + '</h3>' + table(['d', '이론 −p/d', '격자 기울기', 'MC 기울기', '격자/MC 오차비', '우세'], drows('trap'))
+    + fig(loglog([3, 4, 5].map(k => ({ label: `d=${k} 격자`, pts: d.trap[k - 1].points.map(p => [p.M, p.grid]) })).concat([{ label: 'd=4 몬테카를로', pts: d.trap[3].points.map(p => [p.M, p.mc]) }]), '평가점 수 M', '적분 오차'), '그림 3. 사다리꼴 d = 3, 4, 5와 d = 4 몬테카를로.')
+    + '<h3>왼쪽 직사각형 p = 1 → d* = 2 ' + mark(R, 'D-2') + '</h3>' + table(['d', '이론 −p/d', '격자 기울기', 'MC 기울기', '격자/MC 오차비', '우세'], drows('left'))
+    + '<p>격자 오차 ∝ M<sup>−p/d</sup>, 몬테카를로 ∝ M<sup>−1/2</sup>이므로 두 지수가 같아지는 d* = 2p에서 우열이 바뀐다. 차수를 하나 올리면 교차 차원이 둘 올라간다.</p>';
+  // law
+  $('law').innerHTML = fig(loglog([{ label: '열 · 암시적 Euler (C = +½, p = 1)', pts: h1.deficit.map(r => [r.dt, r.rel]) }, { label: '슈뢰딩거 · CN (C = 1/12, p = 2)', pts: s.deficit.map(r => [r.dt, r.rel]) }, { label: '보 · Newmark (C = 1/12, p = 2)', pts: eb.deficit.map(r => [r.dt, r.rel]) }], 'Δt', '결손 예측과 측정의 상대차', [ref(0.01, 3.125e-4, 0.08, 1, '1'), ref(0.04, 1.25e-3, 0.25, 2, '2')]),
+    '그림 4. 명제 2.5의 결손 n(log R − z) ≈ CTλ<sup>p+1</sup>Δt<sup>p</sup>만으로 계산한 오차 예측과 측정의 상대차. 1계 포물형(열), 복소 1계(슈뢰딩거), 2계 쌍곡형(보)에서 모두 상대차가 log R의 다음 항 차수로 준다.')
+    + `<p>세 방정식은 물리도 방정식의 형태도 다르지만, 시간 스텝이 증폭률 R(z)의 거듭제곱이라는 점은 같다. 스텝의 차수를 “로그가 z와 접촉하는 차수”로, 오차 상수를 그 접촉의 계수 C로 읽으면 가장 작은 Δt에서 예측이 측정과 ${(h1.deficit.at(-1).rel * 100).toFixed(2)}%(열), ${(s.deficit.at(-1).rel * 100).toFixed(4)}%(슈뢰딩거), ${(eb.deficit.at(-1).rel * 100).toFixed(3)}%(보)까지 맞는다. 원 착상의 “차수는 반복(스텝)과 로그”가 오차범위를 계산하는 도구로 작동한 것이다.</p>`;
+  $('pinn').innerHTML = table(['실행', '층×노드', '활성화', 'optimizer', 'lr', 'collocation', '제약', 'seed', 'final loss', 'final error L∞', '상대 L²', 'runtime (s)'], PINN.map(p => [p.name, p.layers + '×' + p.nodes, p.act, 'Adam ' + p.adam + (p.lbfgs ? ' + L-BFGS ' + p.lbfgs_iters : ''), p.lr, p.ncol, p.hard ? 'hard' : 'soft', p.seed, fmt(p.final_loss, 2), fmt(p.Linf), fmt(p.relL2), p.runtime.toFixed(0)]));
+}
+render(RECORD, '');
+$('src').textContent = document.getElementById('engine').textContent.trim();
+$('runBtn').onclick = async () => {
+  const btn = $('runBtn'); btn.disabled = true; const t0 = performance.now();
+  try {
+    const R = await ENGINE.runAll(name => new Promise(res => { $('status').textContent = `실행 중: ${name} …`; setTimeout(res, 30); }));
+    let maxRel = 0; const cmp = (a, b) => { if (typeof a === 'number' && typeof b === 'number' && isFinite(a) && isFinite(b) && Math.abs(b) > 1e-10) maxRel = Math.max(maxRel, Math.abs(a - b) / Math.abs(b)); else if (a && b && typeof a === 'object') for (const k in b) if (!/runtime|Ms$|Drift|relDiff|conservationErr|lumpedStep|maxAbs|maxT|^p_/.test(k)) cmp(a[k], b[k]); };
+    const sameVerdicts = R.verdicts.every((v, i) => v.ok === RECORD.verdicts[i].ok);
+    ['H1', 'H2', 'B', 'S', 'EB', 'D'].forEach(k => cmp(R[k], RECORD[k]));
+    render(R, `<br><b>브라우저 재실행 결과</b>로 표시 중 (${((performance.now() - t0) / 1000).toFixed(1)}초). 측정값의 기록 대비 최대 상대차 ${fmt(maxRel, 2)} (반올림 수준 값 제외), 판정은 기록과 ${sameVerdicts ? '모두 같음' : '다름'}.`);
+    $('status').textContent = `완료 — ${R.verdicts.filter(v => v.ok).length}/${R.verdicts.length} 맞음. 측정값의 기록 대비 최대 상대차 ${maxRel.toExponential(1)} (반올림 수준 값·차수 제외), 판정 ${sameVerdicts ? '기록과 같음' : '기록과 다름'}.`;
+  } catch (e) { $('status').textContent = '오류: ' + e.message; }
+  btn.disabled = false;
+};
+})();
+</script>
+</main></body></html>

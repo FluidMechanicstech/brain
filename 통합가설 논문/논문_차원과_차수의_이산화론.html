@@ -1,0 +1,1665 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>차원과 차수의 이산화론</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false})"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&family=Noto+Sans+KR:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fcfbf8; --paper:#ffffff; --ink:#1b1b1b; --muted:#5c5f63; --line:#dedad2;
+  --accent:#27496d; --box:#f5f3ee; --warn:#8a3b16;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#141619; --paper:#1b1e22; --ink:#e7e5e0; --muted:#a2a5aa; --line:#33373d;
+    --accent:#9cc1e6; --box:#23272c; --warn:#f0a07c;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141619; --paper:#1b1e22; --ink:#e7e5e0; --muted:#a2a5aa; --line:#33373d;
+  --accent:#9cc1e6; --box:#23272c; --warn:#f0a07c;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.85 "Noto Serif KR",Georgia,serif}
+main{max-width:800px;margin:0 auto;padding:48px 16px 96px}
+.title{text-align:center;margin-bottom:28px}
+.title h1{font-size:clamp(1.45rem,4vw,2rem);line-height:1.4;margin:0 0 6px;font-weight:700}
+.title .sub{font-size:1rem;color:var(--muted);margin:0}
+.abstract{background:var(--box);border-radius:6px;padding:18px 22px;margin:28px 0 12px;font-size:.95rem}
+.abstract h2{font-size:.85rem;letter-spacing:.12em;margin:0 0 6px;border:none;padding:0;text-transform:uppercase;font-family:"Noto Sans KR",sans-serif}
+.keywords{font-size:.85rem;color:var(--muted);margin:0 0 36px;font-family:"Noto Sans KR",sans-serif}
+h2{font-size:1.28rem;margin:52px 0 14px;font-weight:700}
+h3{font-size:1.05rem;margin:30px 0 8px;font-weight:600}
+p{margin:0 0 14px;text-align:justify;word-break:keep-all;overflow-wrap:anywhere}
+main{overflow-wrap:anywhere}
+.env{margin:18px 0;padding:12px 18px;border-left:3px solid var(--accent);background:var(--paper)}
+.env > .lab{font-family:"Noto Sans KR",sans-serif;font-weight:500;color:var(--accent);font-size:.9rem;margin-right:6px}
+.env.remark{border-left-color:var(--warn)}
+.env.remark > .lab{color:var(--warn)}
+.env p:last-child{margin-bottom:0}
+.proof{font-size:.95rem;color:var(--muted);margin-top:6px}
+.proof::before{content:"증명. ";font-style:italic}
+.proof::after{content:" ∎"}
+q{quotes:"「" "」"}
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:2px 0}
+.table-wrap{overflow-x:auto;margin:14px 0 6px}
+table{border-collapse:collapse;width:100%;font-size:.9rem;font-family:"Noto Sans KR",sans-serif}
+caption{caption-side:top;text-align:left;font-size:.88rem;color:var(--muted);padding-bottom:6px}
+th,td{padding:6px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+thead th{border-top:2px solid var(--ink);border-bottom:1px solid var(--ink);font-weight:500}
+tbody tr:last-child td{border-bottom:2px solid var(--ink)}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+ol.refs{font-size:.88rem;color:var(--muted);padding-left:1.4em}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.85em;background:var(--box);padding:1px 5px;border-radius:3px}
+hr{border:none;border-top:1px solid var(--line);margin:40px 0}
+.fig{margin:24px 0;padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--paper)}
+.fig-controls{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;font-family:"Noto Sans KR",sans-serif;font-size:.85rem;margin-bottom:10px}
+.fig-controls button{font:inherit;padding:4px 12px;border:1px solid var(--line);border-radius:6px;background:var(--box);color:var(--ink);cursor:pointer}
+.fig-controls input[type=range]{vertical-align:middle;width:140px;accent-color:var(--accent)}
+.fig-panels{display:grid;grid-template-columns:1fr;gap:12px}
+.panel .ptitle{font-family:"Noto Sans KR",sans-serif;font-size:.82rem;color:var(--muted);margin-bottom:2px}
+.panel canvas{display:block;width:100%;height:190px}
+.readout{font-family:"Noto Sans KR",sans-serif;font-size:.82rem;font-variant-numeric:tabular-nums;color:var(--muted);margin:10px 0 6px}
+.fig figcaption{font-size:.88rem;line-height:1.7;color:var(--muted)}
+.sw{display:inline-block;width:18px;height:3px;vertical-align:middle;border-radius:2px}
+.sw-n{background:var(--newton)} .sw-e{background:var(--einstein)}
+:root{--newton:#b5651d;--einstein:#27496d;--energy2:#c9a227}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--newton:#e0955a;--einstein:#8fbde8;--energy2:#e2c35a}}
+:root[data-theme="dark"]{--newton:#e0955a;--einstein:#8fbde8;--energy2:#e2c35a}
+.seg{display:inline-flex;flex-wrap:wrap;gap:4px}
+.seg button.on{background:var(--accent);color:var(--paper);border-color:var(--accent)}
+#f2-c{display:block;width:100%;height:440px;cursor:grab;touch-action:none}
+@media (max-width:560px){#f2-c{height:340px}}
+.sw-p{background:var(--plane);height:8px}
+:root{--plane:rgba(201,162,39,.55)}
+
+:root{--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--grid:#ece9e2}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--grid:#2a2c30}}
+:root[data-theme="dark"]{--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--grid:#2a2c30}
+.fig canvas.ch{display:block;width:100%;height:300px;touch-action:none}
+.fig canvas.ch.tall{height:420px}
+.ctl{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;font-family:"Noto Sans KR",sans-serif;font-size:.84rem;margin-bottom:8px}
+.ctl button{font:inherit;padding:3px 10px;border:1px solid var(--line);border-radius:6px;background:var(--box);color:var(--ink);cursor:pointer}
+.ctl button.on{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.ctl input[type=range]{width:180px;accent-color:var(--accent);vertical-align:middle}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-family:"Noto Sans KR",sans-serif;font-size:.8rem;color:var(--muted);margin:2px 0 6px}
+.legend span::before{content:"";display:inline-block;width:14px;height:3px;border-radius:2px;background:var(--c);vertical-align:middle;margin-right:5px}
+.legend span.d::before{background:repeating-linear-gradient(90deg,var(--c) 0 4px,transparent 4px 7px)}
+.tip{position:fixed;pointer-events:none;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:6px 9px;font:12px/1.5 "Noto Sans KR",sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.12);display:none;z-index:9;font-variant-numeric:tabular-nums}
+td.w{white-space:normal;min-width:170px} .g{color:var(--accent);font-weight:500} .l{color:var(--warn);font-weight:500}
+</style>
+</head>
+<body>
+<main>
+
+<div class="title">
+  <h1>차원과 차수의 이산화론</h1>
+  <p class="sub">기울기·편향·곡률의 텐서 계층과 수렴차수, π·e의 위상–노름 분해, 그리고 우주론·양자계의 수치 검증</p>
+</div>
+
+<div class="abstract">
+<h2>초록</h2>
+본 노트는 <q>차원</q>과 <q>차수</q>라는 두 개념을 수치해석의 언어로 분리·재정의하고, 양자가 만나는 지점을 명시한다. 차원은 유한 경계를 가진 도메인에서 선형독립 방향의 수이며, 수직(직교)과 수평(비례상수에 의한 평행)은 그 기저를 다루는 선형 구조로 이해된다. 차수는 테일러 전개의 계층, 즉 기울기(1차 텐서)·편향(내적으로 주어지는 방향성분)·곡률(헤시안, 2차 텐서)·3차 텐서로 정리되며, 이산화 수준에서는 오차 노름의 감소 지수인 수렴차수로 관측된다. 본 노트는 수렴차수가 확률이 아니라 오차의 <b>비율과 편차</b>로 결정되는 결정론적 양임을 보이고, 해의 매끄러움(특성곡선의 교차, 특이점)이 그 상한을 정한다는 점을 강조한다. 이 틀을 우주의 가속팽창, 빅뱅 근방의 특이성, 양자얽힘의 시간발전, 우주의 수명 예측이라는 네 가지 문제에 적용하여, 격자점 수 $N$, 시간 간격 $\Delta t$, $L^\infty$·$L^2$ 오차, 관측 수렴차수로 이론 차수를 검증한다. 공간 이산화는 유한차분법(FDM)과 유한요소법(FEM)을 나란히 비교하고, 시간적분은 명시적 오일러·RK4·크랭크-니콜슨·가우스-르장드르법을 비교한다. 분수(번분수) 근사가 노름 보존을 보장한다는 사실을 파데 근사로 증명하고 수치로 확인하며, $\pi$를 위상과 노름으로, $e$를 칸토어 급수의 부분합과 꼬리로 분해하여 오차를 진폭과 위상으로 분리하고 각 대수 규칙이 전역인지 국소인지 판정하며, 차원을 쐐기곱(가법 불변량)으로, 차수를 반복·회전수·로그(곱셈 불변량)로 구분하여 둘이 오차 $\propto M^{-p/d}$에서 만남을 보이며, 뉴턴 역학이 상대론적 운동의 1차 절단이라는 관점에서 <q>차수가 커짐에 따른 전환</q>을 전개의 수렴반경으로 정식화한다. 마지막으로 물리정보신경망(PINN)을 프리드만 방정식에 실제로 적용하여, 은닉층 수·노드 수·활성화함수·optimizer·학습률·collocation point 수·난수 시드·epoch·최종 오차·runtime의 지표로 격자법과 대조한다. 결론(11절)에서는 이산화 도감의 알고리즘과 지표로 다섯 실험군(1·2차원 열방정식, Burgers, 슈뢰딩거, Euler–Bernoulli 보)과 교차 차원에 대해 실험 전에 기록한 예측을 판정하고(재실험 26개 모두 맞음, 앞선 실험의 틀린 예측 2개는 이력으로 보고), 교차 차원 $d^*=2p$, 차원에 반비례하는 안정 한계, 스텝의 로그 결손에 의한 오차 크기 예측, 노름별로 달라지는 수렴차수, 혼합 질량행렬의 4차 정확도, 공간 미분 차수와 시간 간격의 관계를 명제로 정리한다.
+</div>
+<p class="keywords"><b>주제어</b> — 차원, 차수, 텐서 계층, 헤시안, 수렴차수, 시간·공간 수렴성 분리, 룽게-쿠타, 유한요소법, 파데 근사, 연분수, 포스트뉴턴 전개, 칸토어 급수, 극분해, 쐐기곱, 편각 원리, 값매김, 전역·국소 판정, 유니터리성, 프리드만 방정식, PINN</p>
+
+<!-- ============================================================ -->
+<h2>1. 서론</h2>
+<p>수치해석에서 <q>몇 차원의 문제인가</q>와 <q>몇 차 정확도의 방법인가</q>는 서로 다른 질문이지만, 두 질문은 한 지점에서 만난다. 본 노트의 출발점이 된 착상은 다음과 같다. <b>차원은 유한 경계조건에서 수직과 수평 조건이며 비례상수가 존재하고 선형적이다. 차수는 기울기(시그마 적분의 극한과 노름), 텐서 1·2·3, 편향(벡터의 내적·외적)과 곡률(헤시안)로 정리 가능하다.</b> 이 착상은 뉴턴(뉴턴법의 헤시안)과 아인슈타인(시공간 곡률)이라는 두 전통을 하나의 계층 구조로 묶으려는 시도이다.</p>
+<p>본 노트는 이 착상을 수학적으로 성립하는 형태로 재구성한다. 그 과정에서 <q>차수</q>라는 단어가 여러 의미로 쓰이고 있음을 먼저 분리하고(2절), 차원(3절)과 차수(4절)를 각각 정의한 뒤, 이산화에서 두 개념이 오차 노름과 수렴차수로 합류함을 보인다(5–6절). 7절에서는 스핀·경로·양자의 문제를, 8절에서는 뉴턴에서 아인슈타인으로의 이행과 초곡면의 곡률을, 9절에서는 신경망 근사를 같은 틀에서 다루며, 10절의 수치 실험으로 각 주장을 확인한 뒤, 11절에서 실험 전에 기록한 예측을 도감의 알고리즘과 지표로 판정하여 결론을 내린다.</p>
+
+<!-- ============================================================ -->
+<h2>2. 용어의 분리</h2>
+<div class="env"><span class="lab">정의 2.1</span>(차원) 벡터공간 $V$의 <b>차원</b> $\dim V=d$는 $V$를 생성하는 선형독립 벡터(기저)의 개수이다. 유한 경계를 가진 공간 도메인 $\Omega\subset\mathbb R^d$ 위의 문제를 $d$차원 문제라 한다.</div>
+<div class="env"><span class="lab">정의 2.2</span>(차수의 네 가지 의미) 본 노트에서 <q>차수</q>는 다음 넷을 구분하여 쓴다.
+(i) <b>미분 차수</b> $k$: $k$계 도함수 또는 방정식의 최고 미분 차수.
+(ii) <b>텐서 차수</b>: 다중선형사상이 받는 벡터 입력의 개수.
+(iii) <b>국소 절단 차수</b>: 한 스텝의 국소 오차가 $O(\Delta t^{p+1})$일 때의 $p$.
+(iv) <b>수렴차수</b> $p$: 격자 폭 $h$에 대해 $\|e_h\|\approx Ch^{p}$를 만족하는 지수.</div>
+<p>(i)과 (ii)는 4절에서 테일러 전개를 통해 하나로 묶이고, (iii)과 (iv)는 6절에서 점화식 구조를 통해 하나로 묶인다.</p>
+
+<h3>2.1 차원과 차수의 대수적 구분: 쐐기곱과 로그</h3>
+<p>원 착상은 두 개념의 차이를 다음과 같이 요약한다. <b>차원은 기하적으로 내적과 외적의 직교이고, 차수는 반복(스텝)이나 회전수(지수, 로그)이다.</b> 이 절은 이 요약이 대수적으로 성립하는 정확한 형태와 그 한계를 제시한다.</p>
+<div class="env"><span class="lab">명제 2.3</span>(쐐기곱에 의한 차원, 전역) 벡터공간 $V$에서 $v_1,\dots,v_k$가 선형독립일 필요충분조건은 $v_1\wedge\cdots\wedge v_k\neq0$이다. 따라서
+$$\dim V=n\iff \textstyle\bigwedge^{n}V\neq0\ \text{이고}\ \bigwedge^{n+1}V=0.$$
+<div class="proof">$v_1,\dots,v_k$가 종속이면 어떤 $v_j$가 나머지의 선형결합이고, 교대성 $v\wedge v=0$에 의해 쐐기곱이 사라진다. 독립이면 기저로 확장하여 $\bigwedge^kV$의 기저 원소 $e_{i_1}\wedge\cdots\wedge e_{i_k}$ 하나가 되므로 영이 아니다.</div></div>
+<p>명제 2.3은 원 착상의 <q>차원은 외적의 직교</q>를 계량 없이 성립하는 형태로 바꾼 것이다. 3차원 벡터 외적 $u\times v$는 $u\wedge v$를 호지 쌍대로 벡터에 대응시킨 특수한 경우이며 $d=3$(과 $7$)에서만 벡터 곱으로 정의된다. 내적에 의한 판정, 곧 <q>서로 직교하는 영이 아닌 벡터의 최대 개수가 $\dim V$이다</q>는 양의 정부호 내적에서 참이다(그람-슈미트). 그러나 이것은 계량에 의존한다. 민코프스키 계량에서는 빛꼴 벡터가 자기 자신과 직교하므로, 노름이 영이 아닌 벡터로 제한해야 같은 판정이 성립한다. 따라서 <b>쐐기곱 판정은 전역이고, 내적 직교 판정은 계량이 주어졌을 때의 세는 방법</b>이다. 이 관점은 그라스만의 『확장론』(1844)이 쐐기곱으로 <q>확장</q>, 곧 차원을 세운 데서 비롯한다.</p>
+<div class="env"><span class="lab">명제 2.4</span>(차수는 곱을 합으로 바꾸는 로그형 불변량) 다항식 $f,g$에 대해 $\deg(fg)=\deg f+\deg g$이고 $\deg f=\lim_{|z|\to\infty}\log|f(z)|/\log|z|$이다. 또한 편각 원리에 의해, 원 $|z|=r$ 위에 영점이 없으면
+$$\#\{f\text{의 영점}:\ |z|&lt;r\}=\frac1{2\pi i}\oint_{|z|=r}\frac{f'(z)}{f(z)}\,dz=\frac{1}{2\pi}\,\Delta_{|z|=r}\arg f,$$
+즉 영점의 개수는 $f(z)$가 원점을 감는 <b>회전수</b>이며, $r$이 충분히 크면 이 값은 $\deg f$와 같다.
+<div class="proof">첫 등식은 최고차항의 곱에서, 둘째는 $f(z)=a_nz^n(1+O(1/z))$에서 나온다. 편각 원리는 $f'/f=\sum_j (z-z_j)^{-1}+(\text{정칙})$과 유수 정리에서 나오며, $f'/f\,dz=d\log f$이므로 적분은 로그의 허수부, 곧 편각의 총변화를 $2\pi$로 나눈 값이다.</div></div>
+<p>명제 2.4는 원 착상의 <b><q>차수는 회전수(지수, 로그)</q></b>를 정리 수준에서 정식화한다. 차수는 곱셈을 덧셈으로 바꾸는 양(값매김)이며, 그 값은 로그 미분 $d\log f$의 적분, 곧 감긴 횟수로 읽힌다. 7.1절에서 스핀-½이 $2\pi$ 회전에 $-1$이 된 것과 7.4절에서 위상 규칙이 국소적이었던 것은 모두 이 로그의 다가성에서 비롯한다. 회전군에서도 같은 의미가 성립한다. $2\pi/n$ 회전의 차수(원소의 위수)는 $g^n=1$인 최소 $n$, 곧 제자리로 돌아오기까지의 <b>반복 횟수</b>이다.</p>
+<div class="env"><span class="lab">명제 2.5</span>(스텝의 차수) 선형 문제 $\psi'=\lambda\psi$에 일단계법을 적용하면 한 스텝은 증폭률 $R(z)$ ($z=\lambda\Delta t$)의 곱이고, $n$ 스텝은 거듭제곱 $R(z)^n$이다. 로그를 취하면 스텝은 덧셈이 된다: $\log R(z)^n=n\log R(z)$. 만약
+$$\log R(z)=z+C\,z^{p+1}+O(z^{p+2})$$
+이면, 고정된 시간 $T=n\Delta t$에서 정확한 전파자 $e^{nz}$에 대한 로그 결손은
+$$n\log R(z)-nz=C\,T\lambda^{p+1}\Delta t^{p}+O(\Delta t^{p+1})$$
+이므로 전역 차수는 $p$이다. 즉 <b>스텝의 차수는 $\log R(z)$가 $z$와 접촉하는 차수</b>이다.
+<div class="proof">$n=T/\Delta t$를 대입하면 $nCz^{p+1}=C\,T\lambda^{p+1}\Delta t^{p}$이다. 결손이 작으면 $|R^n-e^{nz}|=|e^{nz}|\,|e^{n\log R-nz}-1|\approx|e^{nz}|\,|n\log R-nz|$이다.</div></div>
+<p>명제 2.5가 원 착상의 <q>차수는 반복(스텝 점화식)</q>의 정확한 형태이다. 한 스텝의 국소 오차 $O(\Delta t^{p+1})$(정의 2.2의 iii)가 $n=T/\Delta t$번 <i>반복</i>되어 전역 차수 $p$(iv)가 되는 과정이 곧 $\log R$의 접촉 차수이며, 결손의 실수부는 7.4절의 진폭 오차, 허수부는 위상 오차에 해당한다. 10.9절에서 네 방법의 $p$와 $C$를 계산하고, 이 결손만으로 10.3절의 전역 오차를 예측한다.</p>
+<div class="env remark"><span class="lab">주의 2.6</span>(이분법의 한계) <q>차원은 기하, 차수는 대수</q>라는 구분은 절대적이지 않다. 차원도 지수를 로그로 읽는 양이 될 수 있다. 박스 차원 $\dim_B=\lim_{\varepsilon\to0}\log N(\varepsilon)/\log(1/\varepsilon)$이 그 예이다. 6절에서 언급한 바이어슈트라스 함수 $W(x)=\sum_n a^n\cos(b^n\pi x)$ ($0&lt;a&lt;1$, $ab&gt;1$)의 그래프는 박스 차원 $2+\log a/\log b$인 비정수 차원을 갖는다(하우스도르프 차원이 같다는 것은 Shen, 2018). 따라서 엄밀한 구분은 <b>차원은 가법적 불변량</b>($\dim(V\oplus W)=\dim V+\dim W$, 교집합에서 여차원이 더해짐)이고 <b>차수는 곱셈적 불변량</b>(곱에서 더해지는 것은 로그를 취한 뒤이며, 베주 정리에서 교집합의 차수는 곱해짐)이라는 것이다. 대수다양체의 힐베르트 다항식 $h(t)\sim\frac{\deg}{\dim!}\,t^{\dim}$에서 두 불변량은 한 식에 함께 나타난다. 차원은 지수 자리에, 차수는 계수 자리에 있다.</div>
+<div class="env"><span class="lab">명제 2.7</span>(수치해석에서 차원과 차수가 만나는 지점) $d$차원 도메인을 폭 $h$의 격자로 나누면 미지수 개수는 $M\propto h^{-d}$이다. 공간 차수가 $p$이면
+$$\|e\|\propto h^{p}\propto M^{-p/d}$$
+이다. 차수는 지수의 분자에, 차원은 분모에 들어간다. 반면 몬테카를로 구적(무작위 collocation)의 오차는 $d$와 무관하게 $M^{-1/2}$이다. 이것이 차원의 저주이고, 9절의 PINN이 고차원에서 의미를 갖는 이유이다.</div>
+
+
+<!-- ============================================================ -->
+<h2>3. 차원: 수직·수평 조건과 비례상수</h2>
+<p>내적 $\langle\cdot,\cdot\rangle$이 주어진 공간에서, 두 벡터가 <b>수직</b>이라는 것은 $\langle u,v\rangle=0$, <b>수평</b>이라는 것은 어떤 <b>비례상수</b> $\lambda$에 대해 $u=\lambda v$라는 것이다. 정규직교기저 $\{e_i\}_{i=1}^d$를 잡으면 임의의 벡터는 $u=\sum_i\langle u,e_i\rangle e_i$로 유일하게 분해되며, 각 성분은 서로 간섭하지 않는다. 이것이 <q>차원은 수직과 수평 조건이며 선형적이다</q>라는 직관의 정확한 내용이다.</p>
+<div class="env remark"><span class="lab">주의 3.1</span>직교성은 차원을 계산하는 <i>도구</i>이지 차원의 <i>정의</i>는 아니다. 차원은 선형독립성만으로 정해지며, 내적이 정의되지 않은 벡터공간에도 존재한다. 또한 <q>선형적</q>이라는 성질은 공간에 속하며, 그 위에서 풀리는 방정식은 비선형일 수 있다. 아인슈타인 장방정식은 4차원 선형공간(각 점의 접공간) 위에서 정의되는 비선형 편미분방정식이다.</div>
+<p>외적 $u\times v$는 $d=3$에서만 벡터로 정의된다. 일반 차원에서 <q>수직 방향을 생성하는 곱</q>의 역할은 쐐기곱 $u\wedge v$가 맡으며, 이는 2차 반대칭 텐서이다. 즉 외적은 이미 차원과 텐서 차수가 교차하는 첫 번째 사례이다.</p>
+
+<!-- ============================================================ -->
+<h2>4. 차수: 기울기·편향·곡률의 텐서 계층</h2>
+<p>매끄러운 함수 $f:\mathbb R^d\to\mathbb R$의 테일러 전개는 원 착상의 <q>기울기–편향–곡률</q> 계층을 정확히 드러낸다.</p>
+$$f(x+h)=\underbrace{f(x)}_{\text{0차}}+\underbrace{\nabla f(x)\cdot h}_{\text{1차: 기울기와 편향}}+\frac12\underbrace{h^\top\mathbf H(x)\,h}_{\text{2차: 곡률}}+\frac16\underbrace{\nabla^3 f(x)[h,h,h]}_{\text{3차 텐서}}+O(\|h\|^4)$$
+<p>여기서 $k$계 도함수 $\nabla^k f(x)$는 $k$개의 벡터를 받아 스칼라를 내는 대칭 $k$차 텐서이다. 따라서 <b>텐서 1, 2, 3</b>은 각각 기울기, 헤시안, 3계 도함수에 대응한다. 1차 항 $\nabla f\cdot h$는 방향 $h$로의 변화율, 즉 <b>편향</b>이며 내적으로 주어진다. 2차 항은 <b>곡률</b>을 측정하고, 헤시안의 고윳값 부호가 극소·극대·안장점을 판정한다.</p>
+<div class="env"><span class="lab">명제 4.1</span>(차원과 차수가 만나는 지점) $d$차원에서 대칭 $k$차 텐서의 독립 성분 수는
+$$n(d,k)=\binom{d+k-1}{k}$$
+이다. 특히 기울기는 $d$개, 헤시안은 $d(d+1)/2$개의 성분을 가진다.
+<div class="proof">대칭 텐서의 성분은 지표의 다중집합 $\{i_1,\dots,i_k\}\subset\{1,\dots,d\}$로 결정되며, 크기 $k$인 다중집합의 개수는 중복조합 $\binom{d+k-1}{k}$이다.</div></div>
+<p>명제 4.1은 원 착상의 <q>편향(차원과 차수가 만나는 지점)</q>에 대한 정량적 표현이다. 차원 $d$가 커질수록 높은 차수의 정보를 담는 비용이 다항식적으로 증가하며, 이는 고차원 문제에서 고차 방법이 비싸지는 근본 이유이다.</p>
+<p>두 전통은 이 계층의 2차 항에서 만난다. <b>뉴턴</b>의 최적화법 $x_{n+1}=x_n-\mathbf H^{-1}\nabla f$는 헤시안(곡률)을 이용해 2차 수렴을 얻는다. <b>아인슈타인</b>의 중력이론은 시공간 계량의 2계 도함수로 만들어지는 리만 곡률 텐서(4차)를 물질의 에너지-운동량과 연결한다.</p>
+<p>원 착상의 <q>텐서 1·2·3은 최종 오차범위와 최단경로를 추적한다</q>는 서술도 이 계층으로 정식화된다. 휘어진 공간에서 최단(정확히는 정류) 경로인 측지선은
+$$\ddot x^\mu+\Gamma^\mu_{\alpha\beta}\,\dot x^\alpha\dot x^\beta=0$$
+을 따르며, 크리스토펠 기호 $\Gamma$는 계량의 1계 도함수(기울기 층위)로 만들어진다. 인접한 두 측지선의 벌어짐 $\xi$는 측지선 편차 방정식 $\ddot\xi^\mu=-R^\mu{}_{\alpha\nu\beta}\dot x^\alpha\xi^\nu\dot x^\beta$를 따르므로, 경로의 <i>오차</i>가 어떻게 커지는지는 곡률(2계 도함수 층위)이 결정한다. 최적화에서도 같은 구조가 나타난다. 경사하강은 1차 정보만으로 경로를 추적하여 오차가 1차로 줄고, 뉴턴법은 헤시안으로 국소 2차 모형의 최솟점을 직접 겨냥하여 오차가 제곱으로 줄어든다.</p>
+<p>원 착상에서 <q>시그마 적분(극한)</q>은 리만합 $\sum_i f(x_i)\Delta x_i\to\int f\,dx$를, 선적분·면적분·체적적분은 발산정리 $\int_V\nabla\!\cdot\!F\,dV=\oint_{\partial V}F\cdot n\,dS$와 스토크스 정리로 연결된 적분 계층을 뜻한다. 유한체적법은 이 정리를 각 제어체적에 적용한 이산화이다.</p>
+
+<!-- ============================================================ -->
+<h2>5. 오차범위 e와 노름: 스칼라화의 조건</h2>
+<p>격자점 수 $N$인 이산해 $u_h$와 기준해 $u$의 차이 $e=u_h-u$는 $N$차원 벡터이다. 서로 다른 격자, 서로 다른 방법의 오차를 비교하려면 이 벡터를 스칼라로 사상해야 한다. 원 착상의 <b><q>오차범위 e는 함수가 스칼라 기저일 때만 차원에 도입 가능하다</q></b>는 주장은 다음과 같이 정식화된다.</p>
+<div class="env"><span class="lab">정의 5.1</span>(오차 노름)
+$$\|e\|_{\infty}=\max_{i}|e_i|,\qquad \|e\|_{2}=\Big(h\sum_{i}|e_i|^2\Big)^{1/2}.$$
+$L^\infty$는 국소적으로 가장 크게 틀린 점을, $L^2$는 도메인 전체의 평균적 정확도를 측정한다.</div>
+<p>노름은 $N$차원 오차를 하나의 스칼라로 줄이며, 이 스칼라의 격자 의존성이 곧 차수이다. 가장 단순한 근사기법인 <b>명시적 오일러법</b>(explicit Euler) $u^{n+1}=u^n+\Delta t\,f(u^n)$은 국소 절단오차 $O(\Delta t^2)$, 전역오차 $O(\Delta t)$의 1차 방법으로, 이후 모든 비교의 기준선이 된다.</p>
+
+<!-- ============================================================ -->
+<h2>6. 점화식 구조, 비율로서의 수렴차수, 그리고 매끄러움의 한계</h2>
+<p>시간적분은 본질적으로 <b>점화식 구조</b>, 즉 스텝 반복 $u^{n+1}=G(u^n,\Delta t)$이다. 원 착상이 <q>스핀(점화식 구조)</q>으로 부른 것은 이 반복을 가리킨다. 국소 절단오차가 $O(\Delta t^{p+1})$이고 $G$가 안정하면 오차는 $n=T/\Delta t$번 누적되어 전역오차 $O(\Delta t^{p})$가 된다. 상미분방정식의 선형 다단계법에 대해서는 이것이 달퀴스트 동치 정리(일관성 + 영점 안정성 ⇔ 수렴)이고, 선형 편미분방정식의 차분법에 대해서는 락스 동치 정리이다. 일단계법(RK4 등)은 $f$가 립시츠 연속이면 일관성만으로 수렴한다.</p>
+<div class="env"><span class="lab">정의 6.1</span>(관측 수렴차수) 정련비 $r$(보통 2)에 대해
+$$p_{\text{obs}}=\frac{\log\big(\|e_h\|/\|e_{h/r}\|\big)}{\log r}.$$</div>
+<p>정의 6.1은 원 착상의 <b><q>수학은 분수값을 확률이 아닌 비율과 편차로 유용한 값을 찾아야 한다, 예측 가능한 오차범위 내에서</q></b>라는 주장의 정확한 형태이다. 수렴차수는 연속한 두 오차의 <i>비율</i>로 정의되며, 결정론적 방법에서 오차 한계 $\|e_h\|\le Ch^p$는 확률 진술이 아니라 부등식이다.</p>
+<p>공간과 시간은 각자의 차수를 갖는다.
+$$\|e\|\approx C_x h^{p}+C_t\,\Delta t^{q}.$$
+따라서 <b>시간 수렴성 분리</b>(공간 격자를 충분히 세밀하게 고정하고 $\Delta t$만 변화)와 <b>공간 수렴성 분리</b>($\Delta t$를 충분히 작게 고정하고 $N$만 변화)를 통해서만 $q$와 $p$를 각각 순수하게 관측할 수 있다. 원 착상의 <q>차수는 공간이산화, 차원은 시간이산화</q>는 이 관계로 대체된다. 공간 차원 $d$는 격자점 수 $N^d$로 비용에 들어가고, 시간은 한 차원을 더해 시공간 $d+1$을 이룬다.</p>
+<div class="env"><span class="lab">명제 6.2</span>(매끄러움이 차수를 제한한다) 수렴차수의 이론값은 해가 충분히 매끄럽다는 가정에서 나온다. 해의 정칙성이 부족하면 관측 차수는 이론값보다 낮아진다. 예컨대 피적분함수가 $x^{\alpha}$ ($0&lt;\alpha&lt;1$)처럼 행동하는 끝점이 있으면 사다리꼴 공식의 오차는 $O(h^{1+\alpha})$이다.</div>
+<p>비선형 쌍곡선 방정식(예: $u_t+uu_x=0$)에서는 <b>특성곡선</b>이 유한 시간에 교차하여 충격파가 형성되고, 그 점에서 <b>미분이 끊긴다</b>. 이 경우 고디노프 정리에 따라 단조성을 보존하는 선형 스킴은 1차를 넘을 수 없다. 이러한 불연속은 조각별로 매끄러운 점프라는 점에서, 모든 점에서 연속이나 어디에서도 미분 불가능한 바이어슈트라스 함수와 구별된다. 원 착상의 <q>라그랑지안 경계조건</q>은 두 가지로 읽을 수 있다. 첫째는 특성곡선을 따라 입자를 추적하는 라그랑주 기술(Lagrangian description)로, 격자를 고정하는 오일러 기술과 짝을 이루는 좌표 선택이다. 둘째는 작용 $S=\int L\,dt$의 변분에서 경계항이 사라지도록 요구하는 조건으로, 7.2절의 정류 경로와 연결된다. 본 노트는 이산화 맥락에서 첫째 해석을 주로 쓰고, 경로 맥락에서 둘째 해석을 쓴다.</p>
+
+<h3>6.1 비율로서의 수렴: 수렴률과 수렴차수, 그리고 번분수</h3>
+<p>원 착상의 <q>반복 지수연산(시그마)</q>과 <q>수렴율(곱연산, 나눗셈)</q>은 서로 다른 두 수렴 척도로 분리된다. 반복 $k$에 대해 오차가 $e_{k+1}\approx\rho\,e_k$이면 <b>선형 수렴</b>이며, $\rho$가 <b>수렴률</b>이다. 이는 연속한 오차의 <i>나눗셈</i>으로 정의되고, 오차는 $\rho$의 <i>거듭제곱</i>으로 감소한다. 반면 격자 폭 $h$에 대해 $e\approx Ch^p$이면 $p$가 <b>수렴차수</b>이다. 급수의 부분합(시그마)은 전자에, 이산화는 후자에 속한다.</p>
+<div class="env"><span class="lab">명제 6.3</span>(연분수의 최량근사) 실수 $x$의 연분수 $x=[a_0;a_1,a_2,\dots]$의 수렴분수 $p_n/q_n$은 $\big|x-p_n/q_n\big|&lt;1/(q_nq_{n+1})$을 만족하며, 분모가 $q_n$ 이하인 모든 분수 가운데 $x$에 가장 가깝다.</div>
+<p>명제 6.3은 원 착상의 <b><q>분수, 번분수</q></b>와 <b><q>분수값을 확률이 아닌 비율과 편차로 유용한 값을 찾아야 한다</q></b>는 주장의 정확한 형태이다. 번분수를 끊는 위치가 오차 한계를 결정하므로, 오차범위는 확률이 아니라 부등식으로 예측된다. 예컨대 $\pi=[3;7,15,1,292,\dots]$에서 $355/113$의 오차는 $2.67\times10^{-7}$이며 한계 $1/(113\cdot33102)$와 일치한다(10.7절). 같은 원리가 시간적분에서 노름 보존을 결정한다는 사실은 7.3절의 명제 7.2에서 보인다.</p>
+<p>라마누잔의 급수
+$$\frac1\pi=\frac{2\sqrt2}{9801}\sum_{k=0}^{\infty}\frac{(4k)!\,(1103+26390k)}{(k!)^4\,396^{4k}}$$
+는 정수들로 이루어진 항의 합이며, 이웃한 항의 비는 $k\to\infty$에서 $256/396^4\approx1.04\times10^{-8}$로 수렴한다. 따라서 이 급수는 선형 수렴이고 항 하나마다 약 8자리가 맞는다. 원 착상의 <q>정수 집합 라마누잔</q>은 이렇게 수렴률의 전형적 예로 정식화된다. 이것이 격자 이산화의 수렴차수와 같은 척도가 아니라는 점에 주의한다.</p>
+
+<h3>6.2 자연상수 e: 칸토어의 무한(가산 급수)과 전역 꼬리 부등식</h3>
+<p>원 착상의 <b><q>자연상수 $e$는 칸토어의 무한으로 쪼개서, 오차범위 내 상수로 부등식으로 묶는다</q></b>는 서술은 다음과 같이 정식화된다. $e$는 가산 개의 항의 합
+$$e=\sum_{k=0}^{\infty}\frac1{k!}=2+\frac1{2!}+\frac1{3!}+\cdots$$
+이며, 이는 칸토어가 1869년에 도입한 <b>칸토어 급수</b> $x=\sum_k d_k/(q_1q_2\cdots q_k)$에서 밑 $q_k=k$, 모든 자릿수 $d_k=1$인 경우(계승 진법)이다. 따라서 <q>칸토어의 무한으로 쪼갠다</q>는 <b>유한 부분합 $S_n$ ⊕ 무한 꼬리 $e-S_n$</b>으로의 분해이다. 여기서 쓰이는 무한은 가산 무한 $\aleph_0$이다. 칸토어의 비가산 무한(연속체)이나 칸토어 집합은 필요하지 않다.</p>
+<div class="env"><span class="lab">명제 6.4</span>(꼬리의 전역 부등식) 모든 $n\ge1$에 대해
+$$0&lt;e-S_n&lt;\frac{1}{n!\,n},\qquad S_n=\sum_{k=0}^{n}\frac1{k!}.$$
+<div class="proof">$e-S_n=\frac1{(n+1)!}\big(1+\frac1{n+2}+\frac1{(n+2)(n+3)}+\cdots\big)&lt;\frac1{(n+1)!}\sum_{j\ge0}(n+1)^{-j}=\frac1{(n+1)!}\cdot\frac{n+1}{n}=\frac1{n!\,n}$.</div></div>
+<p>이 부등식은 특정 근방이나 점근 극한에서가 아니라 모든 $n$에서 성립하므로 <b>전역</b>이다. 오차범위는 확률이 아니라 상수 $1/(n!\,n)$으로 묶이고, 그 범위는 스칼라 $|e-S_n|$ 하나로 명확해진다. 부수적으로 $n!\,(e-S_n)\in(0,1/n)$은 정수가 될 수 없으므로 $e$의 무리성도 여기서 따라 나온다. 그림 1은 이 문서가 열릴 때 90자리 정수 연산으로 계산한 꼬리와 상한이다.</p>
+<figure class="fig" id="figE">
+  <div class="legend"><span style="--c:var(--s1)">실제 꼬리 $e-S_n$</span><span class="d" style="--c:var(--s2)">전역 상한 $1/(n!\,n)$</span></div>
+  <canvas id="cE" class="ch"></canvas>
+  <figcaption><b>그림 1.</b> $e$의 칸토어 급수 꼬리와 전역 상한(로그 축). 모든 $n$에서 꼬리가 상한 아래에 있고, 비율 $(e-S_n)\,n!\,n$은 <span id="eR1"></span>(n=1)에서 <span id="eR16"></span>(n=16)으로 1에 다가간다. 즉 상한은 전역일 뿐 아니라 점근적으로 날카롭다.</figcaption>
+</figure>
+
+<h3>6.3 확률에서 비율로: 큰 수의 법칙</h3>
+<p>본 노트는 분수값을 확률이 아니라 비율과 편차로 기술한다(6절, 6.1절). 이 선택이 확률을 배제하는 것이 아니라는 근거가 큰 수의 법칙이다. 반복 횟수(스텝)를 충분히 쌓으면 확률 자체가 비율로 바뀌고, 남는 것은 줄어드는 편차뿐이다.</p>
+<div class="env"><span class="lab">명제 6.5</span>(큰 수의 법칙과 편차의 차수) 서로 독립이고 같은 분포를 따르는 확률변수 $X_1,X_2,\dots$의 평균이 $\mu$, 분산이 $\sigma^2&lt;\infty$이면 표본평균 $\bar X_N=\frac1N\sum_{k=1}^{N}X_k$에 대해
+$$\bar X_N\xrightarrow{\ \text{a.s.}\ }\mu\qquad(\text{강한 큰 수의 법칙}),$$
+$$\Pr\big(|\bar X_N-\mu|\ge\varepsilon\big)\le\frac{\sigma^2}{N\varepsilon^2}\qquad(\text{체비쇼프 부등식, 모든 }N),$$
+$$\sqrt N\,(\bar X_N-\mu)\ \xrightarrow{\ d\ }\ \mathcal N(0,\sigma^2)\qquad(\text{중심극한정리}).$$
+특히 사건 $A$의 지시변수 $X_k=\mathbf 1_A$에 대해 $\mu=\Pr(A)$이므로, 확률은 상대도수, 곧 <b>비율</b>의 극한이다.
+<div class="proof">체비쇼프 부등식은 $\operatorname{Var}(\bar X_N)=\sigma^2/N$에 마르코프 부등식을 적용한 것이다. 강한 법칙과 중심극한정리는 표준 결과이다.</div></div>
+<p>명제 6.5는 원 착상의 <b><q>분수값을 확률이 아닌 비율과 편차로</q></b>가 확률론 안에서도 성립하는 정확한 형태이다. 확률 $\Pr(A)$는 반복의 극한에서 비율이 되고, 유한한 $N$에서 남는 어긋남은 <b>편차</b> $\sigma/\sqrt N$으로 기술된다. 체비쇼프 부등식은 모든 $N$에서 성립하는 전역 부등식이므로, 확률적 오차도 상수와 부등식으로 묶인다. 이 편차가 줄어드는 차수가 $1/2$이며, 이것이 명제 2.7과 그림 12에서 몬테카를로 구적의 기울기가 차원과 무관하게 $-1/2$로 관측된 이유이고, 명제 9.2에서 무작위 collocation의 손실이 $O(N^{-1/2})$의 구적 오차를 갖는 이유이다.</p>
+<p>이 문서가 열릴 때 고정된 난수 시드로 $\Pr(A)=0.3$인 사건을 $N$번 반복하는 실험을 100회 되풀이하여, 상대도수와 확률의 차이의 제곱평균제곱근(편차)을 구하였다: <span id="lln"></span>. 편차는 $N$이 10배 될 때마다 약 $\sqrt{10}$배 줄고, $\sqrt N$을 곱한 값은 $N$과 무관하게 $\sigma=\sqrt{0.3\cdot0.7}\approx0.458$에 머문다. 반복의 차수가 편차의 차수 $1/2$로 나타나는 것이다.</p>
+<div class="env remark"><span class="lab">주의 6.6</span>큰 수의 법칙의 수렴은 <q>거의 확실한(a.s.)</q> 수렴이므로, 비율 해석은 극한에서 성립하고 유한 $N$에서는 편차를 함께 적어야 완결된다. 또한 양자역학의 보른 규칙(7.3절)이 주는 확률은 반복 측정의 상대도수로 검증되지만, 단일 측정 결과가 비율로 환원되지는 않는다. 따라서 본 노트의 입장은 <q>확률을 쓰지 않는다</q>가 아니라 <q>확률도 반복의 극한에서는 비율과 편차로 읽는다</q>이다.</div>
+
+
+<!-- ============================================================ -->
+<h2>7. 스핀, 경로, 그리고 양자의 결정론적 부분</h2>
+<h3>7.1 스핀과 오일러 항등식</h3>
+<p>원 착상은 <q>텐서는 스핀 독립변수로 파이값(오일러 항등식, 비율)</q>과 연결된다고 보았다. 이 연결은 다음과 같이 엄밀해진다. 스핀-½ 상태는 축 $\hat n$에 대한 각 $\theta$의 회전에 대해 $U(\theta)=e^{-i\theta\,\hat n\cdot\boldsymbol\sigma/2}$로 변환되며, $\theta=2\pi$에서 $U=e^{i\pi}\mathbf 1=-\mathbf 1$이다. 즉 <b>오일러 항등식</b> $e^{i\pi}=-1$이 한 바퀴 회전 후의 부호 반전으로 나타난다. 이 성질 때문에 스핀-½ 상태는 텐서가 아니라 <b>스피너</b>로 분류된다. 텐서는 $2\pi$ 회전에 불변이다.</p>
+
+<h3>7.2 경로와 비례상수 ħ</h3>
+<p>원 착상의 <q>양자가 확률이 아닌 최단시간 경로거리 비례상수 역할을 한다</q>는 주장은 파인만 경로적분에서 정확한 형태를 얻는다. 전이진폭은 모든 경로의 기여 $\int\mathcal D[x]\,e^{iS[x]/\hbar}$로 주어지며, $\hbar$는 작용 $S$를 위상으로 바꾸는 <b>비례상수</b>이다. $\hbar\to0$ 극한에서 정상위상 근사에 의해 작용이 정류하는($\delta S=0$) 고전 경로만 남는다. 빛에 대해 이는 페르마의 최단시간 원리가 된다. 여기서 <q>최단</q>은 일반적으로 <q>정류</q>로 읽어야 한다. 파인만 다이어그램은 이 적분의 섭동 전개 항을 표기하는 도구이다.</p>
+
+<h3>7.3 양자 상태의 시간발전은 결정론적이다</h3>
+<p>양자역학은 쿼크 수준에 국한되지 않고 전자·광자·원자를 포함한 모든 계에 적용된다. 그 확률성은 척도가 작아서가 아니라 측정 결과가 보른 규칙 $P=|\psi|^2$을 따르는 데서 비롯된다. 반면 파동함수의 <i>시간발전</i> $i\hbar\,\partial_t\psi=H\psi$는 결정론적 선형 편미분방정식이다. 따라서 원 착상의 <b><q>수치값은 지표를 제외하면 통계와 무관하다</q></b>는 주장은 결정론적 이산화에 대해 성립한다. 이때 확률의 총합 $\|\psi\|^2=1$은 통계량이 아니라 수치해가 보존해야 할 불변량, 곧 검증 지표가 된다.</p>
+<div class="env"><span class="lab">명제 7.1</span>(명시적 오일러법의 노름 증가) $H$가 에르미트이고 고윳값이 $\lambda_j$일 때, 명시적 오일러법 $\psi^{n+1}=(I-i\Delta t H)\psi^n$은 각 고유성분의 크기를 매 스텝 $\sqrt{1+\lambda_j^2\Delta t^2}>1$배 증폭한다. 따라서 시간 $T$ 후 노름 오차는 근사적으로 $\tfrac12\lambda^2T\,\Delta t$이다. 반면 크랭크-니콜슨법 $\psi^{n+1}=(I+\tfrac i2\Delta tH)^{-1}(I-\tfrac i2\Delta tH)\psi^n$은 케일리 변환으로서 유니터리이며 노름을 정확히 보존한다.
+<div class="proof">$|1-i\lambda\Delta t|^2=1+\lambda^2\Delta t^2$이고, $n=T/\Delta t$번 곱하면 $(1+\lambda^2\Delta t^2)^{n/2}\approx1+\tfrac12\lambda^2T\Delta t$이다. 크랭크-니콜슨의 증폭률은 $|1-i\lambda\Delta t/2|/|1+i\lambda\Delta t/2|=1$이다.</div></div>
+<p>명제 7.1은 원 착상의 <q>회전</q>이 차수와는 독립된 또 하나의 구조적 성질, 즉 <b>노름 보존</b>임을 보여 준다. 높은 차수가 곧 물리적 정합성을 보장하지는 않는다.</p>
+<div class="env"><span class="lab">명제 7.2</span>(분수 근사와 노름 보존) 선형계 $\psi'=Z\psi/\Delta t$ ($Z=-i\Delta tH$)에 대한 일단계법은 안정성 함수 $R(z)$로 $\psi^{n+1}=R(Z)\psi^n$을 준다. 명시적 오일러와 RK4의 $R$은 $e^z$의 테일러 다항식이고, 크랭크-니콜슨과 2단 가우스-르장드르법의 $R$은 $e^z$의 대각 파데 근사(분수함수)
+$$R_{1,1}(z)=\frac{1+z/2}{1-z/2},\qquad R_{2,2}(z)=\frac{1+z/2+z^2/12}{1-z/2+z^2/12}$$
+이다. 대각 파데 근사는 $e^z$ 연분수의 수렴분수이며 $R(-z)=1/R(z)$를 만족하므로 허수축에서 $|R(iy)|=1$이다. 즉 <b>분수 근사는 노름을 정확히 보존</b>한다. 반면 $|R_{\text{Euler}}(iy)|^2=1+y^2$, $|R_{\text{RK4}}(iy)|^2=1-\tfrac{y^6}{72}+\tfrac{y^8}{576}$이므로 다항식 근사는 보존하지 않는다.
+<div class="proof">대각 파데 근사의 분자 $P(z)$와 분모 $Q(z)$는 $Q(z)=P(-z)$를 만족한다. $z=iy$에서 $P(-iy)=\overline{P(iy)}$이므로 $|R(iy)|=|P(iy)|/|\overline{P(iy)}|=1$이다. RK4의 식은 $R=1+z+z^2/2+z^3/6+z^4/24$에 $z=iy$를 대입해 전개하면 얻어진다.</div></div>
+<p>명제 7.2는 원 착상의 <q>번분수</q>가 단순한 수론적 대상이 아니라 시간적분의 구조적 성질을 결정한다는 것을 보여 준다. 2단 가우스-르장드르법은 RK4와 같은 4차이면서 노름까지 보존한다(10.3절).</p>
+
+<h3>7.4 극분해와 오차의 진폭–위상 분리: 전역·국소 판정</h3>
+<p>원 착상의 <b><q>파이는 위상벡터와 독립변수 $\theta$로 쪼개고, 자연상수 $e$는 칸토어의 무한으로 쪼개서 변수분리하고, 오차범위 내 상수로 부등식으로 묶어서 범위를 스칼라 노름으로 명확하게 한다</q></b>는 서술을 엄밀성의 기준, 곧 <b>각 분해에서 쓰이는 대수 규칙이 전역적으로 성립하는가, 국소적으로만 성립하는가</b>로 판정한다. 전역 규칙은 정의역 전체에서 예외 없이 참인 등식·부등식이고, 국소 규칙은 어떤 근방·분지(branch)·점근 극한에서만 참인 규칙이다.</p>
+<p>$\pi$는 $\cos$의 가장 작은 양의 영점의 두 배로 정의되는 상수이며, 위상 $\theta\mapsto e^{i\theta}=\cos\theta+i\sin\theta$의 주기 $2\pi$로 나타난다. 따라서 <q>$\pi$를 쪼갠다</q>의 정확한 형태는 극분해
+$$z=\underbrace{|z|}_{\text{스칼라 노름}}\cdot\underbrace{e^{i\theta}}_{\text{위상벡터}},\qquad \theta\in\mathbb R/2\pi\mathbb Z$$
+이다. 독립변수는 $\theta$이고, $\pi$는 $\theta$가 사는 공간 $\mathbb R/2\pi\mathbb Z$를 정하는 상수이다.</p>
+<div class="table-wrap"><table>
+<caption>표 1. 극분해에서 쓰이는 대수 규칙의 전역·국소 판정</caption>
+<thead><tr><th>규칙</th><th>성립 범위</th><th>판정</th></tr></thead>
+<tbody>
+<tr><td>$|z_1z_2|=|z_1|\,|z_2|$, $|e^{i\theta}|=1$</td><td class="w">모든 $z_1,z_2\in\mathbb C$, 모든 $\theta\in\mathbb R$</td><td class="g">전역</td></tr>
+<tr><td>$e^{i\theta_1}e^{i\theta_2}=e^{i(\theta_1+\theta_2)}$</td><td class="w">모든 실수 $\theta_1,\theta_2$</td><td class="g">전역</td></tr>
+<tr><td>$\operatorname{Arg}(z_1z_2)=\operatorname{Arg}z_1+\operatorname{Arg}z_2$</td><td class="w">합이 $(-\pi,\pi]$ 안에 있을 때만. 일반적으로는 $\bmod 2\pi$</td><td class="l">국소</td></tr>
+<tr><td>$\operatorname{Log}(z_1z_2)=\operatorname{Log}z_1+\operatorname{Log}z_2$</td><td class="w">분지 절단을 넘지 않는 근방에서만</td><td class="l">국소</td></tr>
+<tr><td>$\theta=\arg z$의 연속성</td><td class="w">$z\neq0$이고 절단선 밖에서만</td><td class="l">국소</td></tr>
+</tbody></table></div>
+<p>수치 확인: $z_1=z_2=-1+10^{-12}i$에서 $\operatorname{Arg}(z_1z_2)=$<span id="argProd"></span>이지만 $\operatorname{Arg}z_1+\operatorname{Arg}z_2=$<span id="argSum"></span>로 $2\pi$만큼 다르다. 반면 $|z_1z_2|=|z_1||z_2|=$<span id="argAbs"></span>은 정확히 성립한다. 7.1절의 스핀-½ 부호 반전($e^{i\pi}=-1$)은 바로 이 위상 규칙이 전역적으로 한 값으로 정해지지 않는다는 현상이다. <b>노름은 전역, 위상은 국소</b>라는 이 비대칭이 이하 분해의 골격이다.</p>
+<p>두 분해(π의 극분해와 6.2절의 $e$ 분해)는 지수함수에서 하나로 합쳐진다. $e^{a+i\theta}=e^{a}\cdot e^{i\theta}$에서 $e^a$는 노름(전역), $e^{i\theta}$는 위상(국소)이다. 슈뢰딩거 방정식의 변수분리 $\psi(x,t)=X(x)\,e^{-iEt}$에서 시간 인자가 순수한 위상이라는 사실이 이 분해의 물리적 형태이다. 명제 7.2의 증폭률 $R(iy)$ ($y=\lambda\Delta t$)도 $R=|R|\,e^{i\varphi}$로 쪼개면, 정확한 증폭률 $e^{iy}$와의 오차가 진폭과 위상으로 분리된다.</p>
+<div class="env"><span class="lab">명제 7.3</span>(오차의 진폭–위상 분해, 전역) $\Delta\varphi=\varphi-y$라 하면 모든 $y$에 대해
+$$|R-e^{iy}|^2=(|R|-1)^2+4|R|\sin^2\!\frac{\Delta\varphi}{2},$$
+$$\big||R|-1\big|\ \le\ |R-e^{iy}|\ \le\ \big||R|-1\big|+2\Big|\sin\frac{\Delta\varphi}{2}\Big|.$$
+<div class="proof">$R-e^{iy}=e^{iy}\big(|R|e^{i\Delta\varphi}-1\big)$이고 $\big||R|e^{i\Delta\varphi}-1\big|^2=(|R|-1)^2+2|R|(1-\cos\Delta\varphi)$이다. 하한은 역삼각부등식, 상한은 $|R|e^{i\Delta\varphi}-1=(|R|-1)e^{i\Delta\varphi}+(e^{i\Delta\varphi}-1)$에 삼각부등식을 적용한 것이다.</div></div>
+<p>명제 7.3은 원 착상의 <b><q>변수분리해서 오차범위 내 상수로 부등식으로 묶어서 범위를 스칼라 노름으로 명확하게</q></b>의 정확한 형태이다. 하나의 복소 오차가 진폭 오차 $\big||R|-1\big|$(노름)과 위상 오차 $\Delta\varphi$(국소 변수)로 분리되고, 둘은 전역 부등식으로 스칼라 $|R-e^{iy}|$ 하나에 묶인다. 이 문서가 열릴 때 네 방법에 대해 $y\in(0,4]$의 4000점에서 확인한 항등식의 최대 편차는 <span id="idMax"></span>(기계 정밀도)이고, 상·하한은 <span id="bndOk"></span>.</p>
+<figure class="fig" id="figC">
+  <div class="ctl">
+    <span>방법</span>
+    <button type="button" data-m="0" class="on">Euler</button><button type="button" data-m="1">RK4</button><button type="button" data-m="2">Crank–Nicolson</button><button type="button" data-m="3">Gauss–Legendre</button>
+    <label>$y=\lambda\Delta t$ <input type="range" id="yC" min="0.05" max="3.6" step="0.01" value="1.2"> <span id="yCv">1.20</span></label>
+  </div>
+  <div class="legend"><span style="--c:var(--s1)">Euler</span><span style="--c:var(--s2)">RK4</span><span style="--c:var(--s3)">Crank–Nicolson</span><span style="--c:var(--s4)">Gauss–Legendre</span><span class="d" style="--c:var(--muted)">단위원 $|R|=1$</span></div>
+  <canvas id="cC" class="ch tall"></canvas>
+  <div class="readout" id="rC"></div>
+  <figcaption><b>그림 2.</b> 복소평면에서 본 증폭률 $R(iy)$ 곡선($y$: 0→3.6). 속이 빈 점은 정확한 위상 $e^{iy}$, 속이 찬 점은 선택한 방법의 $R(iy)$이다. 검은 반지름 방향 선분이 <b>진폭 오차</b>, 단위원 위의 주황 호가 <b>위상 오차</b>이다. 파데(분수) 근사인 크랭크-니콜슨과 가우스-르장드르는 모든 $y$에서 단위원 위에 있다(진폭 오차 0, 전역). RK4는 $y&lt;2\sqrt2$에서 원 안쪽, 그 바깥에서 원 밖으로 나간다(국소). Euler는 항상 원 밖에 있다.</figcaption>
+</figure>
+<p>명제 7.3의 분해 자체는 전역이지만, 각 방법의 진폭·위상 오차를 묶는 <q>상수</q>가 전역인지는 방법마다 따로 증명해야 한다. 점근 전개에서 얻은 상수는 기본적으로 국소($y\to0$)이며, 전역으로 올리려면 별도의 부등식 증명이 필요하다. 크랭크-니콜슨의 위상 상한은 $f(y)=y^3/12-y+2\arctan(y/2)$에 대해 $f(0)=0$, $f'(y)=\tfrac{y^2}{4}\big(1-\tfrac1{1+y^2/4}\big)\ge0$이므로 전역이다. Euler의 두 규칙도 $\sqrt{1+u}\le1+u/2$와 $\arctan y\ge y-y^3/3$로 전역이 된다. 반면 RK4의 <q>노름이 커지지 않는다</q>는 규칙은 $y=2\sqrt2$에서 깨진다. 이 경계가 곧 RK4 안정성 영역의 허수축 한계이다.</p>
+<div class="table-wrap"><table id="t-glob"><caption>표 2. 진폭·위상 오차 부등식의 성립 범위 ($y\ge0$)와 이 문서의 수치 확인 ($y\in(0,4]$, 4000점)</caption></table></div>
+<figure class="fig" id="figA">
+  <div class="legend"><span style="--c:var(--s1)">Euler</span><span style="--c:var(--s2)">RK4</span><span style="--c:var(--s3)">Crank–Nicolson</span><span style="--c:var(--s4)">Gauss–Legendre</span></div>
+  <canvas id="cA" class="ch"></canvas>
+  <figcaption><b>그림 3.</b> 진폭 $|R(iy)|$. 점선은 $|R|=1$과 $y=2\sqrt2$. 파데 근사 두 방법은 전 구간에서 1에 겹쳐 있고(전역), RK4는 $2\sqrt2$를 넘으면 1을 넘는다(국소).</figcaption>
+</figure>
+<figure class="fig" id="figP">
+  <div class="legend"><span style="--c:var(--s1)">Euler $y-\arctan y$</span><span class="d" style="--c:var(--s1)">상한 $y^3/3$</span><span style="--c:var(--s3)">CN $y-2\arctan(y/2)$</span><span class="d" style="--c:var(--s3)">상한 $y^3/12$</span></div>
+  <canvas id="cP" class="ch"></canvas>
+  <figcaption><b>그림 4.</b> 위상 오차와 전역 상한(로그–로그). 작은 $y$에서 곡선은 상한과 겹쳐 기울기 3을 보이고, 큰 $y$에서는 상한이 훨씬 위에 있다. 상한은 전 구간에서 성립하지만 날카로운 것은 $y\to0$에서뿐이다.</figcaption>
+</figure>
+<div class="env"><span class="lab">판정 7.5</span>원 착상의 분해는 엄밀하게 성립한다. 단 (i) $\pi$는 변수가 아니라 위상의 주기이며, 쪼개지는 것은 $z=|z|e^{i\theta}$이다. 노름 규칙은 전역, 위상 규칙은 국소이다. (ii) <q>칸토어의 무한</q>은 가산 무한의 칸토어 급수로 읽어야 하며, 그 꼬리 부등식은 전역이다. (iii) 진폭–위상 분해의 항등식과 상·하한은 전역이지만, 방법별 오차 상수는 전역(Euler·크랭크-니콜슨)과 국소(RK4의 $|R|\le1$, $y\le2\sqrt2$)로 갈린다. 10.8절은 이 분해가 실제 오차를 예측함을 보인다.</div>
+
+
+<!-- ============================================================ -->
+<h2>8. 우주의 가속팽창과 3+1 분해</h2>
+<p>원 착상은 <q>가속도와 속도의 방향이 수직이 아닌 경우, 아인슈타인 장방정식에 의해 전환 시점으로 넘어가고, 그때 정적 3차원에서 4차원이 필요한 2차원 초평면으로 넘어가며, 그 계산은 비선형이어서 룽게-쿠타 같은 수치해법이 필요하다</q>고 보았다. 운동학적으로 가속도의 수직 성분은 방향만 바꾸고 평행 성분은 속력을 바꾼다. 우주론에서 대응되는 전환은 척도인자 $a(t)$의 <b>감속에서 가속으로의 전환</b>, 곧 $\ddot a=0$이다.</p>
+<div class="env remark"><span class="lab">주의 8.0</span>원 착상의 <q>수렴차수가 커짐에 따라 반비례 시점으로 넘어간다</q>는 서술에서, 수치해석의 수렴차수(정의 2.2의 iv)는 우주의 감속-가속 전환과 인과적 관계가 없다. 격자를 아무리 정련해도 전환 시점 $\Omega_ma^{-3}=2\Omega_\Lambda$는 바뀌지 않는다. 이 서술이 성립하는 정확한 형태는 <b>전개의 차수</b>(정의 2.2의 i과 같은 계열)에 관한 것이며, 8.1절의 명제 8.1′에서 뉴턴 역학을 상대론적 운동의 1차 절단으로 보고 <q>차수를 올릴 때 어디서 전개가 무너지고 반비례($a\propto\gamma^{-3}$) 영역으로 넘어가는가</q>로 정식화한다.</div>
+<p>일반상대론의 3+1 분해에서 4차원 시공간은 시간 매개변수 $t$로 이어지는 3차원 공간 초곡면들로 엽층화된다. $n$차원 시공간의 초평면은 $n-1$차원이므로, 실제 4차원 시공간에서 동시성 초평면은 3차원이고, 공간 한 축을 생략한 2+1차원 시공간 그림에서는 <b>2차원 초평면</b>으로 그려진다(8.2절, 그림 7). 균질·등방 대칭을 가정하면 비선형 장방정식은 프리드만 방정식이라는 상미분방정식으로 축약된다.
+$$\Big(\frac{\dot a}{a}\Big)^2=H_0^2\big(\Omega_m a^{-3}+\Omega_\Lambda\big),\qquad \frac{\ddot a}{a}=-\frac{H_0^2}{2}\big(\Omega_m a^{-3}-2\Omega_\Lambda\big).$$
+따라서 전환 시점은 $\Omega_m a^{-3}=2\Omega_\Lambda$로 결정되고, 방정식은 룽게-쿠타법으로 적분된다. 장방정식 전체(대칭 가정 없음)는 수치상대론의 영역이다.</p>
+
+<h3>8.1 뉴턴에서 아인슈타인으로: 속도축과 가속도축의 분리</h3>
+<p>뉴턴 역학에서 일정한 힘 $F$를 받는 질량 $m$의 물체는 $a=F/m$을 유지하고, 속도는 $v=at$로 한계 없이 증가한다. 속도와 가속도는 같은 방향으로 겹쳐 있으며, 가속도가 그대로 속도로 누적되는 <b>의존적 관계</b>이다. 상대론에서는 이 관계가 끊어진다. 운동량 변화율 $dp/dt=F$가 일정할 때 $p=\gamma mv=Ft$이므로
+$$v(t)=\frac{\alpha t}{\sqrt{1+(\alpha t/c)^2}},\qquad \gamma(t)=\sqrt{1+(\alpha t/c)^2},\qquad a(t)=\frac{dv}{dt}=\frac{\alpha}{\gamma^{3}},\qquad \alpha=\frac{F}{m}$$
+가 된다. 속도는 $c$에 포화되고, 좌표 가속도는 $\gamma^{-3}$로 사라진다. 물체가 <q>느끼는</q> 고유가속도는 끝까지 $\alpha$로 일정하다.</p>
+<div class="env"><span class="lab">명제 8.1</span>(4-속도와 4-가속도의 직교성) 민코프스키 계량 $\eta=\mathrm{diag}(-1,1,1,1)$에서 4-속도 $u^\mu$와 4-가속도 $A^\mu=du^\mu/d\tau$는 항상 직교한다: $\eta_{\mu\nu}u^\mu A^\nu=0$.
+<div class="proof">$\eta_{\mu\nu}u^\mu u^\nu=-c^2$가 상수이므로 고유시간 $\tau$로 미분하면 $2\eta_{\mu\nu}u^\mu A^\nu=0$이다.</div></div>
+<p>명제 8.1이 원 착상의 <b><q>속도와 가속도의 축이 나뉘어진다</q></b>는 주장의 정확한 형태이다. 뉴턴 역학에서는 직선 운동의 $v$와 $a$가 평행(3절의 <q>수평</q>)하지만, 시공간에서는 둘이 언제나 수직(3절의 <q>수직</q>)이다. 이 분리는 특수상대론의 로런츠 계량에서 이미 나타나며, 아인슈타인 장방정식은 이 계량을 곡률로 일반화한다. 장방정식의 특이점은 이 분리의 원인이 아니라 곡률이 발산하는 지점이다(10.2절).</p>
+<p>원 착상의 <q>힘이 커질수록 에너지 손실이 생긴다</q>는 직관은 다음과 같이 정밀화된다. 힘이 한 일 $W=\int F\,dx=(\gamma-1)mc^2$은 전부 운동에너지로 보존되므로 손실은 없다. 그러나 같은 속도에서 뉴턴식 운동에너지 $\tfrac12mv^2$에 해당하는 몫의 비율
+$$\eta_v=\frac{\tfrac12 mv^2}{(\gamma-1)mc^2}\xrightarrow{\ v\to c\ }0$$
+은 영으로 간다. 즉 투입된 에너지가 <b>속도로 전환되지 않고 관성의 증가로 흡수</b>된다. 이때 진행 방향의 유효 관성 $F/a=\gamma^{3}m$이 원 착상에서 말한 <q>질량은 그런 느낌</q>의 정량적 표현이다. 그림 6은 이 과정을 시간에 따라 보여 준다.</p>
+<div class="env"><span class="lab">명제 8.1′</span>(뉴턴은 1차 절단이고, 전환은 수렴반경에서 일어난다) $x=\alpha t/c$라 하면
+$$\frac vc=\frac{x}{\sqrt{1+x^2}}=\sum_{k=0}^{\infty}\binom{-1/2}{k}x^{2k+1}=x-\frac{x^3}{2}+\frac{3x^5}{8}-\cdots$$
+이며 뉴턴의 $v=\alpha t$는 그 첫 항(1차 절단)이다. 이 급수의 수렴반경은 $|x|=1$이다. 따라서 $\alpha t&lt;c$에서는 전개의 차수를 올릴수록 오차가 줄지만, $\alpha t&gt;c$에서는 어떤 유한 차수의 보정도 발산하며, 운동은 $a=\alpha/\gamma^3\sim c^3/(\alpha^2t^3)$의 반비례 영역으로 넘어간다.
+<div class="proof">$x/\sqrt{1+x^2}$는 $x=\pm i$에서 분기점을 가지므로 원점에서의 거듭제곱급수는 $|x|&lt;1$에서만 수렴한다. $\gamma=\sqrt{1+x^2}\approx x$ ($x\gg1$)에서 $a=\alpha\gamma^{-3}\approx\alpha x^{-3}$이다.</div></div>
+<p>명제 8.1′이 원 착상의 <b><q>(전개의) 차수가 커짐에 따라 반비례 시점으로 넘어간다</q></b>의 엄밀한 형태이다. 전환 시점 $\alpha t=c$ (즉 $v=c/\sqrt2$, $\gamma=\sqrt2$)는 테일러 급수의 수렴반경이라는 순수한 수학적 경계로 결정된다. 표 3은 이 경계에서 차수를 올리는 효과가 역전됨을 보여 준다.</p>
+<div class="table-wrap"><table id="t-pn"><caption>표 3. 속도의 포스트뉴턴 전개를 $x^{2K+1}$ 항까지 절단했을 때의 오차 $|v_K/c-v/c|$</caption></table></div>
+<p>$x&lt;1$에서는 차수를 올릴수록 오차가 기하급수적으로 줄고, $x=1$에서는 매우 느리게 줄며, $x&gt;1$에서는 차수를 올릴수록 오히려 발산한다. 이 경계를 넘으면 뉴턴 근사를 보정하는 방식으로는 운동을 기술할 수 없고, 상대론적 식 자체(또는 그것을 직접 적분하는 수치해법)가 필요하다.</p>
+<figure class="fig" id="figN">
+  <div class="legend"><span style="--c:var(--s1)">$x=0.6$</span><span style="--c:var(--s2)">$x=0.9$</span><span style="--c:var(--s3)">$x=1.0$</span><span style="--c:var(--s4)">$x=1.2$</span></div>
+  <canvas id="cN" class="ch"></canvas>
+  <figcaption><b>그림 5.</b> 포스트뉴턴 전개를 $x^{2K+1}$까지 절단했을 때의 오차(로그 축). 수렴반경 $x=1$의 안쪽(0.6, 0.9)은 $K$와 함께 감소하고, 경계($x=1$)는 매우 느리며, 바깥($x=1.2$)은 발산한다.</figcaption>
+</figure>
+
+<figure class="fig" id="fig1">
+  <div class="fig-controls">
+    <button type="button" id="f1-play" aria-label="재생/정지">❚❚ 정지</button>
+    <label>힘의 크기 $\alpha=F/m$ <input type="range" id="f1-alpha" min="0.3" max="3" step="0.1" value="1"> <span id="f1-alpha-v">1.0</span> $c$/단위시간</label>
+  </div>
+  <div class="fig-panels">
+    <div class="panel"><div class="ptitle">(a) 속도 $v(t)$</div><canvas id="f1-v"></canvas></div>
+    <div class="panel"><div class="ptitle">(b) 속도–가속도 평면 $(v,\,a)$</div><canvas id="f1-p"></canvas></div>
+    <div class="panel"><div class="ptitle">(c) 투입 에너지의 분배 (아인슈타인)</div><canvas id="f1-e"></canvas></div>
+  </div>
+  <div class="readout" id="f1-read"></div>
+  <figcaption><b>그림 6.</b> 일정한 힘 아래에서 뉴턴(<span class="sw sw-n"></span>)과 아인슈타인(<span class="sw sw-e"></span>)의 운동. (a) 뉴턴의 속도는 빛의 속도 $c$(점선)를 넘어 계속 증가하지만 상대론적 속도는 $c$에 포화된다. (b) 뉴턴의 상태는 가속도 $a=\alpha$를 유지한 채 속도축을 따라 무한히 이동하고, 상대론의 상태는 곡선 $a=\alpha(1-v^2/c^2)^{3/2}$를 따라 $(c,0)$으로 떨어진다. 속도축과 가속도축이 분리되는 과정이다. (c) 힘이 한 일 $(\gamma-1)mc^2$ 가운데 속도에 대응하는 몫 $\tfrac12mv^2$와 관성 증가($\gamma^3m$)로 흡수되는 몫. 힘 $\alpha$를 키우면 같은 시간 안에 분리가 더 빨리 일어난다. 단위: $c=m=1$.</figcaption>
+</figure>
+
+<h3>8.2 3차원 정적 축에서 시공간 축으로: 2차원 초평면의 출현</h3>
+<p>뉴턴 역학의 무대는 3차원 유클리드 공간 $(x,y,z)$와 그와 독립된 절대시간 $t$이다. 시간을 축으로 세우면 뉴턴 시공간은 $t=\text{const}$인 <b>정적 3차원</b> 단면들이 쌓인 구조가 되고, 이 단면(동시성)은 모든 관측자에게 동일하다. 물체의 운동 상태와 무관하게 단면은 수평으로 고정되며, 속도 $(1,v)$는 제한 없이 기울 수 있다.</p>
+<p>아인슈타인 역학에서 시공간은 계량 $ds^2=-c^2dt^2+dx^2+dy^2+dz^2$을 갖는 4차원 민코프스키 공간이다. 관측자의 동시성은 그 4-속도 $u$에 민코프스키 직교하는 초평면 $\{X:\eta(u,X-X_0)=0\}$으로 정의되며, 이 초평면은 관측자의 속도에 따라 기울어진다. $x$방향 속도 $v=\beta c$인 관측자의 동시성 초평면은
+$$ct-ct_0=\beta\,(x-x_0)$$
+이고, 기울기 $\beta&lt;1$이므로 광원뿔 $ct=|x|$ 바깥에 머물며 $\beta\to1$에서 광원뿔에 접근한다.</p>
+<div class="env"><span class="lab">명제 8.2</span>(2차원 초평면과 가속도의 위치) 공간 한 축($z$)을 생략한 2+1차원 시공간 $(x,y,ct)$에서 동시성 초평면은 <b>2차원 평면</b>이다. 쌍곡 운동 $ct=\tfrac{c^2}{\alpha}\sinh\tfrac{\alpha\tau}{c},\ x=\tfrac{c^2}{\alpha}\big(\cosh\tfrac{\alpha\tau}{c}-1\big)$에서 4-속도 $u\propto(\cosh,\sinh)$는 이 평면의 법선(민코프스키 의미)이고, 4-가속도 $A\propto(\sinh,\cosh)$는 이 평면 <b>안에</b> 놓인다.
+<div class="proof">$(ct,x)$ 성분으로 $A$의 방향비는 $\sinh:\cosh=\beta:1$이므로 $A$는 직선 $ct-ct_0=\beta(x-x_0)$ 위에 있다. 또 $\eta(u,A)\propto-\cosh\sinh+\sinh\cosh=0$이다.</div></div>
+<p>따라서 원 착상의 <b><q>정적 3차원에서 4차원이 필요한 2차원 초평면으로 넘어간다</q></b>는 서술은 다음 의미에서 엄밀하다. 실제 4차원 시공간에서 동시성 초평면은 3차원이며, 그림을 위해 공간 한 축을 생략한 2+1차원 표현에서 그것이 2차원 평면으로 나타난다. 뉴턴의 경우 이 평면은 항상 수평이고 속도와 무관하다. 아인슈타인의 경우 평면은 속도를 따라 기울어지고, 속도는 평면의 법선 방향으로, 가속도는 평면 안으로 분리된다. 그림 7는 세 단계를 연속적으로 보여 준다.</p>
+<div class="env remark"><span class="lab">주의 8.3</span>그림은 유클리드 투영이므로 $u$와 $A$가 화면에서 직각으로 보이지 않는다. 직교성은 민코프스키 내적 $\eta(u,A)=0$의 의미이며, 그림 하단의 수치가 이를 확인한다. 뉴턴 시공간에는 시간과 공간을 섞는 내적이 없으므로 <q>직교</q>라는 말 자체가 정의되지 않는다.</div>
+
+<figure class="fig" id="fig2">
+  <div class="fig-controls">
+    <div class="seg" role="group" aria-label="단계">
+      <button type="button" data-stage="0">① 3차원 정적 공간</button>
+      <button type="button" data-stage="1">② 뉴턴 시공간</button>
+      <button type="button" data-stage="2" class="on">③ 아인슈타인 시공간</button>
+      <button type="button" data-stage="3">④ 휘어진 초곡면 (우주론)</button>
+    </div>
+    <button type="button" id="f2-play">❚❚ 정지</button>
+    <label>진행 <input type="range" id="f2-s" min="0" max="1" step="0.005" value="0.4"></label>
+  </div>
+  <canvas id="f2-c" aria-label="시공간 다이어그램"></canvas>
+  <div class="readout" id="f2-read"></div>
+  <figcaption><b>그림 7.</b> 공간 한 축을 생략한 시공간 다이어그램(드래그하여 회전). ① 3차원 정적 공간 $(x,y,z)$. ② 뉴턴 시공간 $(x,y,t)$: 세로축이 절대시간으로 바뀌고, 동시성 단면(<span class="sw sw-p"></span>)은 항상 수평인 2차원 평면이다. 세계선(<span class="sw sw-n"></span>)은 포물선 $x=\tfrac12\alpha t^2$. ③ 아인슈타인 시공간 $(x,y,ct)$: 광원뿔(점선)이 나타나고, 세계선(<span class="sw sw-e"></span>)은 쌍곡선이며, 동시성 2차원 초평면이 속도를 따라 기울어진다. 화살표 $u$는 4-속도(평면의 민코프스키 법선), $A$는 4-가속도(평면 내부). 옅은 점선은 이전 고유시각들의 동시성 단면으로, 모두 린들러 지평선 $x=-c^2/\alpha,\ ct=0$(적색 점선)을 지난다. ④ 평탄 ΛCDM 우주의 우주 시간 일정 초곡면을 공동운동 관측자의 국소 관성계에서 본 모습: $\Delta(ct)\approx \tfrac12 H(t)\,r^2/c$로 휘며(곡률은 시각화를 위해 축척), 외재 곡률 $K=-3H$는 빅뱅으로 갈수록 발산한다. 단위: ①–③ $c=\alpha=1$, ④ 시간 $1/H_0$.</figcaption>
+</figure>
+
+<h3>8.3 초곡면의 곡률 변화와 미분의 불연속</h3>
+<p>8.2절의 동시성 초평면은 평평하다. 이는 특수상대론의 민코프스키 시공간이 곡률을 갖지 않기 때문이며, 그 한도에서 정확하다. 원 착상이 요구하는 <q>곡률의 변화량이 있고 미분연산이 연속적이지 않은 순간</q>은 장방정식이 곡률을 부여하는 일반상대론에서 나타난다. 이를 서술하려면 초곡면 $\Sigma_t$의 곡률을 두 종류로 구분해야 한다.</p>
+<div class="env"><span class="lab">정의 8.4</span>(내재 곡률과 외재 곡률) 공간꼴 초곡면 $\Sigma_t$의 유도계량 $\gamma_{ij}$로부터 계산되는 리치 곡률 ${}^{(3)}\!R_{ij}$를 <b>내재 곡률</b>, 단위 법선 $n$의 변화율 $K_{ij}=-\nabla_i n_j$ (공간 성분)을 <b>외재 곡률</b>이라 한다. 전자는 초곡면 자체의 휨을, 후자는 초곡면이 시공간 안에서 구부러진 정도를 측정한다. 부호는 MTW 규약을 따른다.</div>
+<div class="env"><span class="lab">명제 8.5</span>(평탄 FLRW 우주의 초곡면) 평탄 FLRW 계량 $ds^2=-c^2dt^2+a(t)^2\delta_{ij}dx^idx^j$의 우주 시간 일정 초곡면은 내재 곡률 ${}^{(3)}\!R_{ij}=0$이고, 외재 곡률은
+$$K_{ij}=-H\gamma_{ij},\qquad K=\gamma^{ij}K_{ij}=-3H(t)$$
+이다. 공동운동 관측자의 국소 관성계에서 이 초곡면은 관측자의 동시성 평면으로부터 $\Delta(ct)=\tfrac{H}{2c}r^2+O(r^3)$만큼 휜다.
+<div class="proof">$\gamma_{ij}=a^2\delta_{ij}$, $n=\partial_t/c$이므로 $K_{ij}=-\tfrac1{2c}\partial_t\gamma_{ij}=-\tfrac{\dot a}{a}\tfrac{\gamma_{ij}}{c}$이며, $c=1$ 단위에서 $K=-3H$이다. 고유거리 $r$의 공동운동 이웃은 $v=Hr$로 후퇴하므로 그 지점에서 우주 시간 일정 면은 관측자의 동시성 평면에 대해 기울기 $\beta=Hr/c$를 갖는다(8.2절). 이를 $r$에 대해 적분하면 $\Delta(ct)=Hr^2/(2c)$이다.</div></div>
+<p>명제 8.5에 의해 <b>초곡면 곡률의 변화량은 허블 매개변수의 시간 변화 그 자체</b>이다. 10.1절에서 룽게-쿠타로 적분한 프리드만 방정식은 곧 $K(t)=-3H(t)$의 발전 방정식을 푼 것이다. 원 착상의 <q>곡률(헤시안)</q>은 여기서 초곡면의 2차 형식 $K_{ij}$로 구체화된다.</p>
+<p>미분의 불연속은 정칙성의 정도에 따라 세 부류로 나뉜다.</p>
+<div class="env"><span class="lab">명제 8.6</span>(불연속의 분류)
+(i) <b>곡률의 도약.</b> 계량이 $C^1$이지만 $C^2$가 아니면 곡률은 유한한 도약을 갖는다. 별의 표면처럼 밀도가 불연속인 경계가 이에 해당하며, 경계면을 가로지르는 외재 곡률의 도약 $[K_{ij}]$는 이스라엘 접합조건에 의해 경계면의 표면 에너지-운동량과 연결된다. 미분이 <i>불연속</i>인 경우이다.<br>
+(ii) <b>곡률의 발산.</b> 평탄 FLRW에서 크레치만 불변량은 $R_{abcd}R^{abcd}=12\big[(\ddot a/a)^2+H^4\big]$이며, 물질 우세기에 $H\approx 2/(3t)$이므로 $t\to0$에서 $t^{-4}$로 발산한다. 동시에 $K=-3H\to-\infty$이다. 이는 좌표 변환으로 제거할 수 없는 <b>물리적 특이점</b>이며, 미분이 불연속한 것이 아니라 정의되지 않는다.<br>
+(iii) <b>좌표 특이점.</b> 쌍곡 운동하는 관측자의 동시성 초평면 $ct-ct_0=\beta(x-x_0)$은 모두 $x=-c^2/\alpha$, $ct=0$을 지난다(그림 7의 ③). 그곳에서 관측자의 시간좌표는 퇴화하지만 시공간 곡률은 영이다(린들러 지평선). 수치상대론에서 쌍곡형 시간 단면 조건이 특성곡선의 교차로 인해 형성하는 <b>게이지 충격파</b>도 같은 부류이다.</div>
+<p>(i)–(iii)의 판정 기준은 좌표 불변량이다. 크레치만 불변량과 같은 스칼라가 발산하면 물리적 특이점이고, 좌표 선택을 바꾸어 사라지면 좌표 특이점이다. 특히 (iii)의 게이지 충격파는 6절의 비선형 쌍곡선 방정식에서 특성곡선이 교차하여 미분이 끊기는 현상과 수학적으로 동일한 구조이다. 이로써 원 착상의 <q>특성곡선 미분이 끊기는 비선형 쌍곡선</q>과 <q>장방정식 특이점</q>은 하나의 틀로 연결되며, 둘을 구분하는 것이 곧 좌표 불변량이다. 그림 7의 ④는 (ii)를, ③은 (iii)을 보여 준다.</p>
+<div class="env remark"><span class="lab">주의 8.7</span>그림 7 ④의 곡면은 공동운동 관측자 근방의 국소 근사 $\Delta(ct)\approx\tfrac12Hr^2$을 시각화한 것이며, 곡률 크기는 축척되었다. 평탄 FLRW 우주는 전역적으로 민코프스키 공간에 매장되지 않는다.</div>
+
+
+
+<!-- ============================================================ -->
+<h2>9. 신경망 근사(PINN)에서의 차수</h2>
+<p>물리정보신경망은 해를 신경망 $u_\theta$로 표현하고, collocation point(방정식을 채점할 배치점) 위에서 PDE 잔차·초기조건·경계조건의 제곱합을 최소화한다. 원 착상의 <q>3차 이하일 때</q>라는 조건은 활성화함수의 정칙성 조건으로 정식화된다. 이 문구를 <q>수렴차수 3 이하</q>로 읽을 수도 있으나, PINN에는 격자 폭 $h$가 없어 정의 2.2의 수렴차수가 정의되지 않으므로 본 노트는 정칙성 해석을 택한다.</p>
+<div class="env"><span class="lab">명제 9.1</span>(활성화함수의 정칙성) PDE가 $k$계 도함수를 포함하면 잔차를 자동미분으로 계산하기 위해 활성화함수는 적어도 $C^k$여야 한다. 따라서 2계 PDE에서 ReLU(도함수가 계단함수)는 부적합하고 tanh, sin, GELU가 적합하다.</div>
+<p>PINN의 오차는 근사오차(은닉층 수·노드 수가 결정), 추정오차(collocation point 수가 결정), 최적화오차(optimizer·학습률·epoch가 결정)로 분해된다. 격자법과 달리 최적화오차가 지배적이어서, collocation point를 늘려도 오차가 일정 수준에서 포화되는 경우가 많다. 따라서 PINN에는 깨끗한 $h^p$ 형태의 수렴차수를 가정할 수 없으며, 난수 시드에 따른 분산이 존재하므로 결과는 여러 시드의 평균과 표준편차로 보고해야 한다. 원 착상이 결정론적 이산화에 대해 배제한 통계는 이 지점에서 다시 필요해진다.</p>
+<div class="env"><span class="lab">명제 9.2</span>(손실함수는 정적분의 구적이다) 도메인 $\Omega$ 위의 잔차 $r_\theta$에 대해 PINN 손실
+$$\mathcal L(\theta)=\frac1N\sum_{i=1}^{N}r_\theta(x_i)^2\ \approx\ \frac1{|\Omega|}\int_\Omega r_\theta(x)^2\,dx$$
+은 적분의 구적 근사이다. collocation point를 매 epoch 무작위로 뽑으면 몬테카를로 구적(표준편차 $O(N^{-1/2})$)이 되고, 균등 격자에 고정하면 결정론적 구적(매끄러운 피적분함수에 대해 $O(N^{-1})$ 이상)이 된다.</div>
+<p>명제 9.2는 원 착상의 <b><q>정적분 국소값 패턴 인식</q></b>에 대한 정확한 형태이다. 각 collocation point는 피적분함수 $r^2$의 <i>국소값</i>을 채점하고, 신경망은 그 국소값들이 모두 작아지는 함수의 <i>패턴</i>을 학습한다. 따라서 collocation point 수는 FDM의 격자점 수 $N$에 대응하지만, 그것이 줄이는 것은 해의 이산화 오차가 아니라 손실 적분의 구적 오차이다.</p>
+<p><b>유한요소법(FEM)의 관점.</b> 잔차 $r(u_h)$를 처리하는 방식으로 세 방법을 한 줄에 놓을 수 있다.</p>
+<div class="table-wrap"><table><caption>표 4. 잔차를 0으로 만드는 방식의 비교</caption>
+<thead><tr><th>방법</th><th>시행함수 공간</th><th>조건</th><th>필요한 정칙성</th></tr></thead>
+<tbody>
+<tr><td>FDM</td><td>격자 함수</td><td>격자점에서 차분 잔차 $=0$</td><td>차분 연산자</td></tr>
+<tr><td>FEM (갤러킨)</td><td>조각별 다항식 $V_h$</td><td>$\int_\Omega r(u_h)\,v\,dx=0\ \ \forall v\in V_h$ (약형식)</td><td>$H^1$ (1계 도함수만)</td></tr>
+<tr><td>콜로케이션 / PINN</td><td>다항식 / 신경망 (비선형)</td><td>$r(u_h)(x_i)=0$ 또는 $\sum_i r(x_i)^2$ 최소 (강형식)</td><td>$C^k$ ($k$계 도함수 전부)</td></tr>
+</tbody></table></div>
+<p>갤러킨법은 부분적분으로 도함수 하나를 시험함수로 넘기므로 2계 PDE도 1계 도함수만 있는 조각별 선형 함수로 풀 수 있다. 조각별 선형 모자함수는 ReLU 세 개의 선형결합과 정확히 같다. 그런데도 ReLU PINN이 실패하는 이유는 신경망 자체가 아니라 <b>강형식</b>(잔차를 점마다 평가)을 쓰기 때문이다. 이것이 명제 9.1의 FEM 쪽 해석이다. 원 착상의 <q>히든레이어 추적</q>은 은닉층 수·너비에 따른 오차 변화로 정량화한다(10.6절).</p>
+<p>곡률이 편미분방정식을 구동한다는 관점의 극단적 예로 페렐만이 푸앵카레 추측의 증명에 사용한 리치 흐름 $\partial_t g=-2\,\mathrm{Ric}(g)$를 들 수 있다. 이는 계량에 대한 열방정식형 흐름으로, 4절의 곡률 계층이 동역학을 결정하는 사례이다. 다만 이것과 PINN 사이에 직접적 연관은 정립되어 있지 않다.</p>
+
+<!-- ============================================================ -->
+<h2>10. 수치 실험</h2>
+<p>평탄 ΛCDM 모형($\Omega_m=0.31$, $\Omega_\Lambda=0.69$, $H_0=67.7$ km/s/Mpc)을 사용하고, 시간은 $1/H_0$ 단위, 양자계는 $\hbar=m=1$ 단위로 쓴다. 모든 값은 부록의 스크립트로 재현된다.</p>
+
+<h3>10.1 우주의 가속팽창: 시간 수렴성 분리</h3>
+<p>평탄 ΛCDM의 정확해 $a(t)=(\Omega_m/\Omega_\Lambda)^{1/3}\sinh^{2/3}\!\big(\tfrac32\sqrt{\Omega_\Lambda}\,t\big)$를 기준해로 삼아, 특이점을 피한 $t_s=0.05$에서 현재 $t_0$까지 적분하였다.</p>
+<div class="table-wrap"><table id="t-fried"><caption>표 5. 프리드만 방정식의 시간 수렴성</caption></table></div>
+<p>관측 차수는 이론값 1과 4에 수렴한다. 우주의 나이는 $t_0=0.9553/H_0=13.80$ Gyr, 감속-가속 전환은 $a=0.608$ (적색편이 $z\approx0.65$, 빅뱅 후 약 7.6 Gyr)에서 일어난다.</p>
+
+<h3>10.2 빅뱅 근방: 특이점에 의한 차수 저하</h3>
+<p>우주의 나이 $t_0=\int_0^1 da/(aH)$의 피적분함수는 $a\to0$에서 $\sqrt a/\sqrt{\Omega_m}$처럼 행동한다. 명제 6.2에 의해 사다리꼴 공식의 차수는 $1+\tfrac12=1.5$로 예측된다.</p>
+<div class="table-wrap"><table id="t-age"><caption>표 6. 우주 나이 적분의 사다리꼴 구적</caption></table></div>
+<p>관측값은 예측과 일치한다. 표준 모형에서 $t=0$은 $a=0$인 특이점으로 방정식이 정의되지 않으므로, <q>빅뱅 이전</q>에 대해 수치해석이 제공할 수 있는 것은 특이점 근방의 거동을 차수 저하로 진단하는 것까지이다. 그 이전의 기술(인플레이션, 바운스 모형 등)은 추가 가설을 요구한다.</p>
+
+<h3>10.3 양자얽힘: 차수와 유니터리성의 분리</h3>
+<p>2-큐빗 XX 결합 $H=\tfrac J2(\sigma_x\otimes\sigma_x+\sigma_y\otimes\sigma_y)$에서 $|10\rangle$로 시작하면 정확해는 $\psi(t)=\cos(Jt)|10\rangle-i\sin(Jt)|01\rangle$이며, $t=\pi/(4J)$에서 얽힘 척도 concurrence $C=2|\psi_{00}\psi_{11}-\psi_{01}\psi_{10}|$가 최댓값 1에 도달한다.</p>
+<div class="table-wrap"><table id="t-qubit"><caption>표 7. 2-큐빗 얽힘 동역학 (스텝 수 25–400, $T=\pi/4$). 예측값은 명제 7.1–7.2의 $\big||R(iJ\Delta t)|^n-1\big|$</caption></table></div>
+<p class="note">* 마지막 정련(200→400 스텝)에서는 오차가 $10^{-14}$ 수준의 부동소수점 반올림 한계에 닿아 관측 차수가 4보다 낮게 나올 수 있다. 25–200 스텝에서는 모두 4에 가깝다. 측정값이 $10^{-14}$–$10^{-15}$인 항목은 반올림 오차의 누적이다.</p>
+<p>명시적 오일러법의 노름 오차 $7.7\times10^{-4}$는 명제 7.1의 예측 $\tfrac12J^2T\Delta t$와 두 자리까지 일치하며, 그 결과 concurrence가 물리적 상한 1을 넘는다. 크랭크-니콜슨법은 RK4보다 차수가 낮지만 분수 근사이므로 구조적으로 노름을 보존한다. 가우스-르장드르법은 <b>4차 정확도와 노름 보존을 동시에</b> 갖는다. 즉 번분수의 다음 수렴분수로 가면 차수는 올라가고 보존성은 유지된다.</p>
+
+<h3>10.4 파동묶음: 공간 수렴성 분리 — FDM과 FEM</h3>
+<p>1차원 자유 슈뢰딩거 방정식 $i\psi_t=-\tfrac12\psi_{xx}$을 도메인 $[-20,20]$, 가우스 파동묶음($\sigma=1$, $k_0=2$), $T=1$로 풀었다. 시간은 행렬지수(고유분해)로 정확히 적분하여 시간 오차를 제거하였으므로, 표의 오차는 순수한 공간 이산화 오차이다. FDM은 2차 중심차분 $\psi_{xx}\approx(\psi_{i+1}-2\psi_i+\psi_{i-1})/h^2$, FEM은 조각별 선형(P1) 요소의 갤러킨법 $iM\dot\psi=\tfrac12K\psi$ (질량행렬 $M$, 강성행렬 $K$, 초기값은 $L^2$ 투영)을 썼다. $L^2$와 $H^1$ 반노름은 요소마다 4점 가우스 구적으로 계산한 연속 노름이다.</p>
+<div class="table-wrap"><table id="t-space"><caption>표 8. 공간 수렴성: FDM(2차 중심차분) 대 FEM(P1 갤러킨)</caption></table></div>
+<p>두 방법 모두 $L^\infty$·$L^2$에서 2차, $H^1$ 반노름(1계 도함수의 오차)에서 1차로 수렴한다. 도함수를 한 번 취할 때마다 차수가 하나 떨어진다는 것은 4절의 텐서 계층이 오차에서도 그대로 유지됨을 뜻한다. P1 FEM의 이론 차수는 $\|u-u_h\|_{L^2}=O(h^2)$, $|u-u_h|_{H^1}=O(h)$이며 관측값과 일치한다. 같은 $N$에서 두 방법의 오차는 거의 같다. 균등 격자의 1차원 문제에서 P1 FEM의 강성행렬은 중심차분 행렬에 $h$를 곱한 것과 같고, 차이는 질량행렬(인접 절점의 결합)뿐이기 때문이다. FEM의 이점은 비균등 격자, 복잡한 경계, 약형식이 필요한 불연속 계수에서 드러난다.</p>
+<figure class="fig" id="figF">
+  <div class="legend"><span style="--c:var(--s1)">FDM $L^2$</span><span style="--c:var(--s2)">FEM $L^2$</span><span class="d" style="--c:var(--s1)">FDM $H^1$</span><span class="d" style="--c:var(--s2)">FEM $H^1$</span></div>
+  <canvas id="cF" class="ch"></canvas>
+  <figcaption><b>그림 8.</b> 공간 오차(로그–로그, 표 8). 두 방법 모두 $L^2$에서 기울기 −2, 도함수 오차 $H^1$에서 기울기 −1을 보인다. 도함수를 한 번 취할 때마다 차수가 하나 떨어진다.</figcaption>
+</figure>
+
+<h3>10.5 우주의 수명: 팬텀 암흑에너지와 Big Rip</h3>
+<p>상태방정식 $w&lt;-1$인 암흑에너지에서는 척도인자가 유한 시간에 발산한다. 남은 시간 $t_{\text{rip}}-t_0=\int_1^\infty da/(aH)$를 치환 $a=e^u$로 적응 구적하고 Caldwell 등의 근사식 $\tfrac{2}{3|1+w|H_0\sqrt{1-\Omega_m}}$과 비교하였다.</p>
+<div class="table-wrap"><table id="t-rip"><caption>표 9. Big Rip까지 남은 시간 (Gyr)</caption></table></div>
+<p>근사식은 물질항을 무시하므로 약 1 Gyr 과대평가한다. $w=-1$이면 Big Rip은 없으며 우주는 무한히 팽창한다. 현재 관측은 $w\approx-1$과 대체로 부합하고, 표의 $w$는 가정값이다.</p>
+
+<h3>10.6 PINN: 프리드만 방정식에 대한 학습 지표</h3>
+<p>10.1절의 문제 $\dot a=a\sqrt{\Omega_ma^{-3}+\Omega_\Lambda}$, $t\in[0.05,\,t_0]$에 PINN을 적용하였다. 초기조건은 $a_\theta(t)=a(t_s)+(t-t_s)\,\mathcal N_\theta(t)$로 강제하여 손실에는 잔차만 남겼다. 참조해는 정확해이며, final error는 2001개 균등 점에서의 $L^\infty$와 $L^2$ (제곱평균제곱근)이다. 기준 설정은 은닉층 3개 × 노드 32개, tanh, Adam(학습률 $10^{-3}$, 3000 epoch) 후 L-BFGS 300회, collocation point 128개(매 epoch 무작위 재추출), 배정밀도, 단일 CPU 스레드이다. 각 설정은 난수 시드 3개(기준 설정은 5개)로 반복하여 평균 ± 표준편차를 보고한다.</p>
+<div class="table-wrap"><table><caption>표 10. 기준 설정의 재현성 (시드 5개)과 동일 정확도의 RK4 — PyTorch 실행 기록</caption>
+<thead><tr><th>방법</th><th>$L^\infty$</th><th>$L^2$</th><th>최종 손실</th><th>runtime</th></tr></thead>
+<tbody>
+<tr><td>PINN 3×32 tanh</td><td class="n">5.8e-5 ± 1.2e-5</td><td class="n">3.1e-5 ± 0.8e-5</td><td class="n">2.8e-7</td><td class="n">10.1 s</td></tr>
+<tr><td>RK4, 13 스텝</td><td class="n">4.5e-5</td><td class="n">–</td><td class="n">–</td><td class="n">55 μs</td></tr>
+<tr><td>RK4, 50 스텝 (표 5)</td><td class="n">2.4e-7</td><td class="n">2.0e-7</td><td class="n">–</td><td class="n">0.2 ms</td></tr>
+</tbody></table></div>
+<p>같은 정확도에서 RK4는 PINN보다 약 $2\times10^5$배 빠르다. 1차원 상미분방정식처럼 격자법이 잘 작동하는 문제에서 PINN의 가치는 속도가 아니라, 격자 없이 같은 코드로 역문제·고차원·자료 동화로 확장된다는 데 있다.</p>
+<div class="table-wrap"><table><caption>표 11. 지표별 민감도 (시드 3개 평균 ± 표준편차, $L^\infty$ 오차) — PyTorch 실행 기록</caption>
+<thead><tr><th>지표</th><th>설정</th><th>$L^\infty$</th><th>최종 손실</th><th>runtime</th></tr></thead>
+<tbody>
+<tr><td>collocation point 수 (무작위)</td><td class="n">8</td><td class="n">6.4e-3 ± 3.6e-3</td><td class="n">7.3e-4</td><td class="n">6.6 s</td></tr>
+<tr><td></td><td class="n">32</td><td class="n">7.4e-4 ± 6.9e-4</td><td class="n">1.2e-5</td><td class="n">12.0 s</td></tr>
+<tr><td></td><td class="n">128</td><td class="n">5.0e-5 ± 0.8e-5</td><td class="n">2.8e-7</td><td class="n">10.4 s</td></tr>
+<tr><td></td><td class="n">512</td><td class="n">4.1e-5 ± 0.4e-5</td><td class="n">3.7e-7</td><td class="n">9.9 s</td></tr>
+<tr><td>collocation point 수 (균등 고정)</td><td class="n">8</td><td class="n">2.7e-3 ± 0.3e-3</td><td class="n">1.1e-4</td><td class="n">6.1 s</td></tr>
+<tr><td></td><td class="n">32</td><td class="n">6.5e-5 ± 2.6e-5</td><td class="n">4.9e-7</td><td class="n">6.3 s</td></tr>
+<tr><td></td><td class="n">128</td><td class="n">3.2e-5 ± 1.5e-5</td><td class="n">1.7e-7</td><td class="n">6.7 s</td></tr>
+<tr><td></td><td class="n">512</td><td class="n">3.1e-5 ± 1.1e-5</td><td class="n">3.2e-7</td><td class="n">10.0 s</td></tr>
+<tr><td>activation function</td><td class="n">tanh</td><td class="n">5.0e-5 ± 0.8e-5</td><td class="n">2.8e-7</td><td class="n">11.1 s</td></tr>
+<tr><td></td><td class="n">sin</td><td class="n">3.0e-4 ± 1.4e-4</td><td class="n">9.7e-6</td><td class="n">7.6 s</td></tr>
+<tr><td></td><td class="n">GELU</td><td class="n">6.9e-5 ± 0.5e-5</td><td class="n">4.6e-7</td><td class="n">9.2 s</td></tr>
+<tr><td></td><td class="n">ReLU</td><td class="n">4.9e-3 ± 2.0e-3</td><td class="n">9.2e-4</td><td class="n">6.2 s</td></tr>
+<tr><td>hidden layer × node</td><td class="n">1 × 16</td><td class="n">9.2e-5 ± 2.4e-5</td><td class="n">1.3e-6</td><td class="n">5.0 s</td></tr>
+<tr><td></td><td class="n">2 × 32</td><td class="n">6.1e-5 ± 2.8e-5</td><td class="n">8.8e-7</td><td class="n">6.2 s</td></tr>
+<tr><td></td><td class="n">3 × 32</td><td class="n">5.0e-5 ± 0.8e-5</td><td class="n">2.8e-7</td><td class="n">7.6 s</td></tr>
+<tr><td></td><td class="n">4 × 64</td><td class="n">1.2e-4 ± 1.0e-4</td><td class="n">1.3e-6</td><td class="n">11.7 s</td></tr>
+<tr><td>optimizer · learning rate</td><td class="n">Adam 1e-2 (단독)</td><td class="n">1.6e-3 ± 0.6e-3</td><td class="n">1.3e-5</td><td class="n">6.5 s</td></tr>
+<tr><td></td><td class="n">Adam 1e-3 (단독)</td><td class="n">1.0e-2 ± 0.8e-2</td><td class="n">3.4e-3</td><td class="n">5.9 s</td></tr>
+<tr><td></td><td class="n">Adam 1e-4 (단독)</td><td class="n">1.2e-1 ± 1.1e-1</td><td class="n">5.5e-2</td><td class="n">5.9 s</td></tr>
+<tr><td></td><td class="n">Adam 1e-3 + L-BFGS</td><td class="n">5.0e-5 ± 0.8e-5</td><td class="n">2.8e-7</td><td class="n">10.4 s</td></tr>
+</tbody></table></div>
+<p class="note">runtime은 두 실험 묶음을 2코어에서 동시에 돌린 벽시계 시간이므로 ±30% 정도의 변동을 포함한다.</p>
+<figure class="fig" id="figK">
+  <div class="legend"><span style="--c:var(--s1)">무작위 재추출</span><span style="--c:var(--s2)">균등 격자 고정</span></div>
+  <canvas id="cK" class="ch"></canvas>
+  <figcaption><b>그림 9.</b> collocation point 수에 따른 final error (시드 3개 평균, 막대는 ±1 표준편차, PyTorch 실행 기록). 128개 이상에서 약 $3$–$5\times10^{-5}$에 포화되며, 작은 $N$에서 균등 격자가 더 정확한 것은 명제 9.2의 구적 차수 차이와 일치한다.</figcaption>
+</figure>
+<figure class="fig" id="figS">
+  <canvas id="cS" class="ch"></canvas>
+  <figcaption><b>그림 10.</b> 지표별 final error (로그 축, 시드 3개 평균 ± 표준편차, PyTorch 실행 기록). 활성화함수, 은닉층×노드, optimizer·학습률의 세 묶음.</figcaption>
+</figure>
+<div class="table-wrap"><table><caption>표 12. epoch에 따른 수렴 (기준 설정, 시드 0) — PyTorch 실행 기록</caption>
+<thead><tr><th>epoch</th><th>1</th><th>250</th><th>500</th><th>1000</th><th>2000</th><th>3000</th><th>+ L-BFGS 300</th></tr></thead>
+<tbody>
+<tr><td>손실</td><td class="n">1.8e+2</td><td class="n">2.4e-1</td><td class="n">4.6e-2</td><td class="n">4.6e-2</td><td class="n">3.0e-2</td><td class="n">1.5e-2</td><td class="n">4.3e-7</td></tr>
+<tr><td>$L^\infty$</td><td class="n">1.09</td><td class="n">2.7e-1</td><td class="n">5.6e-2</td><td class="n">3.8e-2</td><td class="n">3.0e-2</td><td class="n">2.1e-2</td><td class="n">5.8e-5</td></tr>
+</tbody></table></div>
+<figure class="fig" id="figT">
+  <div class="legend"><span style="--c:var(--s1)">손실</span><span style="--c:var(--s2)">$L^\infty$ 오차</span></div>
+  <canvas id="cT" class="ch"></canvas>
+  <figcaption><b>그림 11.</b> epoch에 따른 수렴(기준 설정, 시드 0, 로그 축, PyTorch 실행 기록). Adam 3000 epoch 동안 오차는 $2\times10^{-2}$에서 정체되고, 마지막 L-BFGS 300회(음영)에서 $5.8\times10^{-5}$로 떨어진다.</figcaption>
+</figure>
+<p>결과는 9절의 오차 분해를 지표별로 확인한다.</p>
+<p>(1) <b>collocation point 수</b>(추정오차): 8→128에서 오차가 두 자릿수 줄고 128 이상에서 약 $3$–$5\times10^{-5}$에 포화된다. 포화 이후에는 최적화오차가 지배한다. 작은 $N$에서 균등 격자가 무작위 추출보다 정확한 것은 명제 9.2의 구적 차수 차이($O(N^{-1})$ 대 $O(N^{-1/2})$)와 일치한다.</p>
+<p>(2) <b>activation function</b>(정칙성): 이 방정식은 1계이므로 ReLU도 형식적으로 쓸 수 있으나, ReLU 신경망의 도함수는 계단함수라서 매끄러운 잔차를 만들지 못해 오차가 100배 크다. 명제 9.1과 표 4의 강형식 해석과 일치한다.</p>
+<p>(3) <b>hidden layer · node 수</b>(근사오차와 최적화의 균형): 깊이와 너비를 늘리면 3×32까지는 개선되지만 4×64에서는 평균과 분산이 모두 커진다. 표현력은 커졌으나 같은 epoch 안에 최적화가 끝나지 않은 것이다. 은닉층을 추적하면 <q>더 깊게</q>가 곧 <q>더 정확하게</q>가 아님을 알 수 있다.</p>
+<p>(4) <b>optimizer · learning rate · epoch</b>(최적화오차): Adam 단독으로는 3000 epoch 후에도 $10^{-2}$–$10^{-3}$에 머물고 학습률에 민감하다. 준뉴턴법인 L-BFGS를 이어 붙이면 300회 만에 오차가 400배 줄어든다. 이는 4절에서 논한 뉴턴법의 곡률(헤시안) 정보가 최적화에서도 결정적임을 보여 준다.</p>
+<p>(5) <b>random seed</b>(재현성): 기준 설정에서도 시드 간 상대 표준편차가 약 20%이다. 결정론적 RK4에는 없는 이 분산 때문에, PINN의 final error는 단일 값이 아니라 분포로 보고해야 한다.</p>
+
+<h3>10.7 분수·번분수와 수렴률</h3>
+<div class="table-wrap"><table id="t-picf"><caption>표 13. $\pi=[3;7,15,1,292,1,1,\dots]$의 수렴분수와 명제 6.3의 한계</caption></table></div>
+<div class="table-wrap"><table id="t-ram"><caption>표 14. 라마누잔 급수의 선형 수렴 (80자리 정밀도)</caption></table></div>
+<p>연분수 수렴분수의 오차는 명제 6.3의 한계 안에 있으며, $355/113$처럼 다음 부분분모가 큰(292) 경우 한계에 거의 붙는다. 라마누잔 급수의 오차 비율은 이론 수렴률 $256/396^4=1.04\times10^{-8}$로 다가가고, 항마다 약 8자리가 더해진다. 두 경우 모두 오차는 확률이 아니라 비율로 예측된다.</p>
+
+<h3>10.8 진폭–위상 분해에 의한 오차 예측</h3>
+<p>10.3절의 2-큐빗 문제($T=\pi/4$, 400 스텝, $y=J\Delta t=\pi/1600$)에서 상태는 고윳값 $\pm J$의 두 성분(각 진폭 $1/\sqrt2$)으로 이루어진다. $n$ 스텝 후 각 성분의 오차는 명제 7.3에 $|R|^n$과 $n\Delta\varphi$를 넣은 값이므로, 분해만으로 성분별 최대오차 $L^\infty$를 예측할 수 있다.</p>
+<div class="table-wrap"><table id="t-pred"><caption>표 15. 진폭 ⊕ 위상 분해에 의한 예측과 실제 $L^\infty$ (400 스텝)</caption></table></div>
+<p>Euler와 크랭크-니콜슨에서는 예측과 측정이 유효숫자 세 자리까지 일치한다. Euler의 오차는 거의 전부 진폭(노름)에서, 크랭크-니콜슨의 오차는 전부 위상에서 온다. 같은 $L^\infty$라도 <b>무엇이 틀렸는지</b>가 분해로 구별된다. RK4와 가우스-르장드르는 오차가 $10^{-14}$ 수준이라 부동소수점 반올림이 섞여 예측과 측정의 비가 1–3배 벌어진다. 이는 분해의 한계가 아니라 배정밀도의 한계이다.</p>
+
+<h3>10.9 차원과 차수의 대수적 구분에 대한 수치 확인</h3>
+<p>2.1절의 명제들을 이 문서에 포함된 엔진으로 확인한다. 편각 원리(명제 2.4)는 영점이 $0.2,\ -0.5i,\ 1.3,\ -1.1-0.4i,\ 2.5i$인 5차 다항식에서, 원 $|z|=r$을 20000개 점으로 돌며 편각의 총변화를 누적하여 회전수를 계산하였다.</p>
+<div class="table-wrap"><table id="t-wind"><caption>표 16. 편각 원리: 회전수와 원 안 영점 수 (명제 2.4)</caption></table></div>
+<p>스텝의 차수(명제 2.5)는 $D(y)=\log R(iy)-iy$를 $y=0.04,\,0.02$에서 비교하여 접촉 차수 $p$를, $y=0.01$에서 $C=D/(iy)^{p+1}$를 계산하였다. 마지막 열은 결손만으로 예측한 2-큐빗 문제(400 스텝, $y=\pi/1600$)의 전역 로그 결손 $n|D(y)|$이다.</p>
+<div class="table-wrap"><table id="t-step"><caption>표 17. 스텝의 차수: $\log R(z)=z+Cz^{p+1}+\cdots$의 접촉 차수와 상수 (명제 2.5)</caption></table></div>
+<p>네 방법의 접촉 차수는 이론 차수 1, 4, 2, 4와 일치한다. 상수는 Euler $-1/2$, RK4 $-1/120$, 크랭크-니콜슨 $1/12$, 가우스-르장드르 $-1/720$로 나타난다. Euler와 RK4의 계산값에 붙은 작은 허수부는 $y=0.01$에서 남은 다음 차수 항의 기여 $O(y)$이다. 크랭크-니콜슨과 가우스-르장드르의 $C$는 순실수이므로 $z=iy$에서 결손 $Cz^{p+1}$은 순허수, 곧 순수한 위상 오차가 된다. 이것이 명제 7.2의 노름 보존을 로그의 언어로 다시 본 것이다. Euler의 예측 $7.7\times10^{-4}$와 크랭크-니콜슨의 예측 $2.52\times10^{-7}$은 표 7의 노름 오차 및 표 15의 위상 오차와 일치한다.</p>
+<div class="table-wrap"><table id="t-dim"><caption>표 18. 오차–미지수 관계 $\|e\|\propto M^{-p/d}$ (명제 2.7): 적분 $\int_{[0,1]^d}\prod_i\cos x_i\,dx=\sin^d1$</caption></table></div>
+<figure class="fig" id="figD">
+  <div class="legend"><span style="--c:var(--s1)">사다리꼴 $d=1$</span><span style="--c:var(--s2)">사다리꼴 $d=2$</span><span style="--c:var(--s3)">사다리꼴 $d=3$</span><span class="d" style="--c:var(--s4)">몬테카를로 $d=3$</span></div>
+  <canvas id="cD" class="ch"></canvas>
+  <figcaption><b>그림 12.</b> 미지수(평가점) 수 $M$에 대한 구적 오차(로그–로그). 2차 사다리꼴의 기울기는 $-2/d$로 차원이 커질수록 완만해지고(차원의 저주), 몬테카를로의 기울기는 차원과 무관하게 $-1/2$이다. 몬테카를로는 16회 반복의 제곱평균제곱근이며 난수 시드를 고정하였다.</figcaption>
+</figure>
+<p>주의 2.6의 반례는 바이어슈트라스 함수 $a=1/2$, $b=3$ (16항, $3^{11}$개 표본점)의 그래프에 상자 세기를 적용하여 확인하였다. 상자 폭 $\varepsilon=3^{-2},\dots,3^{-8}$에서 로그–로그 기울기로 추정한 박스 차원은 <span id="wEst"></span>이고, 이론값 $2+\log a/\log b=$<span id="wTh"></span>와 비교된다. 차원이 정수가 아니라 로그로 읽는 지수로 나타나는 경우이다.</p>
+
+
+
+<!-- ============================================================ -->
+<h2>11. 결론: 도감 지표에 의한 사전 예측 검증</h2>
+<p>10절까지의 수치 실험은 주장을 세운 뒤 그것을 확인하는 방식이었다. 이 절은 순서를 바꾼다. 2–9절의 대수적 명제에서 <b>측정 전에 예측을 유도하여 기록</b>하고, 이산화 도감의 알고리즘과 지표로 측정한 뒤, 기록을 고치지 않고 판정한다. 확인된 예측은 명제로 올려 증명·유도·서술을 붙인다. 결론은 이 판정 위에서 내린다(11.11).</p>
+
+<h3>11.1 검증 설계</h3>
+<p><b>실험군과 알고리즘.</b> 도감 카드의 알고리즘을 그대로 쓴다.</p>
+<ul>
+<li>1차원 열방정식 $u_t=u_{xx}$: 2차 중심차분과 암시적 Euler $(I-kL_h)U^{n+1}=U^n$, P1 FEM(lumped·consistent·혼합 질량).</li>
+<li>2차원 열방정식 $u_t=u_{xx}+u_{yy}$: 5점 라플라시안과 명시적 Euler.</li>
+<li>Burgers 방정식 $u_t+uu_x=\nu u_{xx}$: 보존형 IMEX $(I-k\nu L_h)U^{n+1}=U^n-kD(U^n\odot U^n/2)$, 비점성 극한의 1차 업윈드 유한체적.</li>
+<li>1차원 슈뢰딩거 방정식 $iu_t=-u_{xx}$: 크랭크-니콜슨 $(I+i\tfrac k2H)U^{n+1}=(I-i\tfrac k2H)U^n$.</li>
+<li>Euler–Bernoulli 보 $u_{tt}+u_{xxxx}=0$(단순지지): 5점 4계 차분 $L_h^2$와 평균가속도 Newmark($\beta=\tfrac14,\gamma=\tfrac12$).</li>
+<li>교차 차원: 적분 $\int_{[0,1]^d}\prod_i\cos x_i\,dx=\sin^d1$에 대한 격자 규칙과 몬테카를로.</li>
+</ul>
+<p>여기서 $L_h=\mathrm{tridiag}(1,-2,1)/h^2$는 음정부호 차분 라플라시안이다. FEM 강성행렬 $K=\tfrac1h[-1,2,-1]$와는 부호가 반대이다. 모든 문제는 엄밀해를 알거나 충분히 세밀한 기준해를 만든 데모 문제이다.</p>
+<p><b>지표.</b> 도감의 지표를 모두 쓴다. 격자법에서는 $N$, $\Delta t$, 미지수 $M$, $L^\infty$·$L^2$·$L^1$, 관측 차수(정의 6.1), 시간·공간 수렴성 분리, 내부/경계 오차, 보존량(질량·노름·에너지) 오차, 방법 간 차이, 안정 한계, runtime을 쓴다. PINN에서는 은닉층·노드·활성화·optimizer·학습률·collocation·seed·final loss·final error·runtime·epoch를 쓴다. 공간 차수는 반이산계를 사인 변환으로 대각화하여 시간에 대해 정확히 풀어 $C_t\Delta t^q=0$으로 만든 뒤 재고, 시간 차수는 같은 격자의 반이산 정확해를 기준으로 잰다(6절의 분리).</p>
+<p><b>판정 규칙과 설계 규칙.</b> 관측 차수는 마지막 두 정련값이 이론값 $\pm0.15$ 안이면 맞음, 부등식 예측은 부등호가 성립하면 맞음이다. 앞선 두 차례의 실험(11.10)에서 틀린 예측 두 개는 모두 측정 설계의 결함이었고, 그 교훈을 규칙으로 고정했다.
+(i) 기준해의 $\Delta t$·$h$는 최소 측정값의 $\tfrac1{100}$ 이하로 둔다.
+(ii) 오차가 기계 정밀도의 $10^3$배($2.2\times10^{-13}$) 미만인 격자는 차수 계산에서 뺀다.
+(iii) 편차 예측에는 지표를 적는다.
+실험 코드는 JavaScript로 작성되어 부속 실험 보고서와 이 절 끝의 실행 단추에 들어 있으며, 브라우저에서 약 10초에 전 과정을 다시 계산한다.</p>
+<div class="table-wrap"><table id="t19"><caption>표 19. v4 재실험의 사전 예측 판정 (실행 전 기록, 판정 규칙: 마지막 두 정련값이 이론값 ±0.15)</caption><thead><tr><th>ID</th><th>예측</th><th>측정</th><th>판정</th></tr></thead><tbody><tr><td>H1-1</td><td class="n">1D 열 공간 차수 2 (L∞·L²)</td><td class="n">2.00, 2.00 / 2.00, 2.00</td><td class="n"><span class="g">맞음</span></td></tr><tr><td>H1-2</td><td class="n">1D 열 시간 차수 1</td><td class="n">1.00, 1.00</td><td class="n"><span class="g">맞음</span></td></tr><tr><td>H1-3</td><td class="n">lumped FEM = FDM (≤10⁻¹²)</td><td class="n">5.8e-16</td><td class="n"><span class="g">맞음</span></td></tr><tr><td>H1-4</td><td class="n">consistent 차이 차수 2, 혼합 질량 차수 4</td><td class="n">2.00, 2.00 / 4.01, 3.98</td><td class="n"><span class="g">맞음</span></td></tr><tr><td>H1-5</td><td class="n">명시적 Euler r=0.5 안정, 0.51 발산</td><td class="n">0.4 안정 · 0.5 안정 · 0.51 발산 · 0.6 발산</td><td class="n"><span class="g">맞음</span></td></tr><tr><td>H1-6</td><td class="n">결손 예측 상대차의 차수 1</td><td class="n">1.00, 1.00</td><td class="n"><span class="g">맞음</span></td></tr><tr><td>H2-1</td><td class="n">2D 열 (r=0.2 고정) L∞ 차수 2</td><td class="n">2.01, 2.00</td><td class="n"><span class="g">맞음</span></td></tr><tr><td>H2-2</td><td class="n">2D 안정 한계 r=1/4 (0.25 안정, 0.26 발산)</td><td class="n">0.24 안정 · 0.25 안정 · 0.26 발산 · 0.3 발산</td><td class="n"><span class="g">맞음</span></td></tr><tr><td>H2-3</td><td class="n">오차–미지수 기울기 −p/d: 1D −2, 2D −1</td><td class="n">-1.991 / -0.983</td><td class="n"><span class="g">맞음</span></td></tr><tr><td>B-1</td><td class="n">Burgers 공간 차수 2</td><td class="n">2.01, 2.02</td><td class="n"><span class="g">맞음</span></td></tr><tr><td>B-2</td><td class="n">Burgers 시간 차수 1 (참조 Δt/200)</td><td class="n">1.01, 1.01</td><td class="n"><span class="g">맞음</span></td></tr><tr><td>B-3</td><td class="n">충격파 차수 L∞ 0, L² ½, L¹ 1</td><td class="n">-0.00, 0.50, 1.00</td><td class="n"><span class="g">맞음</span></td></tr><tr><td>B-4</td><td class="n">보존량 오차 ≤10⁻¹², 속도 0.5±10⁻³</td><td class="n">2.2e-14, 0.500000</td><td class="n"><span class="g">맞음</span></td></tr><tr><td>B-5</td><td class="n">IMEX 한계 k≤2ν/a² (h 무관), ν=0 불안정</td><td class="n">ν=0.05 k=0.09 N=50: 안정 · ν=0.05 k=0.09 N=200: 안정 · ν=0.05 k=0.09 N=800: 안정 · ν=0.05 k=0.12 N=50: 불안정 · ν=0.05 k=0.12 N=200: 불안정 · ν=0.05 k=0.12 N=800: 불안정 · ν=0 k=0.0025 N=200: 불안정</td><td class="n"><span class="g">맞음</span></td></tr><tr><td>S-1</td><td class="n">슈뢰딩거 공간 차수 2 (FDM, FEM)</td><td class="n">2.00, 2.00 / 2.00, 2.00</td><td class="n"><span class="g">맞음</span></td></tr><tr><td>S-2</td><td class="n">혼합 질량 공간 차수 4</td><td class="n">4.00, 4.00</td><td class="n"><span class="g">맞음</span></td></tr><tr><td>S-3</td><td class="n">CN 시간 차수 2, 노름 변화 ≤10⁻¹²</td><td class="n">2.00, 2.00, 1.8e-13</td><td class="n"><span class="g">맞음</span></td></tr><tr><td>S-4</td><td class="n">EE 노름 정확식 상대차 ≤10⁻⁸ (Δt≤2×10⁻⁴)</td><td class="n">1.1e-10</td><td class="n"><span class="g">맞음</span></td></tr><tr><td>S-5</td><td class="n">CN 결손 예측 상대차의 차수 2</td><td class="n">2.01, 2.00</td><td class="n"><span class="g">맞음</span></td></tr><tr><td>EB-1</td><td class="n">보 공간 차수 2</td><td class="n">1.98, 1.99</td><td class="n"><span class="g">맞음</span></td></tr><tr><td>EB-2</td><td class="n">Newmark 시간 차수 2</td><td class="n">2.00, 2.00</td><td class="n"><span class="g">맞음</span></td></tr><tr><td>EB-3</td><td class="n">Newmark 에너지 변화 ≤10⁻¹²</td><td class="n">1.1e-14</td><td class="n"><span class="g">맞음</span></td></tr><tr><td>EB-4</td><td class="n">leapfrog 한계 k≈h²/2 (0.98 안정, 1.02 발산)</td><td class="n">0.98 안정 · 1.02 발산</td><td class="n"><span class="g">맞음</span></td></tr><tr><td>EB-5</td><td class="n">Newmark 결손 예측 상대차의 차수 2</td><td class="n">2.00, 2.00</td><td class="n"><span class="g">맞음</span></td></tr><tr><td>D-1</td><td class="n">사다리꼴 d*=4 (d=3 격자, d=5 MC, d=4 기울기 차 ≤0.1)</td><td class="n">d=3 격자 · d=5 MC · d=4 차 0.035</td><td class="n"><span class="g">맞음</span></td></tr><tr><td>D-2</td><td class="n">직사각형 d*=2 (d=1 격자, d=3 MC, d=2 기울기 차 ≤0.1)</td><td class="n">d=1 격자 · d=3 MC · d=2 차 0.007</td><td class="n"><span class="g">맞음</span></td></tr></tbody></table></div>
+<p>사전 예측 26개 중 <b>26개가 맞았다</b>. 이 결과는 설계 규칙 (i)–(iii)을 적용한 뒤의 것이며, 앞선 실험의 틀린 예측은 11.10에 그대로 남긴다.</p>
+<div class="fig" id="rerunBox" style="font-family:'Noto Sans KR',sans-serif;font-size:.88rem"><button id="rerunBtn" style="font:inherit;padding:4px 12px;border:1px solid var(--line);border-radius:6px;background:var(--box);color:var(--ink);cursor:pointer">이 브라우저에서 재실험 실행</button> <span id="rerunStatus" style="color:var(--muted)">표 19–26의 측정과 판정을 JavaScript 엔진으로 다시 계산한다(약 10초).</span></div>
+
+<h3>11.2 차원과 차수의 교차: $d^*=2p$</h3>
+<div class="env"><span class="lab">명제 11.1</span>(교차 차원) 공간 차수 $p$의 격자 규칙과 몬테카를로의 오차가 $M$개 평가점에서 각각 $E_g\approx AM^{-p/d}$, $E_{mc}\approx BM^{-1/2}$이면
+$$\frac{E_g}{E_{mc}}\approx\frac AB\,M^{\frac12-\frac pd}\ \xrightarrow{M\to\infty}\ \begin{cases}0 & d<2p\\ A/B & d=2p\\ \infty & d>2p\end{cases}$$
+이다. 따라서 우열이 뒤바뀌는 차원은 $d^*=2p$이고, 차수를 하나 올리면 교차 차원은 둘 올라간다.
+<div class="proof">명제 2.7의 두 오차식을 나누면 지수가 $\tfrac12-\tfrac pd$이며 그 부호는 $d$와 $2p$의 대소로 정해진다.</div></div>
+<div class="table-wrap"><table><caption>표 20. 격자 구적과 몬테카를로(seed 10)의 기울기(마지막 세 점) 및 최대 $M\approx2.6\times10^5$에서의 오차비</caption><thead><tr><th>규칙</th><th>$d$</th><th>이론 $-p/d$</th><th>격자</th><th>MC</th><th>격자/MC</th><th>우세</th></tr></thead><tbody><tr><td>사다리꼴 $p=2$</td><td class="n">1</td><td class="n">-2.000</td><td class="n">-2.004</td><td class="n">-0.614</td><td class="n">5.19\times10^{-9}</td><td class="n">격자</td></tr><tr><td></td><td class="n">2</td><td class="n">-1.000</td><td class="n">-1.007</td><td class="n">-0.506</td><td class="n">1.13\times10^{-3}</td><td class="n">격자</td></tr><tr><td></td><td class="n">3</td><td class="n">-0.667</td><td class="n">-0.688</td><td class="n">-0.585</td><td class="n">0.152</td><td class="n">격자</td></tr><tr><td></td><td class="n">4</td><td class="n">-0.500</td><td class="n">-0.536</td><td class="n">-0.501</td><td class="n">1.35</td><td class="n">MC</td></tr><tr><td></td><td class="n">5</td><td class="n">-0.400</td><td class="n">-0.449</td><td class="n">-0.483</td><td class="n">4.44</td><td class="n">MC</td></tr><tr><td></td><td class="n">6</td><td class="n">-0.333</td><td class="n">-0.395</td><td class="n">-0.389</td><td class="n">12.2</td><td class="n">MC</td></tr><tr><td>왼쪽 직사각형 $p=1$</td><td class="n">1</td><td class="n">-1.000</td><td class="n">-1.000</td><td class="n">-0.614</td><td class="n">4.51\times10^{-3}</td><td class="n">격자</td></tr><tr><td></td><td class="n">2</td><td class="n">-0.500</td><td class="n">-0.499</td><td class="n">-0.506</td><td class="n">1.88</td><td class="n">MC</td></tr><tr><td></td><td class="n">3</td><td class="n">-0.333</td><td class="n">-0.333</td><td class="n">-0.585</td><td class="n">30.9</td><td class="n">MC</td></tr><tr><td></td><td class="n">4</td><td class="n">-0.250</td><td class="n">-0.251</td><td class="n">-0.501</td><td class="n">93.5</td><td class="n">MC</td></tr><tr><td></td><td class="n">5</td><td class="n">-0.200</td><td class="n">-0.204</td><td class="n">-0.483</td><td class="n">150</td><td class="n">MC</td></tr><tr><td></td><td class="n">6</td><td class="n">-0.167</td><td class="n">-0.175</td><td class="n">-0.389</td><td class="n">257</td><td class="n">MC</td></tr></tbody></table></div>
+<p><b>서술.</b> 사다리꼴($p=2$)은 $d=4$에서 격자 기울기 -0.536, 몬테카를로 -0.501로 거의 같고 오차비가 1.35이다. $d=3$에서는 격자가, $d=5$에서는 몬테카를로가 이긴다. 왼쪽 직사각형($p=1$)은 $d=2$에서 두 기울기가 -0.499와 -0.506로 같다. 명제 2.7의 <q>차수는 지수의 분자에, 차원은 분모에</q>가 교차 차원이라는 측정 가능한 값이 된 것이다.</p>
+
+<h3>11.3 차원은 안정 한계와 비용에 들어간다</h3>
+<div class="env"><span class="lab">명제 11.2</span>(차원과 명시적 스킴) $d$차원 단위 격자에서 명시적 Euler와 $(2d+1)$점 라플라시안을 쓰면 $r=\alpha\Delta t/h^2$에 대해 가장 높은 격자 모드의 증폭률은 $R=1-4dr\sin^2\!\frac{(N-1)\pi}{2N}$이고, 안정 조건은 $r\le\frac1{2d}$이다. 또한 미지수 $M\propto h^{-d}$이므로 $r$을 고정한 정련에서 오차는 $\|e\|\propto h^2\propto M^{-2/d}$이다.
+<div class="proof">톱니 모드에서는 $2d$개의 이웃이 모두 부호가 반대이므로 라플라시안이 $-4d/h^2$배가 된다. $|1-4dr|\le1$에서 $r\le1/(2d)$이다. $r$ 고정이면 $\Delta t\propto h^2$이라 시간 오차 $O(\Delta t)$와 공간 오차 $O(h^2)$가 같은 차수이다.</div></div>
+<div class="table-wrap"><table><caption>표 21. 2차원 열방정식(5점 + 명시적 Euler). 왼쪽: $r=0.2$ 고정 정련, 오른쪽: 안정 한계($N=20$)</caption><thead><tr><th>$N$</th><th>미지수 $M$</th><th>$L^\infty$</th><th>차수</th><th>$r$</th><th>톱니 $R=1-8r\sin^2$</th><th>결과</th></tr></thead><tbody><tr><td>10</td><td class="n">81</td><td class="n">$2.82\times10^{-4}$</td><td class="n">–</td><td class="n">0.24</td><td class="n">-0.908</td><td class="n">안정</td></tr><tr><td>20</td><td class="n">361</td><td class="n">$6.95\times10^{-5}$</td><td class="n">2.02</td><td class="n">0.25</td><td class="n">-0.988</td><td class="n">안정</td></tr><tr><td>40</td><td class="n">1521</td><td class="n">$1.73\times10^{-5}$</td><td class="n">2.01</td><td class="n">0.26</td><td class="n">-1.067</td><td class="n">발산 (567스텝)</td></tr><tr><td>80</td><td class="n">6241</td><td class="n">$4.32\times10^{-6}$</td><td class="n">2.00</td><td class="n">0.3</td><td class="n">-1.385</td><td class="n">발산 (114스텝)</td></tr></tbody></table></div>
+<p><b>서술.</b> 2차원 한계 $r=\tfrac14$는 1차원 한계 $\tfrac12$(연산 훈련 연습 4-4)의 절반이고, $r=0.25$는 4000스텝 동안 안정, $r=0.26$은 발산했다. 같은 2차 방법에서 미지수에 대한 오차 기울기는 1차원 -1.991, 2차원 -0.983으로 $-p/d$와 맞는다. 원 착상의 <q>차원은 유한 경계에서의 수직·수평 조건</q>은 이산화에서 두 자리에 나타난다. 격자 방향의 수 $2d$가 안정 한계의 분모에, 차원 $d$가 비용 지수의 분모에 들어간다.</p>
+
+<h3>11.4 스텝의 차수는 오차의 크기를 예측한다</h3>
+<div class="env"><span class="lab">명제 11.3</span>(결손에 의한 전역 오차 예측) 반이산계 $U'=AU$에서 $A$가 고유쌍 $(\lambda_j,v_j)$로 대각화되고 $U^0=\sum_jc_jv_j$라 하자. 일단계법의 증폭률이 $\log R(z)=z+Cz^{p+1}+O(z^{p+2})$를 만족하면 $T=n\Delta t$에서
+$$U^n-e^{TA}U^0=\sum_jc_j\,e^{\lambda_jT}\big(e^{D_j}-1\big)v_j,\qquad D_j=CT\lambda_j^{p+1}\Delta t^p+O(\Delta t^{p+1})$$
+이고, 선도항 $\sum_jc_je^{\lambda_jT}CT\lambda_j^{p+1}\Delta t^pv_j$와 실제 오차의 상대차는 $\log R$의 다음 항 차수로 준다.
+<div class="proof">한 모드에서 $R(z_j)^n=e^{\lambda_jT}e^{D_j}$, $D_j=n(\log R(z_j)-z_j)$이고 명제 2.5의 계산을 모드마다 적용한다. $e^D-1=D+O(D^2)$이다.</div></div>
+<p><b>유도.</b> 세 방법에 대해 계수 $C$와 다음 항을 구한다.</p>
+<ul>
+<li><b>암시적 Euler:</b> $\log R=-\log(1-z)=z+\tfrac12z^2+\tfrac13z^3+\cdots$ 이므로 $C=+\tfrac12$, $p=1$이고 상대차는 $O(\Delta t)$이다.</li>
+<li><b>크랭크-니콜슨:</b> $\log R=2\,\mathrm{artanh}(z/2)=z+\tfrac1{12}z^3+\tfrac1{80}z^5+\cdots$ 이므로 $C=\tfrac1{12}$, $p=2$이다. 로그가 홀함수라 다음 항이 $z^5$이고, 상대차는 $O(\Delta t^2)$이다.</li>
+<li><b>평균가속도 Newmark:</b> 1계계 $(u,u_t)'=\begin{pmatrix}0&1\\-L_h^2&0\end{pmatrix}(u,u_t)$에 대한 사다리꼴 규칙과 같다. 고윳값이 $\pm i\omega_j$이므로 증폭률이 크랭크-니콜슨과 같고, 모드마다 위상 결손 $T\omega_j^3\Delta t^2/12$가 생긴다.</li>
+</ul>
+<div class="table-wrap"><table><caption>표 22. 결손 예측과 측정의 상대차. 열: 암시적 Euler($N=100$, $L^\infty$), 슈뢰딩거: CN($N=1600$, $L^2$), 보: Newmark($N=50$, $L^2$). 기준은 같은 격자의 반이산 정확해</caption><thead><tr><th>$\Delta t$</th><th>열</th><th>$\Delta t$</th><th>슈뢰딩거</th><th>$\Delta t$</th><th>보</th></tr></thead><tbody><tr><td>$0.01$</td><td class="n">4.35%</td><td class="n">$0.04$</td><td class="n">6.1480%</td><td class="n">$0.01$</td><td class="n">18.529%</td></tr><tr><td>$5.00\times10^{-3}$</td><td class="n">2.16%</td><td class="n">$0.02$</td><td class="n">1.3513%</td><td class="n">$5.00\times10^{-3}$</td><td class="n">4.160%</td></tr><tr><td>$2.50\times10^{-3}$</td><td class="n">1.08%</td><td class="n">$0.01$</td><td class="n">0.3214%</td><td class="n">$2.50\times10^{-3}$</td><td class="n">1.014%</td></tr><tr><td>$1.25\times10^{-3}$</td><td class="n">0.54%</td><td class="n">$5.00\times10^{-3}$</td><td class="n">0.0792%</td><td class="n">$1.25\times10^{-3}$</td><td class="n">0.252%</td></tr><tr><td>$6.25\times10^{-4}$</td><td class="n">0.27%</td><td class="n">$2.50\times10^{-3}$</td><td class="n">0.0197%</td><td class="n">$6.25\times10^{-4}$</td><td class="n">0.063%</td></tr><tr><td>$3.12\times10^{-4}$</td><td class="n">0.13%</td><td class="n">$1.25\times10^{-3}$</td><td class="n">0.0049%</td><td class="n">$3.12\times10^{-4}$</td><td class="n">0.016%</td></tr><tr><td>상대차의 차수</td><td class="n">1.00</td><td class="n"></td><td class="n">2.00</td><td class="n"></td><td class="n">2.00</td></tr></tbody></table></div>
+<figure class="fig"><div class="legend"><span style="--c:var(--s1)">열 · 암시적 Euler (C = +½, p = 1)</span><span style="--c:var(--s2)">슈뢰딩거 · CN (C = 1/12, p = 2)</span><span style="--c:var(--s3)">보 · Newmark (C = 1/12, p = 2)</span></div><svg viewBox="0 0 620 320" style="width:100%;height:auto;display:block" role="img" aria-label="결손 예측의 상대차"><line x1="64" x2="602" y1="274.0" y2="274.0" stroke="var(--grid)"/><text x="58" y="278.0" text-anchor="end" font-size="11" fill="var(--muted)">10<tspan dy="-6" font-size="8">-5</tspan></text><line x1="64" x2="602" y1="222.0" y2="222.0" stroke="var(--grid)"/><text x="58" y="226.0" text-anchor="end" font-size="11" fill="var(--muted)">10<tspan dy="-6" font-size="8">-4</tspan></text><line x1="64" x2="602" y1="170.0" y2="170.0" stroke="var(--grid)"/><text x="58" y="174.0" text-anchor="end" font-size="11" fill="var(--muted)">10<tspan dy="-6" font-size="8">-3</tspan></text><line x1="64" x2="602" y1="118.0" y2="118.0" stroke="var(--grid)"/><text x="58" y="122.0" text-anchor="end" font-size="11" fill="var(--muted)">10<tspan dy="-6" font-size="8">-2</tspan></text><line x1="64" x2="602" y1="66.0" y2="66.0" stroke="var(--grid)"/><text x="58" y="70.0" text-anchor="end" font-size="11" fill="var(--muted)">10<tspan dy="-6" font-size="8">-1</tspan></text><line x1="64" x2="602" y1="14.0" y2="14.0" stroke="var(--grid)"/><text x="58" y="18.0" text-anchor="end" font-size="11" fill="var(--muted)">10<tspan dy="-6" font-size="8">0</tspan></text><text x="210.4" y="290" text-anchor="middle" font-size="11" fill="var(--muted)">0.001</text><text x="277.7" y="290" text-anchor="middle" font-size="11" fill="var(--muted)">0.002</text><text x="366.6" y="290" text-anchor="middle" font-size="11" fill="var(--muted)">0.005</text><text x="433.9" y="290" text-anchor="middle" font-size="11" fill="var(--muted)">0.01</text><text x="501.2" y="290" text-anchor="middle" font-size="11" fill="var(--muted)">0.02</text><text x="590.1" y="290" text-anchor="middle" font-size="11" fill="var(--muted)">0.05</text><line x1="64" x2="602" y1="274" y2="274" stroke="var(--muted)"/><polyline fill="none" stroke-width="2" stroke="var(--s1)" points="433.9,84.8 366.6,100.6 299.4,116.3 232.1,132.0 164.8,147.6 97.5,163.3"/><circle cx="433.9" cy="84.8" r="3.8" fill="var(--s1)"><title>Δt=0.01: 상대차 0.0435</title></circle><circle cx="366.6" cy="100.6" r="3.8" fill="var(--s1)"><title>Δt=0.005: 상대차 0.0216</title></circle><circle cx="299.4" cy="116.3" r="3.8" fill="var(--s1)"><title>Δt=0.0025: 상대차 0.0108</title></circle><circle cx="232.1" cy="132.0" r="3.8" fill="var(--s1)"><title>Δt=0.00125: 상대차 0.00539</title></circle><circle cx="164.8" cy="147.6" r="3.8" fill="var(--s1)"><title>Δt=0.000625: 상대차 0.00269</title></circle><circle cx="97.5" cy="163.3" r="3.8" fill="var(--s1)"><title>Δt=0.0003125: 상대차 0.00135</title></circle><polyline fill="none" stroke-width="2" stroke="var(--s2)" points="568.5,77.0 501.2,111.2 433.9,143.6 366.6,175.3 299.4,206.7 232.1,238.0"/><circle cx="568.5" cy="77.0" r="3.8" fill="var(--s2)"><title>Δt=0.04: 상대차 0.0615</title></circle><circle cx="501.2" cy="111.2" r="3.8" fill="var(--s2)"><title>Δt=0.02: 상대차 0.0135</title></circle><circle cx="433.9" cy="143.6" r="3.8" fill="var(--s2)"><title>Δt=0.01: 상대차 0.00321</title></circle><circle cx="366.6" cy="175.3" r="3.8" fill="var(--s2)"><title>Δt=0.005: 상대차 0.000792</title></circle><circle cx="299.4" cy="206.7" r="3.8" fill="var(--s2)"><title>Δt=0.0025: 상대차 0.000197</title></circle><circle cx="232.1" cy="238.0" r="3.8" fill="var(--s2)"><title>Δt=0.00125: 상대차 4.93e-05</title></circle><polyline fill="none" stroke-width="2" stroke="var(--s3)" points="433.9,52.1 366.6,85.8 299.4,117.7 232.1,149.1 164.8,180.5 97.5,211.8"/><circle cx="433.9" cy="52.1" r="3.8" fill="var(--s3)"><title>Δt=0.01: 상대차 0.185</title></circle><circle cx="366.6" cy="85.8" r="3.8" fill="var(--s3)"><title>Δt=0.005: 상대차 0.0416</title></circle><circle cx="299.4" cy="117.7" r="3.8" fill="var(--s3)"><title>Δt=0.0025: 상대차 0.0101</title></circle><circle cx="232.1" cy="149.1" r="3.8" fill="var(--s3)"><title>Δt=0.00125: 상대차 0.00252</title></circle><circle cx="164.8" cy="180.5" r="3.8" fill="var(--s3)"><title>Δt=0.000625: 상대차 0.000629</title></circle><circle cx="97.5" cy="211.8" r="3.8" fill="var(--s3)"><title>Δt=0.0003125: 상대차 0.000157</title></circle><text x="333.0" y="312" text-anchor="middle" font-size="12" fill="var(--ink)">Δt</text><text transform="translate(14,144.0) rotate(-90)" text-anchor="middle" font-size="12" fill="var(--ink)">예측과 측정의 상대차</text></svg><figcaption><b>그림 13.</b> 명제 11.3의 결손만으로 계산한 오차 예측과 측정의 상대차. 1계 포물형(열), 복소 1계(슈뢰딩거), 2계 쌍곡형(보)에서 상대차가 각각 $\Delta t$, $\Delta t^2$, $\Delta t^2$에 비례해 준다. 예측식은 측정값을 쓰지 않는다.</figcaption></figure>
+<p><b>서술.</b> 가장 작은 $\Delta t$에서 예측과 측정의 차이는 열 0.13%, 슈뢰딩거 0.0049%, 보 0.016%이다. 더 중요한 것은 불일치의 모양이다. 상대차 자체가 1차(열)와 2차(슈뢰딩거, 보)로 수렴한다. 1계 포물형, 복소 1계, 2계 쌍곡형이라는 서로 다른 방정식에서 하나의 식이 차수뿐 아니라 상수와 그 다음 항까지 맞힌다. 원 착상의 <q>차수는 반복(스텝)과 로그</q>가 오차범위를 계산하는 도구로 작동한 것이다.</p>
+<div class="env remark"><span class="lab">주의</span>(상수의 두 정의) 발표판은 오차 상수를 $|e^z-R(z)|\le C_p|z|^{p+1}$의 크기로 정의한다(명시적 Euler $\tfrac12$, 암시적 Euler $\tfrac12$, 크랭크-니콜슨 $\tfrac1{12}$, RK4 $\tfrac1{120}$). 본 논문은 $\log R=z+Cz^{p+1}$로 정의하여 부호까지 쓴다(명시적 Euler $-\tfrac12$, 암시적 Euler $+\tfrac12$, RK4 $-\tfrac1{120}$, 크랭크-니콜슨 $+\tfrac1{12}$). 선도항에서 $C_p=|C|$이다. 부호는 수치해가 정확해보다 덜 감쇠하는지($C&gt;0$) 더 감쇠하는지($C&lt;0$)를 알려 준다.</div>
+
+<h3>11.5 노름과 에너지는 전역 규칙이다</h3>
+<div class="env"><span class="lab">명제 11.4</span>(노름 변화의 정확식) $A=-iH$이고 $H$가 실대칭이면 $\|U^n\|^2=\sum_j|c_j|^2|R(z_j)|^{2n}$이다. $w_j=|c_j|^2/\sum_k|c_k|^2$로 두면
+$$\text{명시적 Euler: }\frac{\|U^n\|^2}{\|U^0\|^2}-1=\sum_jw_j\big[(1+\Delta t^2\lambda_j^2)^n-1\big]\approx T\Delta t\langle\lambda^2\rangle,\qquad\text{CN·Newmark: }0.$$
+<div class="proof">고유벡터가 직교하고 $|1-i\lambda\Delta t|^2=1+\Delta t^2\lambda^2$이다. 크랭크-니콜슨과 Newmark는 순허수 $z$에서 $|R|=1$이다(명제 7.2). Newmark의 경우 이것이 이산 에너지 $\tfrac12|V|^2+\tfrac12U^\top L_h^2U$의 보존이다.</div></div>
+<div class="table-wrap"><table><caption>표 23. 명시적 Euler의 노름 변화 $\|U^n\|^2/\|U^0\|^2-1$ (슈뢰딩거, $N=400$): 측정과 정확식</caption><thead><tr><th>$\Delta t$</th><th>측정</th><th>정확식</th><th>선도항 $T\Delta t\langle\lambda^2\rangle$</th><th>상대차</th></tr></thead><tbody><tr><td>$4.00\times10^{-4}$</td><td class="n">$0.0116167$</td><td class="n">$0.0116379$</td><td class="n">$0.01135$</td><td class="n">$1.8\times10^{-3}$</td></tr><tr><td>$2.00\times10^{-4}$</td><td class="n">$5.71654\times10^{-3}$</td><td class="n">$5.71654\times10^{-3}$</td><td class="n">$5.674\times10^{-3}$</td><td class="n">$1.2\times10^{-11}$</td></tr><tr><td>$1.00\times10^{-4}$</td><td class="n">$2.84749\times10^{-3}$</td><td class="n">$2.84749\times10^{-3}$</td><td class="n">$2.837\times10^{-3}$</td><td class="n">$2.1\times10^{-11}$</td></tr><tr><td>$5.00\times10^{-5}$</td><td class="n">$1.42106\times10^{-3}$</td><td class="n">$1.42106\times10^{-3}$</td><td class="n">$1.418\times10^{-3}$</td><td class="n">$1.1\times10^{-10}$</td></tr><tr><td>$2.50\times10^{-5}$</td><td class="n">$7.09865\times10^{-4}$</td><td class="n">$7.09865\times10^{-4}$</td><td class="n">$7.092\times10^{-4}$</td><td class="n">$6.0\times10^{-12}$</td></tr></tbody></table></div>
+<p><b>서술.</b> $\Delta t\le2\times10^{-4}$에서 측정과 정확식의 상대차는 1.1\times10^{-10} 이하이다. 식에는 조정할 매개변수가 없고 스펙트럼 가중치 $w_j$와 이산 고윳값만 들어간다. $\langle\lambda^2\rangle=28.37$은 연속 파속의 $\langle\xi^4\rangle=28.75$보다 작다. 2차 중심차분의 고윳값이 참값보다 작기 때문이며, 이 부호는 11.7에서 다시 나온다. 크랭크-니콜슨의 노름 변화는 1.8\times10^{-13}, Newmark의 에너지 변화는 1.1\times10^{-14} 이하였다. 7.4절의 <q>노름 규칙은 전역</q>과 7.3절의 <q>확률 총합의 보존은 차수와 독립된 검증 지표</q>가 1계 복소 방정식과 2계 실수 방정식에서 같은 형태로 확인된다.</p>
+
+<h3>11.6 수렴차수는 노름을 정한 뒤에만 정해진다</h3>
+<div class="env"><span class="lab">명제 11.5</span>(노름별 수렴차수와 보존형) 불연속 해의 근사가 점프를 $h$와 무관한 $w$개 칸에 $O(1)$ 크기로 번지게 하고 나머지 오차가 무시할 만하면 $\|e\|_q=(h\sum_i|e_i|^q)^{1/q}\asymp(wh)^{1/q}$이므로 $p_q=1/q$, $p_\infty=0$이다. 보존형 $U_i^{n+1}=U_i^n-\tfrac kh(F_{i+1/2}-F_{i-1/2})$에서는 $h\sum_iU_i^{n+1}-h\sum_iU_i^n=k(F_{\rm in}-F_{\rm out})$이 정확히 성립한다.
+<div class="proof">$w$개 칸에서 $|e_i|^q=O(1)$이므로 $h\sum|e_i|^q\asymp wh$이다. 내부 유속은 이웃 칸에서 한 번씩 더하고 빼져 망원급수가 된다.</div></div>
+<div class="table-wrap"><table><caption>표 24. 비점성 Burgers 충격파(1차 업윈드 보존형)</caption><thead><tr><th>$N$</th><th>$L^\infty$</th><th>$L^2$</th><th>$L^1$</th><th>차수 $L^\infty/L^2/L^1$</th><th>보존량 오차</th><th>충격파 속도</th></tr></thead><tbody><tr><td>100</td><td class="n">$0.232$</td><td class="n">$0.0314$</td><td class="n">$4.73\times10^{-3}$</td><td class="n">– / – / –</td><td class="n">$0$</td><td class="n">0.499763</td></tr><tr><td>200</td><td class="n">$0.232$</td><td class="n">$0.0222$</td><td class="n">$2.36\times10^{-3}$</td><td class="n">-0.00 / 0.50 / 1.00</td><td class="n">$1.7\times10^{-16}$</td><td class="n">0.500000</td></tr><tr><td>400</td><td class="n">$0.232$</td><td class="n">$0.0157$</td><td class="n">$1.18\times10^{-3}$</td><td class="n">-0.00 / 0.50 / 1.00</td><td class="n">$2.9\times10^{-15}$</td><td class="n">0.500000</td></tr><tr><td>800</td><td class="n">$0.232$</td><td class="n">$0.0111$</td><td class="n">$5.91\times10^{-4}$</td><td class="n">-0.00 / 0.50 / 1.00</td><td class="n">$9.4\times10^{-16}$</td><td class="n">0.500000</td></tr><tr><td>1600</td><td class="n">$0.232$</td><td class="n">$7.85\times10^{-3}$</td><td class="n">$2.95\times10^{-4}$</td><td class="n">-0.00 / 0.50 / 1.00</td><td class="n">$3.3\times10^{-16}$</td><td class="n">0.500000</td></tr><tr><td>3200</td><td class="n">$0.232$</td><td class="n">$5.55\times10^{-3}$</td><td class="n">$1.48\times10^{-4}$</td><td class="n">-0.00 / 0.50 / 1.00</td><td class="n">$2.2\times10^{-14}$</td><td class="n">0.500000</td></tr></tbody></table></div>
+<p><b>서술.</b> 같은 오차 벡터가 $L^\infty$로 0차, $L^2$로 ½차, $L^1$로 1차이다. 5절의 <q>오차범위는 노름으로 스칼라화될 때만 비교 가능하다</q>가 가장 강한 형태를 얻는다. <b>수렴차수는 방법의 성질이 아니라 (방법, 해의 매끄러움, 노름)의 성질이다</b>(명제 6.2). 보존량 오차는 2.2\times10^{-14} 이하이고 충격파 속도는 0.500000로 란킨-위고니오 값 ½과 같다.</p>
+
+<h3>11.7 FDM과 FEM: 같은 차수, 반대 부호, 혼합 질량의 4차</h3>
+<div class="env"><span class="lab">명제 11.6</span>(질량행렬과 고윳값 오차) 균일 격자에서 $\theta=\xi h$인 모드에 대해 $-\partial_{xx}$의 이산 고윳값은 FDM(=lumped FEM) $\xi^2(1-\theta^2/12+\theta^4/360-\cdots)$, consistent FEM $\xi^2(1+\theta^2/12+\theta^4/360+\cdots)$이다. 따라서 두 방법의 오차는 선도항에서 크기가 같고 부호가 반대이며, $M_{\rm mix}=\tfrac12(M_{\rm lumped}+M_{\rm consistent})$의 고윳값은 $\xi^2(1-\theta^4/240+\cdots)$이 되어 격자점 오차가 4차가 된다.
+<div class="proof">강성의 고윳값은 $(2-2\cos\theta)/h$, 질량의 고윳값은 lumped $h$, consistent $h(4+2\cos\theta)/6$, 혼합 $h(10+2\cos\theta)/12$이다. 비를 전개하면 된다. 격자점 값의 오차는 초기 보간이 격자점에서 정확하므로 고윳값 오차만으로 정해진다.</div></div>
+<div class="table-wrap"><table><caption>표 25. 질량행렬 세 가지(시간 정확). 왼쪽: 열 $L^\infty$, 오른쪽: 슈뢰딩거 $L^2$. 괄호는 관측 차수(열 $N=320$은 반올림 바닥이라 제외)</caption><thead><tr><th>$N$</th><th>consistent − FDM</th><th>consistent 오차</th><th>혼합 오차</th><th>$N$</th><th>FDM</th><th>consistent</th><th>혼합</th></tr></thead><tbody><tr><td>10</td><td class="n">$1.56\times10^{-3}$</td><td class="n">$7.83\times10^{-4}$</td><td class="n">$1.03\times10^{-7}$ (–)</td><td class="n">400</td><td class="n">$0.039$</td><td class="n">$0.0393$</td><td class="n">$2.31\times10^{-4}$ (–)</td></tr><tr><td>20</td><td class="n">$3.90\times10^{-4}$</td><td class="n">$1.95\times10^{-4}$</td><td class="n">$5.59\times10^{-9}$ (4.20)</td><td class="n">800</td><td class="n">$9.78\times10^{-3}$</td><td class="n">$9.80\times10^{-3}$</td><td class="n">$1.44\times10^{-5}$ (4.01)</td></tr><tr><td>40</td><td class="n">$9.75\times10^{-5}$</td><td class="n">$4.87\times10^{-5}$</td><td class="n">$3.37\times10^{-10}$ (4.05)</td><td class="n">1600</td><td class="n">$2.45\times10^{-3}$</td><td class="n">$2.45\times10^{-3}$</td><td class="n">$8.97\times10^{-7}$ (4.00)</td></tr><tr><td>80</td><td class="n">$2.44\times10^{-5}$</td><td class="n">$1.22\times10^{-5}$</td><td class="n">$2.09\times10^{-11}$ (4.01)</td><td class="n">3200</td><td class="n">$6.12\times10^{-4}$</td><td class="n">$6.12\times10^{-4}$</td><td class="n">$5.61\times10^{-8}$ (4.00)</td></tr><tr><td>160</td><td class="n">$6.09\times10^{-6}$</td><td class="n">$3.05\times10^{-6}$</td><td class="n">$1.32\times10^{-12}$ (3.98)</td><td class="n"></td><td class="n"></td><td class="n"></td><td class="n"></td></tr><tr><td>320</td><td class="n">$1.52\times10^{-6}$</td><td class="n">$7.61\times10^{-7}$</td><td class="n">$1.01\times10^{-13}$ (–)</td><td class="n"></td><td class="n"></td><td class="n"></td><td class="n"></td></tr></tbody></table></div>
+<p><b>서술.</b> lumped FEM과 FDM을 시간전진으로 비교한 차이는 5.8\times10^{-16}이다(같은 행렬). consistent FEM과 FDM의 차이는 각 오차의 두 배다. 두 방법은 참값을 양쪽에서 감싼다. 혼합 질량의 관측 차수는 열에서 4.01, 3.98, 슈뢰딩거에서 4.00, 4.00이다. 이 예측은 두 번째 실험에서 결과를 모른 채 처음 유도한 것이고(11.10), 이번 재실험에서 두 방정식 모두 맞았다. 오차가 차수만이 아니라 부호 있는 상수로 기술되면 상쇄되는 조합으로 차수를 올릴 수 있다. 크랭크-니콜슨이 명시적·암시적 Euler의 $C=\mp\tfrac12$을 평균해 2차가 되는 것과 같은 원리가 공간에서 성립한 것이다. 질량 혼합으로 분산 오차를 줄이는 방법은 파동 방정식 문헌에 알려져 있다(Marfurt, 1984).</p>
+
+<h3>11.8 공간 미분의 차수는 시간 간격을 묶는다</h3>
+<div class="env"><span class="lab">명제 11.7</span>(공간 차수와 명시적 시간 간격) 공간 연산자의 이산 고윳값이 $|\lambda|_{\max}\propto h^{-m}$($m$계 미분)이면, 1계 시간 명시적 스킴은 $\Delta t\lesssim c\,h^{m}$을, 2계 시간 중심차분(leapfrog)은 $\Delta t\le2/\omega_{\max}\propto h^{m/2}$을 요구한다. 보($m=4$, 시간 2계)에서 $\omega_{\max}\approx4/h^2$이므로 $\Delta t\le h^2/2$이다. 반면 도감의 Burgers IMEX(대류 명시적 중심차분, 확산 암시적)의 선형화 안정 조건은 $k\le2\nu/a^2$로 $h$와 무관하다.
+<div class="proof">leapfrog는 $u^{n+1}-2u^n+u^{n-1}=-k^2\omega^2u^n$에서 특성근의 곱이 1이고, $|k\omega|\le2$일 때만 두 근이 단위원 위에 있다. IMEX의 증폭률은 $|G|^2=(1+C^2\sin^2\theta)/(1+4\mu\sin^2(\theta/2))^2$ ($C=ak/h$, $\mu=\nu k/h^2$)이다. 작은 $\theta$에서 $C^2\le2\mu$, 곧 $k\le2\nu/a^2$이다.</div></div>
+<div class="table-wrap"><table><caption>표 26. 시간 간격의 한계: 4계 공간 미분의 명시적 스킴과 IMEX 대류</caption><thead><tr><th>경우</th><th>지표</th><th>결과</th></tr></thead><tbody><tr><td>보 leapfrog, $k=0.98\cdot h^2/2$</td><td class="n">$k\omega_{\max}=1.958$</td><td class="n">안정</td></tr><tr><td>보 leapfrog, $k=1.02\cdot h^2/2$</td><td class="n">$k\omega_{\max}=2.038$</td><td class="n">발산 (133스텝)</td></tr><tr><td>Burgers IMEX, $\nu=0.05$, $k=0.09$, $N=50$</td><td class="n">CFL $4.5$, $G_{\max}=1.0000$</td><td class="n">안정</td></tr><tr><td>Burgers IMEX, $\nu=0.05$, $k=0.09$, $N=200$</td><td class="n">CFL $18$, $G_{\max}=1.0000$</td><td class="n">안정</td></tr><tr><td>Burgers IMEX, $\nu=0.05$, $k=0.09$, $N=800$</td><td class="n">CFL $72$, $G_{\max}=1.0000$</td><td class="n">안정</td></tr><tr><td>Burgers IMEX, $\nu=0.05$, $k=0.12$, $N=50$</td><td class="n">CFL $6$, $G_{\max}=1.0138$</td><td class="n">불안정 (1566스텝)</td></tr><tr><td>Burgers IMEX, $\nu=0.05$, $k=0.12$, $N=200$</td><td class="n">CFL $24$, $G_{\max}=1.0142$</td><td class="n">불안정 (1483스텝)</td></tr><tr><td>Burgers IMEX, $\nu=0.05$, $k=0.12$, $N=800$</td><td class="n">CFL $96$, $G_{\max}=1.0141$</td><td class="n">불안정 (1478스텝)</td></tr><tr><td>Burgers IMEX, $\nu=0$, $k=0.0025$, $N=200$</td><td class="n">CFL $0.5$, $G_{\max}=1.1180$</td><td class="n">불안정 (297스텝)</td></tr></tbody></table></div>
+<p><b>서술.</b> 보의 leapfrog는 $k=0.98\cdot h^2/2$에서 20000스텝 동안 안정하고, $1.02\cdot h^2/2$에서 133스텝 만에 발산했다. 4계 공간 미분이 시간 간격을 $h^2$에 묶는 것이다. 이것은 열방정식(2계 공간, 1계 시간)의 $\Delta t\propto h^2$와 같은 지수이고, 파동 방정식의 $\Delta t\propto h$보다 한 차수 엄격하다. Burgers IMEX는 CFL 72에서도 안정하고 $k=0.12$에서 모든 격자에서 불안정했다. 도감 카드의 <q>CFL ≤ 1</q>은 업윈드 명시적 변형에만 해당한다. 공간 미분의 차수와 시간 스킴의 구조가 함께 시간 간격의 지수를 정한다는 점에서, 이것도 차수가 차수를 제한하는 사례이다.</p>
+
+<h3>11.9 PINN: 강형식의 정칙성과 구적으로서의 손실</h3>
+<div class="table-wrap"><table><caption>표 27. 열방정식 PINN($u_t=0.1u_{xx}$)의 도감 파트 2 지표 (PyTorch 기록)</caption><thead><tr><th>실행</th><th>층×노드</th><th>활성화</th><th>optimizer</th><th>collocation</th><th>제약</th><th>seed</th><th>final loss</th><th>final error $L^\infty$</th><th>runtime (s)</th></tr></thead><tbody><tr><td>기준</td><td class="n">3×32</td><td class="n">tanh</td><td class="n">Adam 2000 + L-BFGS 492</td><td class="n">1000</td><td class="n">hard</td><td class="n">0</td><td class="n">$7.5\times10^{-8}$</td><td class="n">$3.68\times10^{-5}$</td><td class="n">53</td></tr><tr><td>seed 1</td><td class="n">3×32</td><td class="n">tanh</td><td class="n">Adam 2000 + L-BFGS 438</td><td class="n">1000</td><td class="n">hard</td><td class="n">1</td><td class="n">$5.4\times10^{-8}$</td><td class="n">$3.65\times10^{-5}$</td><td class="n">32</td></tr><tr><td>seed 2</td><td class="n">3×32</td><td class="n">tanh</td><td class="n">Adam 2000 + L-BFGS 495</td><td class="n">1000</td><td class="n">hard</td><td class="n">2</td><td class="n">$5.4\times10^{-8}$</td><td class="n">$3.82\times10^{-5}$</td><td class="n">34</td></tr><tr><td>ReLU</td><td class="n">3×32</td><td class="n">relu</td><td class="n">Adam 2000 + L-BFGS 7</td><td class="n">1000</td><td class="n">hard</td><td class="n">0</td><td class="n">$1.1\times10^{-3}$</td><td class="n">$0.0992$</td><td class="n">19</td></tr><tr><td>Adam 단독</td><td class="n">3×32</td><td class="n">tanh</td><td class="n">Adam 2000</td><td class="n">1000</td><td class="n">hard</td><td class="n">0</td><td class="n">$9.4\times10^{-6}$</td><td class="n">$5.31\times10^{-4}$</td><td class="n">25</td></tr><tr><td>Adam 단독 6000</td><td class="n">3×32</td><td class="n">tanh</td><td class="n">Adam 6000</td><td class="n">1000</td><td class="n">hard</td><td class="n">0</td><td class="n">$3.9\times10^{-7}$</td><td class="n">$1.11\times10^{-4}$</td><td class="n">73</td></tr><tr><td>soft</td><td class="n">3×32</td><td class="n">tanh</td><td class="n">Adam 2000 + L-BFGS 500</td><td class="n">1000</td><td class="n">soft</td><td class="n">0</td><td class="n">$3.1\times10^{-7}$</td><td class="n">$7.23\times10^{-4}$</td><td class="n">52</td></tr><tr><td>col 32</td><td class="n">3×32</td><td class="n">tanh</td><td class="n">Adam 2000 + L-BFGS 500</td><td class="n">32</td><td class="n">hard</td><td class="n">0</td><td class="n">$1.4\times10^{-7}$</td><td class="n">$1.01\times10^{-3}$</td><td class="n">10</td></tr><tr><td>col 128</td><td class="n">3×32</td><td class="n">tanh</td><td class="n">Adam 2000 + L-BFGS 500</td><td class="n">128</td><td class="n">hard</td><td class="n">0</td><td class="n">$2.6\times10^{-8}$</td><td class="n">$3.85\times10^{-5}$</td><td class="n">15</td></tr><tr><td>col 250</td><td class="n">3×32</td><td class="n">tanh</td><td class="n">Adam 2000 + L-BFGS 500</td><td class="n">250</td><td class="n">hard</td><td class="n">0</td><td class="n">$5.0\times10^{-8}$</td><td class="n">$6.55\times10^{-5}$</td><td class="n">17</td></tr><tr><td>col 4000</td><td class="n">3×32</td><td class="n">tanh</td><td class="n">Adam 2000 + L-BFGS 500</td><td class="n">4000</td><td class="n">hard</td><td class="n">0</td><td class="n">$6.7\times10^{-8}$</td><td class="n">$3.91\times10^{-5}$</td><td class="n">167</td></tr></tbody></table></div>
+<p>PINN은 브라우저에서 재학습하지 않고 PyTorch 기록을 쓴다.</p>
+<ul>
+<li><b>활성화(명제 9.1):</b> ReLU의 final error는 tanh의 2700배이다. 10.6절의 프리드만 PINN(tanh $5.8\times10^{-5}$, ReLU $4.9\times10^{-3}$)과 발표판의 열방정식 보고(0.0710 대 0.4397)와 같은 방향이다.</li>
+<li><b>손실은 구적(명제 9.2):</b> collocation 32점은 final loss가 기준과 같은 수준인데 final error가 27배 크다. 손실이 적분 $\int r^2$의 구적이라서, 점이 적으면 손실이 작아도 적분은 작지 않을 수 있다. collocation은 128점 이상에서 포화하며, 10.6절의 프리드만 PINN도 같은 지점에서 포화했다.</li>
+<li><b>optimizer:</b> Adam 뒤 L-BFGS가 오차를 14배 줄이고 seed 간 편차도 2–5%로 모은다. 곡률을 쓰는 단계가 최적화 오차의 크기와 분산을 함께 줄인다.</li>
+<li><b>비용:</b> 비슷한 정확도에서 FDM 0.31초, PINN 33–53초이다. 1차원 매끄러운 문제에서 PINN이 이길 이유는 없고, 명제 11.1의 교차 논리가 PINN에 유리하게 작동하려면 고차원이어야 한다.</li>
+</ul>
+
+<h3>11.10 실험 이력과 틀린 예측</h3>
+<p>이 절의 결과는 네 차례 실험의 마지막이다.</p>
+<ul>
+<li><b>1차</b>(열·Burgers·슈뢰딩거·교차 차원·열 PINN): 맞음 18, 틀림 1, 판정 불가 1.
+  <ul>
+  <li>Burgers 시간 차수가 1.17로 나왔다. 기준해를 최소 $\Delta t$의 $\rho=\tfrac15$로 만들었기 때문이며, 방법이 1차이면 겉보기 차수는 $\log_2\frac{2-\rho}{1-\rho}=1.17$로 측정값과 소수 둘째 자리까지 같다.</li>
+  <li>seed 편차 예측은 지표를 적지 않아 판정하지 않았다.</li>
+  </ul></li>
+<li><b>2차</b>(혼합 질량행렬, IMEX 안정 한계): 맞음 4, 틀림 1. 혼합 질량의 열방정식 차수가 3.71로 나왔는데, $N=320$의 오차 $10^{-13}$이 반올림 바닥이었다. 50자리 계산에서는 4.00이었다.</li>
+<li><b>3차</b>(스토크스): 판정 전에 중단하여 결과에 넣지 않는다.</li>
+<li><b>4차</b>(이 절): 설계 규칙 (i)–(iii)을 적용한 재실험이다.</li>
+</ul>
+<p>앞선 틀린 예측이 이번에 사라진 것은 알고리즘이나 이론을 바꾸어서가 아니라 측정 설계를 고쳤기 때문이다. 틀린 예측의 크기까지 식으로 설명되었다는 점에서, 틀림 역시 이론의 예측력에 대한 증거가 되었다.</p>
+
+<h3>11.11 종합</h3>
+<p>차원은 유한 경계를 가진 도메인에서 선형독립 방향의 수이며, 수직(직교)과 수평(비례상수에 의한 평행)은 그 기저를 다루는 선형 구조이다. 차수는 테일러 전개의 계층으로서 기울기(1차 텐서), 편향(내적으로 주어지는 방향성분), 곡률(헤시안, 2차 텐서), 3차 텐서로 정리되며, 차원과 차수가 만나는 지점은 텐서의 독립 성분 수 $\binom{d+k-1}{k}$로 정량화된다. 이산화에서 차수는 오차 노름 $\|e\|\approx C_xh^p+C_t\Delta t^q$의 지수로 나타나고, 점화식 반복과 격자 정련의 비율로 관측되며, 해의 매끄러움에 의해 그 상한이 정해진다. 차원은 쐐기곱이 처음으로 사라지는 차수로 계량 없이 정의되는 가법 불변량이고, 차수는 반복(스텝)과 회전수를 로그로 읽는 곱셈 불변량이다. 분수(번분수) 근사는 수론에서 최량근사의 오차 한계를, 시간적분에서는 파데 근사를 통해 노름 보존을 결정한다. 확률은 큰 수의 법칙에 의해 반복의 극한에서 비율이 된다. 프랙탈 차원은 이 구분이 절대적이지 않음을 보이고, 뉴턴 역학은 상대론적 운동의 1차 절단이다.</p>
+<p>이 절의 검증은 이 틀에 네 가지를 더한다.</p>
+<ol>
+<li><b>차원이 들어가는 자리.</b> 차원은 교차 차원 $d^*=2p$(11.2), 명시적 스킴의 안정 한계 $r\le1/(2d)$, 비용 지수 $M^{-p/d}$(11.3)라는 세 자리에서 측정 가능한 값으로 나타난다.</li>
+<li><b>차수의 로그 읽기.</b> 차수를 로그의 접촉 차수로, 오차 상수를 그 계수로 읽으면 세 방정식에서 오차의 크기가 예측된다(11.4). 노름과 에너지는 조정할 매개변수 없는 전역 규칙으로 예측된다(11.5).</li>
+<li><b>차수는 무엇에 대한 차수인가.</b> 수렴차수는 노름을 정한 뒤에 정해지고(11.6), 부호 있는 상수의 상쇄로 올라가며(11.7), 공간 미분의 차수는 명시적 시간 간격의 지수를 정한다(11.8).</li>
+<li><b>예측 가능한 오차범위.</b> 결정론적 수치해의 오차는 확률이 아니라 예측 가능한 오차범위라는 본 논문의 출발점은, 오차의 크기와 그 불일치의 크기까지 계산으로 예측되는 형태로 뒷받침된다.</li>
+</ol>
+<p>한계도 분명하다. 확인된 결과의 대부분은 수치해석에서 알려진 사실을 1·2차원 데모 문제에서 재현한 것이다. 이 절의 기여는 새로운 정리가 아니라, 원 착상을 재구성한 대수적 명제가 측정 전에 수치를 예측하고 그 예측이 기록된 규칙으로 판정된다는 데 있다. 결손 예측은 앞선 실험에서 식을 확인한 뒤 이번에 예측으로 기록했다. 결과를 모르고 한 예측은 혼합 질량행렬뿐이다. 예측이 성립하는 범위는 선형 문제, 매끄러운 해, 증폭률을 아는 방법이다. 비선형 문제의 오차 크기와 PINN의 오차는 아직 예측하지 못한다. 다음 단계는 고차원($d\ge4$) 문제에서 PINN과 격자법의 교차를 사전 예측으로 판정하는 것이다.</p>
+
+
+<hr>
+<h2>부록. 재현</h2>
+<p>표 3·5·6·7·8·9·13·14·2·15과 그림 1·2·3·4·5·8과 표 16–18, 그림 12, 10.9절의 박스 차원의 모든 수치는 이 문서에 포함된 JavaScript 수치 엔진이 문서를 열 때마다 직접 계산한다. 엔진은 원래의 파이썬 구현(numpy·scipy·mpmath)을 이식한 것이다. 슈뢰딩거 문제는 사인 변환으로 정확히 대각화하고, 연분수·라마누잔 급수·$e$의 꼬리는 90자리 BigInt 고정소수점으로 계산한다. 계산값은 파이썬 결과와 표시된 유효숫자까지 일치한다. 표 10–12과 그림 9–11의 PINN 결과는 PyTorch(CPU, float64)로 60여 회 학습한 실행 기록이다. 브라우저에서 재학습하지 않는다. 그림 6·7은 해석해를 그대로 그린다. 11절의 표 19–26과 그림 13은 부속 실험의 JavaScript 엔진(이 문서 끝에도 포함되어 11.1절의 단추로 재실행된다)을 Node.js로 실행한 결과이고, 표 27은 PyTorch 기록이다. 사전 예측 기록과 전 과정은 「도감 알고리즘 재실험」 보고서에 있다. 계산 소요 시간: <span id="engineMs"></span>.</p>
+<h3>참고문헌</h3>
+<ol class="refs">
+<li>R. J. LeVeque, <i>Finite Difference Methods for Ordinary and Partial Differential Equations</i>, SIAM, 2007.</li>
+<li>E. Hairer, S. P. Nørsett, G. Wanner, <i>Solving Ordinary Differential Equations I</i>, Springer, 1993.</li>
+<li>R. R. Caldwell, M. Kamionkowski, N. N. Weinberg, "Phantom energy and cosmic doomsday," <i>Phys. Rev. Lett.</i> 91, 071301, 2003.</li>
+<li>M. Raissi, P. Perdikaris, G. E. Karniadakis, "Physics-informed neural networks," <i>J. Comput. Phys.</i> 378, 686–707, 2019.</li>
+<li>R. P. Feynman, A. R. Hibbs, <i>Quantum Mechanics and Path Integrals</i>, McGraw-Hill, 1965.</li>
+<li>W. Israel, "Singular hypersurfaces and thin shells in general relativity," <i>Nuovo Cimento B</i> 44, 1–14, 1966.</li>
+<li>M. Alcubierre, "Appearance of coordinate shocks in hyperbolic formalisms of general relativity," <i>Phys. Rev. D</i> 55, 5981, 1997.</li>
+<li>C. W. Misner, K. S. Thorne, J. A. Wheeler, <i>Gravitation</i>, W. H. Freeman, 1973.</li>
+<li>G. Dahlquist, "Convergence and stability in the numerical integration of ordinary differential equations," <i>Math. Scand.</i> 4, 33–53, 1956.</li>
+<li>G. A. Baker, P. Graves-Morris, <i>Padé Approximants</i>, 2nd ed., Cambridge University Press, 1996.</li>
+<li>A. Ya. Khinchin, <i>Continued Fractions</i>, University of Chicago Press, 1964.</li>
+<li>S. Ramanujan, "Modular equations and approximations to π," <i>Quart. J. Pure Appl. Math.</i> 45, 350–372, 1914.</li>
+<li>S. C. Brenner, L. R. Scott, <i>The Mathematical Theory of Finite Element Methods</i>, 3rd ed., Springer, 2008.</li>
+<li>H. Grassmann, <i>Die lineale Ausdehnungslehre</i>, Leipzig, 1844.</li>
+<li>L. V. Ahlfors, <i>Complex Analysis</i>, 3rd ed., McGraw-Hill, 1979.</li>
+<li>R. Hartshorne, <i>Algebraic Geometry</i>, Springer, 1977.</li>
+<li>K. Falconer, <i>Fractal Geometry: Mathematical Foundations and Applications</i>, 3rd ed., Wiley, 2014.</li>
+<li>W. Shen, "Hausdorff dimension of the graphs of the classical Weierstrass functions," <i>Math. Z.</i> 289, 223–266, 2018.</li>
+<li>K. J. Marfurt, "Accuracy of finite-difference and finite-element modeling of the scalar and elastic wave equations," <i>Geophysics</i> 49(5), 533–549, 1984.</li>
+<li>R. J. LeVeque, <i>Finite Volume Methods for Hyperbolic Problems</i>, Cambridge University Press, 2002.</li>
+<li>U. M. Ascher, S. J. Ruuth, B. T. R. Wetton, "Implicit-explicit methods for time-dependent partial differential equations," <i>SIAM J. Numer. Anal.</i> 32(3), 797–823, 1995.</li>
+<li>T. J. R. Hughes, <i>The Finite Element Method: Linear Static and Dynamic Finite Element Analysis</i>, Dover, 2000.</li>
+</ol>
+
+<div class="tip" id="tip"></div>
+</main>
+<script>
+/* ===== 수치 엔진: 파이썬 스크립트(cosmo_convergence.py, extra_checks.py, phase_norm_split.py)의 JS 이식 ===== */
+const NE = (function(){
+const Om=0.31, OL=0.69, sq=Math.sqrt(OL), H0GYR=977.8/67.7;
+const T0=2/(3*sq)*Math.asinh(Math.sqrt(OL/Om)), TS=0.05;
+const aEx=t=>Math.cbrt(Om/OL)*Math.pow(Math.sinh(1.5*sq*t),2/3);
+const fF=a=>a*Math.sqrt(Om/(a*a*a)+OL);
+const ord=e=>e.map((v,i)=>i?Math.log(e[i-1]/v)/Math.log(2):null);
+
+/* 1) 프리드만: Euler / RK4 시간 수렴성 */
+function friedmann(){
+  const Ns=[50,100,200,400,800], res={};
+  for(const m of ['euler','rk4']){
+    res[m]=Ns.map(n=>{ const dt=(T0-TS)/n; let a=aEx(TS), mx=0, s2=0;
+      for(let k=1;k<=n;k++){
+        if(m==='euler') a=a+dt*fF(a);
+        else { const k1=fF(a),k2=fF(a+dt/2*k1),k3=fF(a+dt/2*k2),k4=fF(a+dt*k3); a+=dt/6*(k1+2*k2+2*k3+k4); }
+        const e=Math.abs(a-aEx(TS+k*dt)); if(e>mx) mx=e; s2+=e*e; }
+      return {Linf:mx, L2:Math.sqrt(s2/n)}; });
+    res[m+'_p']=ord(res[m].map(r=>r.Linf)); res[m+'_p2']=ord(res[m].map(r=>r.L2));
+  }
+  const aAcc=Math.cbrt(Om/(2*OL)), tAcc=Math.asinh(Math.sqrt(aAcc**3*OL/Om))/(1.5*sq);
+  // RK4 스텝 수별 오차 (PINN 동일 정확도 비교용)
+  const rk4At=n=>{ const dt=(T0-TS)/n; let a=aEx(TS), mx=0; for(let k=1;k<=n;k++){ const k1=fF(a),k2=fF(a+dt/2*k1),k3=fF(a+dt/2*k2),k4=fF(a+dt*k3); a+=dt/6*(k1+2*k2+2*k3+k4); mx=Math.max(mx,Math.abs(a-aEx(TS+k*dt))); } return mx; };
+  return {Ns, ...res, t0:T0, t0Gyr:T0*H0GYR, aAcc, zAcc:1/aAcc-1, tAccGyr:tAcc*H0GYR, rk4_13:rk4At(13)};
+}
+
+/* 2) 우주 나이 사다리꼴 구적 */
+function ageTrap(){
+  const f=a=>Math.sqrt(a)/Math.sqrt(Om+OL*a*a*a), Ns=[16,32,64,128,256,512];
+  const err=Ns.map(n=>{ let s=0.5*(f(0)+f(1)); for(let i=1;i<n;i++) s+=f(i/n); return Math.abs(s/n-T0); });
+  return {Ns, err, p:ord(err)};
+}
+
+/* 안정성 함수 (복소수 [re,im]) */
+const cm=(a,b)=>[a[0]*b[0]-a[1]*b[1],a[0]*b[1]+a[1]*b[0]], ca=(a,b)=>[a[0]+b[0],a[1]+b[1]], cs=(a,s)=>[a[0]*s,a[1]*s];
+const cd=(a,b)=>{const d=b[0]*b[0]+b[1]*b[1];return [(a[0]*b[0]+a[1]*b[1])/d,(a[1]*b[0]-a[0]*b[1])/d];};
+const cabs=a=>Math.hypot(a[0],a[1]), carg=a=>Math.atan2(a[1],a[0]);
+const RF={
+  euler:z=>ca([1,0],z),
+  rk4:z=>{const z2=cm(z,z),z3=cm(z2,z),z4=cm(z3,z);return ca(ca(ca(ca([1,0],z),cs(z2,1/2)),cs(z3,1/6)),cs(z4,1/24));},
+  cn:z=>cd(ca([1,0],cs(z,.5)),ca([1,0],cs(z,-.5))),
+  gl:z=>{const z2=cm(z,z);return cd(ca(ca([1,0],cs(z,.5)),cs(z2,1/12)),ca(ca([1,0],cs(z,-.5)),cs(z2,1/12)));}
+};
+const METH=['euler','rk4','cn','gl'];
+
+/* 3) 2-큐빗 XX 결합: 부분공간 {|01>,|10>}에서 H = J σx, 정확해 ψ = (-i sin Jt, cos Jt) */
+function qubit(){
+  const J=1, T=Math.PI/4, Ns=[25,50,100,200,400], out={};
+  for(const m of METH){
+    const rows=Ns.map(n=>{ const dt=T/n, Rp=RF[m]([0,-J*dt]), Rm=RF[m]([0,J*dt]);
+      const d=cs(ca(Rp,Rm),.5), o=cs(ca(Rp,cs(Rm,-1)),.5);           // M = [[d,o],[o,d]]
+      let p=[[0,0],[1,0]], mx=0;
+      for(let k=1;k<=n;k++){ p=[ca(cm(d,p[0]),cm(o,p[1])), ca(cm(o,p[0]),cm(d,p[1]))];
+        const t=k*dt, e0=cabs(ca(p[0],[0,Math.sin(J*t)])), e1=cabs(ca(p[1],[-Math.cos(J*t),0])); mx=Math.max(mx,e0,e1); }
+      const nrm=Math.hypot(cabs(p[0]),cabs(p[1]));
+      // 진폭 ⊕ 위상 예측 (명제 7.3)
+      const R=RF[m]([0,J*dt]), A=Math.pow(cabs(R),n); let dph=n*carg(cm(R,[Math.cos(J*dt),-Math.sin(J*dt)]));
+      const amp=Math.abs(A-1), ph=2*Math.abs(Math.sin(dph/2)), tot=Math.sqrt((A-1)**2+4*A*Math.sin(dph/2)**2);
+      return {Linf:mx, drift:Math.abs(nrm-1), C:2*cabs(cm(p[0],p[1])), predDrift:amp, amp, ph, pred:tot/Math.SQRT2}; });
+    out[m]={rows, p:ord(rows.map(r=>r.Linf))};
+  }
+  return {Ns, ...out};
+}
+
+/* 4) 1D 자유 슈뢰딩거: FDM(2차 중심차분) vs P1 FEM(갤러킨), 사인 변환으로 정확 시간적분 */
+function schrod(){
+  const Lx=40, Tq=1, k0=2, GP=[-0.8611363115940526,-0.3399810435848563,0.3399810435848563,0.8611363115940526], GW=[0.3478548451374538,0.6521451548625461,0.6521451548625461,0.3478548451374538];
+  const PI4=Math.pow(Math.PI,-0.25);
+  const csqrt=a=>{const r=cabs(a),s=Math.sqrt((r+a[0])/2); return [s, (a[1]>=0?1:-1)*Math.sqrt((r-a[0])/2)];};
+  const cexp=a=>{const e=Math.exp(a[0]);return [e*Math.cos(a[1]),e*Math.sin(a[1])];};
+  const psi=(x,t)=>{ const c=[1,t], X=x-k0*t; const q=cd([-X*X/2,0],c); return cs(cd(cexp(ca(q,[0,k0*(x-k0*t/2)])),csqrt(c)),PI4); };
+  const dpsi=(x,t)=>{ const c=[1,t]; return cm(psi(x,t), ca(cd([-(x-k0*t),0],c),[0,k0])); };
+  function dst(re,im,n){ // 정규직교 사인 변환 (자기 역변환)
+    const M=2*(n+1), S=new Float64Array(M); for(let m=0;m<M;m++) S[m]=Math.sin(Math.PI*m/(n+1));
+    const s=Math.sqrt(2/(n+1)), oR=new Float64Array(n), oI=new Float64Array(n);
+    for(let k=1;k<=n;k++){ let ar=0,ai=0,idx=0; for(let j=1;j<=n;j++){ idx+=k; if(idx>=M) idx-=M; const w=S[idx]; ar+=w*re[j-1]; ai+=w*im[j-1]; } oR[k-1]=s*ar; oI[k-1]=s*ai; }
+    return [oR,oI];
+  }
+  const Ns=[101,201,401,801,1601], res={fdm:[],fem:[]};
+  for(const N of Ns){
+    const h=Lx/(N-1), n=N-2, x=i=>-Lx/2+i*h, th=Math.PI/(n+1);
+    for(const meth of ['fdm','fem']){
+      const vr=new Float64Array(n), vi=new Float64Array(n);
+      if(meth==='fdm'){ for(let j=1;j<=n;j++){ const v=psi(x(j),0); vr[j-1]=v[0]; vi[j-1]=v[1]; } }
+      else { for(let e=0;e<N-1;e++){ const xa=x(e), xb=x(e+1);
+          for(let q=0;q<4;q++){ const xq=(xa+xb)/2+h/2*GP[q], wq=GW[q]*h/2, f=psi(xq,0), pL=(xb-xq)/h, pR=(xq-xa)/h;
+            if(e>=1){ vr[e-1]+=wq*f[0]*pL; vi[e-1]+=wq*f[1]*pL; }
+            if(e+1<=n){ vr[e]+=wq*f[0]*pR; vi[e]+=wq*f[1]*pR; } } } }
+      const [cr,ci]=dst(vr,vi,n);
+      for(let k=1;k<=n;k++){ const ck=Math.cos(k*th); let lam, sc=1;
+        if(meth==='fdm') lam=(2-2*ck)/(h*h); else { const Kk=(2-2*ck)/h, Mk=h/6*(4+2*ck); lam=Kk/Mk; sc=1/Mk; }
+        const ph=-0.5*lam*Tq, er=Math.cos(ph)*sc, ei=Math.sin(ph)*sc, a=cr[k-1], b=ci[k-1];
+        cr[k-1]=a*er-b*ei; ci[k-1]=a*ei+b*er; }
+      const [ur,ui]=dst(cr,ci,n);
+      const U=i=>(i===0||i===N-1)?[0,0]:[ur[i-1],ui[i-1]];
+      let Linf=0,L2=0,H1=0;
+      for(let i=0;i<N;i++){ Linf=Math.max(Linf,cabs(ca(U(i),cs(psi(x(i),Tq),-1)))); }
+      for(let e=0;e<N-1;e++){ const xa=x(e), Ua=U(e), Ub=U(e+1), du=cs(ca(Ub,cs(Ua,-1)),1/h);
+        for(let q=0;q<4;q++){ const xq=(xa+x(e+1))/2+h/2*GP[q], wq=GW[q]*h/2, uh=ca(Ua,cs(du,(xq-xa)));
+          L2+=wq*cabs(ca(uh,cs(psi(xq,Tq),-1)))**2; H1+=wq*cabs(ca(du,cs(dpsi(xq,Tq),-1)))**2; } }
+      res[meth].push({Linf, L2:Math.sqrt(L2), H1:Math.sqrt(H1)});
+    }
+  }
+  const P=(m,k)=>ord(res[m].map(r=>r[k]));
+  return {Ns, ...res, p:{fdm:{Linf:P('fdm','Linf'),L2:P('fdm','L2'),H1:P('fdm','H1')}, fem:{Linf:P('fem','Linf'),L2:P('fem','L2'),H1:P('fem','H1')}}};
+}
+
+/* 5) Big Rip: v = e^{-cu} 치환, ∫_0^1 dv / (c √(Ωm v^{2+3/c} + ΩΛ)),  c = 3|1+w|/2 */
+function bigRip(){
+  const GP=[-0.8611363115940526,-0.3399810435848563,0.3399810435848563,0.8611363115940526], GW=[0.3478548451374538,0.6521451548625461,0.6521451548625461,0.3478548451374538];
+  return [-1.05,-1.1,-1.2,-1.5].map(w=>{ const c=1.5*Math.abs(1+w), f=v=>1/(c*Math.sqrt(Om*Math.pow(v,2+3/c)+OL));
+    const P=2000; let s=0; for(let i=0;i<P;i++){ const a=i/P,b=(i+1)/P; for(let q=0;q<4;q++) s+=GW[q]*(b-a)/2*f((a+b)/2+(b-a)/2*GP[q]); }
+    return {w, gyr:s*H0GYR, approx:2/(3*Math.abs(1+w)*Math.sqrt(1-Om))*H0GYR}; });
+}
+
+/* 6) 연분수·라마누잔·e 꼬리 (BigInt 고정소수점) */
+function fractions(){
+  const D=90, SC=10n**BigInt(D);
+  const PIS="3141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148";
+  const PI=BigInt(PIS.slice(0,D+1));
+  const toF=b=>{ const s=(b<0n?-b:b).toString(); const L=s.length; return Number(s.slice(0,17))*Math.pow(10,L-17-D); };
+  // π 연분수
+  const cf=[3,7,15,1,292,1,1]; let h=[1n,BigInt(cf[0])], k=[0n,1n]; const conv=[[3n,1n]];
+  for(const a of cf.slice(1)){ const A=BigInt(a); h.push(A*h[h.length-1]+h[h.length-2]); k.push(A*k[k.length-1]+k[k.length-2]); conv.push([h[h.length-1],k[k.length-1]]); }
+  const cfRows=conv.slice(0,-1).map(([p,q],i)=>{ const err=toF((PI*q-p*SC)/q); const qn=conv[i+1][1]; return {p:p.toString(), q:q.toString(), err:Math.abs(err), bound:1/(Number(q)*Number(qn))}; });
+  // 라마누잔
+  let x=SC*14142n/10000n; const two=2n*SC*SC; for(let i=0;i<200;i++){ const nx=(x+two/x)/2n; if(nx===x) break; x=nx; } const SQ2=x;
+  const fact=n=>{let r=1n;for(let i=2n;i<=n;i++) r*=i; return r;};
+  let S=0n, prev=null; const ram=[];
+  for(let kk=0n;kk<6n;kk++){ S+=SC*fact(4n*kk)*(1103n+26390n*kk)/(fact(kk)**4n * 396n**(4n*kk));
+    const piK=9801n*SC*SC*SC/(2n*SQ2*S); const err=Math.abs(toF(piK-PI));
+    ram.push({k:Number(kk), err, digits:-Math.log10(err), ratio:prev===null?null:err/prev}); prev=err; }
+  // e 꼬리
+  let E=0n; for(let kk=0n;kk<=80n;kk++) E+=SC/fact(kk);
+  const eTail=[]; let Sn=0n;
+  for(let n=0;n<=16;n++){ Sn+=SC/fact(BigInt(n)); if(n>=1){ const tail=toF(E-Sn); let nf=1; for(let i=2;i<=n;i++) nf*=i; eTail.push({n, tail, bound:1/(nf*n)}); } }
+  return {cfRows, ram, rate:256/Math.pow(396,4), eTail};
+}
+
+/* 7) 포스트뉴턴 전개 */
+function postNewton(){
+  const coef=k=>{let c=1;for(let j=0;j<k;j++) c*=(-0.5-j)/(j+1);return c;};
+  const err=(x,K)=>{let s=0;for(let j=0;j<=K;j++) s+=coef(j)*Math.pow(x,2*j+1); return Math.abs(s-x/Math.sqrt(1+x*x));};
+  return {err};
+}
+
+/* 8) 진폭–위상 분해의 전역·국소 점검 */
+function phaseChecks(){
+  const ys=Array.from({length:4000},(_,i)=>1e-4+(4-1e-4)*i/3999); let idMax=0, lo=true, up=true;
+  for(const m of METH) for(const y of ys){ const R=RF[m]([0,y]), A=cabs(R), dph=carg(cm(R,[Math.cos(y),-Math.sin(y)]));
+    const lhs=(R[0]-Math.cos(y))**2+(R[1]-Math.sin(y))**2, rhs=(A-1)**2+4*A*Math.sin(dph/2)**2;
+    idMax=Math.max(idMax,Math.abs(lhs-rhs)); if(Math.abs(A-1)>Math.sqrt(lhs)+1e-15) lo=false; if(Math.sqrt(lhs)>Math.abs(A-1)+2*Math.abs(Math.sin(dph/2))+1e-15) up=false; }
+  const all=f=>ys.every(f);
+  let rkMax=0; for(const y of ys) if(cabs(RF.rk4([0,y]))<=1+1e-15) rkMax=y;
+  const argEx=(()=>{ const z=[-1,1e-12], p=cm(z,z); return {prod:carg(p), sum:2*carg(z), abs:cabs(p)}; })();
+  return { idMax, lo, up,
+    euA:all(y=>Math.sqrt(1+y*y)-1<=y*y/2+1e-16), euP:all(y=>y-Math.atan(y)<=y**3/3+1e-16),
+    cnA:all(y=>Math.abs(cabs(RF.cn([0,y]))-1)<1e-13), cnP:all(y=>y-2*Math.atan(y/2)<=y**3/12+1e-16),
+    glA:all(y=>Math.abs(cabs(RF.gl([0,y]))-1)<1e-13), rkGlobal:all(y=>cabs(RF.rk4([0,y]))<=1+1e-15), rkMax, argEx };
+}
+
+return {friedmann, ageTrap, qubit, schrod, bigRip, fractions, postNewton, phaseChecks, RF, METH, cabs, carg, cm};
+})();
+
+
+</script>
+<script>
+/* ===== 렌더: 엔진 결과로 표와 그래프를 채운다 ===== */
+(function(){
+const t0=performance.now();
+const F=NE.friedmann(), AG=NE.ageTrap(), Q=NE.qubit(), SP=NE.schrod(), RIP=NE.bigRip(), FR=NE.fractions(), PN=NE.postNewton(), PC=NE.phaseChecks();
+const ms=performance.now()-t0;
+const sci=(v,d=2)=>{ if(v===null||v===undefined) return '–'; if(v===0) return '0'; const [m,e]=v.toExponential(d).split('e'); const x=parseInt(e,10); return x===0?m:`${m}e${x}`; };
+const fx=(v,d=2)=>v===null?'–':v.toFixed(d);
+function tbl(id, head, rows){ const t=document.getElementById(id); if(!t) return;
+  let h='<thead><tr>'+head.map(x=>`<th>${x}</th>`).join('')+'</tr></thead><tbody>';
+  rows.forEach(r=>{ h+='<tr>'+r.map((c,i)=>{ if(c&&typeof c==='object') return `<td class="${c.cls||''}">${c.v}</td>`; return i?`<td class="n">${c}</td>`:`<td>${c}</td>`; }).join('')+'</tr>'; });
+  t.insertAdjacentHTML('beforeend', h+'</tbody>'); }
+const set=(id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=v; };
+
+/* 표: 포스트뉴턴 */
+const Ks=[0,1,2,4,8,16];
+tbl('t-pn',['$x=\\alpha t/c$','$v/c$','$K=0$ (뉴턴)','$K=1$','$K=2$','$K=4$','$K=8$','$K=16$'],
+  [0.3,0.6,0.9,1.0,1.2,1.5].map(x=>[fx(x,1),(x/Math.sqrt(1+x*x)).toFixed(4),...Ks.map(K=>{const e=PN.err(x,K);return e<1e-15?'&lt;1e-15':sci(e,1);})]));
+/* 표: 프리드만 */
+tbl('t-fried',['스텝 수','Euler $L^\\infty$','$p_{\\text{obs}}$','Euler $L^2$','RK4 $L^\\infty$','$p_{\\text{obs}}$','RK4 $L^2$'],
+  F.Ns.map((n,i)=>[n,sci(F.euler[i].Linf),fx(F.euler_p[i]),sci(F.euler[i].L2),sci(F.rk4[i].Linf),fx(F.rk4_p[i]),sci(F.rk4[i].L2)]));
+/* 표: 우주 나이 구적 */
+tbl('t-age',['N',...AG.Ns],[['오차',...AG.err.map(e=>sci(e))],['$p_{\\text{obs}}$',...AG.p.map(p=>fx(p))]]);
+/* 표: 큐빗 */
+const MN={euler:'명시적 Euler',rk4:'RK4',cn:'Crank–Nicolson',gl:'Gauss–Legendre 2단'}, MR={euler:'테일러 1차',rk4:'테일러 4차',cn:'파데 [1/1]',gl:'파데 [2/2]'};
+tbl('t-qubit',['방법','$R(z)$','$p_{\\text{obs}}$ (25→400)','$L^\\infty$ (400)','$\\big|\\|\\psi(T)\\|-1\\big|$ 측정','예측','$C(T)$'],
+  NE.METH.map(m=>{ const r=Q[m].rows[4]; return [MN[m],MR[m],Q[m].p.slice(1).map(p=>fx(p)).join(' · '),sci(r.Linf),sci(r.drift,1),(m==='cn'||m==='gl')?'0':(r.predDrift<1e-12?'&lt;1e-12':sci(r.predDrift,1)),r.C.toFixed(m==='euler'?4:6)]; }));
+/* 표: 공간 수렴 */
+const nm={Linf:'$L^\\infty$ (절점)',L2:'$L^2$',H1:'$H^1$ 반노름'};
+tbl('t-space',['방법','노름',...SP.Ns.map(n=>'N='+n),'$p_{\\text{obs}}$ (마지막)'],
+  ['fdm','fem'].flatMap(m=>['Linf','L2','H1'].map(k=>[m.toUpperCase(),{v:nm[k],cls:''},...SP[m].map(r=>sci(r[k])),fx(SP.p[m][k][4])])));
+/* 표: Big Rip */
+tbl('t-rip',['$w$',...RIP.map(r=>String(r.w).replace('-','−'))],[['수치적분 (Gyr)',...RIP.map(r=>r.gyr.toFixed(1))],['근사식 (Gyr)',...RIP.map(r=>r.approx.toFixed(1))]]);
+/* 표: π 연분수, 라마누잔 */
+tbl('t-picf',['$p_n/q_n$','$|\\pi-p_n/q_n|$','한계 $1/(q_nq_{n+1})$'],FR.cfRows.map(r=>[`${r.p}/${r.q}`,sci(r.err),sci(r.bound)]));
+tbl('t-ram',['항 수 $k+1$',...FR.ram.map(r=>r.k+1)],[['$|\\pi_k-\\pi|$',...FR.ram.map(r=>sci(r.err,1))],['맞은 자릿수',...FR.ram.map(r=>r.digits.toFixed(1))],['비율 $e_k/e_{k-1}$',...FR.ram.map(r=>r.ratio===null?'–':sci(r.ratio,1))]]);
+/* 표: 전역·국소 */
+const ok=b=>b?'✓ 전 구간 성립':'✗ 위반';
+tbl('t-glob',['방법','진폭 규칙','범위','위상 규칙','범위','수치 확인'],[
+  ['Euler','$0\\le|R|-1\\le y^2/2$',{v:'전역',cls:'g'},'$0\\le y-\\arctan y\\le y^3/3$',{v:'전역',cls:'g'},{v:ok(PC.euA&&PC.euP),cls:'w'}],
+  ['RK4','$|R|^2=1-\\tfrac{y^6}{72}+\\tfrac{y^8}{576}\\le1$',{v:'국소: $y\\le2\\sqrt2$',cls:'l'},'$\\Delta\\varphi=O(y^5)$',{v:'점근(국소)',cls:'l'},{v:`|R|≤1 마지막 성립점 y = ${PC.rkMax.toFixed(4)} (2√2 = ${(2*Math.SQRT2).toFixed(4)})`,cls:'w'}],
+  ['Crank–Nicolson','$|R|=1$',{v:'전역',cls:'g'},'$0\\le y-2\\arctan\\tfrac y2\\le y^3/12$',{v:'전역',cls:'g'},{v:ok(PC.cnA&&PC.cnP),cls:'w'}],
+  ['Gauss–Legendre','$|R|=1$',{v:'전역',cls:'g'},'$\\Delta\\varphi=O(y^5)$',{v:'점근(국소)',cls:'l'},{v:ok(PC.glA)+' (진폭)',cls:'w'}]]);
+/* 표: 예측 */
+tbl('t-pred',['방법','진폭 오차 $||R|^n-1|$','위상 오차 $2|\\sin(n\\Delta\\varphi/2)|$','예측 $L^\\infty$ (×$1/\\sqrt2$)','측정 $L^\\infty$','지배 성분'],
+  NE.METH.map(m=>{ const r=Q[m].rows[4]; const dom=(r.amp<1e-12&&r.ph<1e-12)?'반올림 수준':(r.amp>r.ph?'진폭':'위상');
+    return [MN[m],r.amp===0?'0':(r.amp<1e-12?'≈0 ('+sci(r.amp,1)+')':sci(r.amp)),sci(r.ph),sci(r.pred),sci(r.Linf),{v:dom,cls:''}]; }));
+/* 인라인 값 */
+set('argProd',sci(PC.argEx.prod,1)); set('argSum',PC.argEx.sum.toFixed(4)); set('argAbs',PC.argEx.abs.toFixed(0));
+set('idMax',sci(PC.idMax,1)); set('bndOk',(PC.lo&&PC.up)?'네 방법 모두에서 예외 없이 성립하였다':'일부 점에서 위반되었다');
+set('eR1',(FR.eTail[0].tail/FR.eTail[0].bound).toFixed(2)); set('eR16',(FR.eTail[15].tail/FR.eTail[15].bound).toFixed(3));
+set('engineMs', ms.toFixed(0)+' ms');
+
+/* ===== 차트 ===== */
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const tip=document.getElementById('tip');
+const fmt=v=>{ if(v===0) return '0'; const a=Math.abs(v); return (a>=1e-2&&a<1e4)?(+v.toPrecision(3)).toString():v.toExponential(2); };
+function setup(cnv){ const dpr=window.devicePixelRatio||1, w=cnv.clientWidth, h=cnv.clientHeight;
+  if(cnv.width!==Math.round(w*dpr)||cnv.height!==Math.round(h*dpr)){cnv.width=Math.round(w*dpr);cnv.height=Math.round(h*dpr);}
+  const g=cnv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,w,h); return {g,w,h}; }
+function chart(id,o){
+  const cnv=document.getElementById(id); let hov=null;
+  function draw(){
+    const {g,w,h}=setup(cnv), L=o.left||58, R=14, T=10, B=o.bottom||38;
+    const tx=v=>o.xlog?Math.log10(v):v, ty=v=>o.ylog?Math.log10(v):v;
+    const [x0,x1]=o.x.map(tx), [y0,y1]=o.y.map(ty);
+    const X=v=>L+(w-L-R)*(tx(v)-x0)/(x1-x0), Y=v=>T+(h-T-B)*(1-(ty(v)-y0)/(y1-y0));
+    g.font='11px "Noto Sans KR",sans-serif'; g.lineWidth=1;
+    const ticks=(lo,hi,log,given)=>given||(log?Array.from({length:Math.floor(hi)-Math.ceil(lo)+1},(_,i)=>10**(Math.ceil(lo)+i)):[]);
+    let yt=ticks(y0,y1,o.ylog,o.yt); if(o.ylog&&yt.length>9) yt=yt.filter((v,i)=>i%2===0);
+    yt.forEach(v=>{ g.strokeStyle=css('--grid'); g.beginPath(); g.moveTo(L,Y(v)); g.lineTo(w-R,Y(v)); g.stroke();
+      g.fillStyle=css('--muted'); g.textAlign='right'; g.fillText(o.ylog?('1e'+Math.round(Math.log10(v))):v, L-5, Y(v)+4); });
+    ticks(x0,x1,o.xlog,o.xt).forEach(v=>{ g.fillStyle=css('--muted'); g.textAlign='center'; g.fillText(v, X(v), h-B+15); });
+    g.strokeStyle=css('--line'); g.beginPath(); g.moveTo(L,T); g.lineTo(L,h-B); g.lineTo(w-R,h-B); g.stroke();
+    g.fillStyle=css('--muted'); g.textAlign='center'; g.fillText(o.xname,(L+w-R)/2,h-4);
+    g.save(); g.translate(12,(T+h-B)/2); g.rotate(-Math.PI/2); g.fillText(o.yname,0,0); g.restore();
+    if(o.pre) o.pre(g,X,Y,{L,R,T,B,w,h});
+    g.save(); g.beginPath(); g.rect(L,T,w-L-R,h-T-B); g.clip();
+    o.series.forEach(s=>{ const col=css(s.c); g.strokeStyle=col; g.fillStyle=col; g.lineWidth=2; g.setLineDash(s.dash?[5,4]:[]);
+      if(s.err) s.pts.forEach((p,i)=>{ const e=s.err[i]; g.lineWidth=1.5; g.beginPath(); g.moveTo(X(p[0]),Y(Math.max(p[1]-e,o.y[0]))); g.lineTo(X(p[0]),Y(p[1]+e)); g.stroke(); g.lineWidth=2; });
+      g.beginPath(); s.pts.forEach((p,i)=>{ i?g.lineTo(X(p[0]),Y(p[1])):g.moveTo(X(p[0]),Y(p[1])); }); g.stroke(); g.setLineDash([]);
+      if(s.dots) s.pts.forEach(p=>{ g.beginPath(); g.arc(X(p[0]),Y(p[1]),4.5,0,7); g.fill(); g.strokeStyle=css('--paper'); g.lineWidth=2; g.stroke(); g.strokeStyle=col; });
+    });
+    g.restore();
+    if(hov){ g.strokeStyle=css('--muted'); g.lineWidth=1; g.setLineDash([2,3]); g.beginPath(); g.moveTo(hov,T); g.lineTo(hov,h-B); g.stroke(); g.setLineDash([]); }
+    cnv._m={X,L,R,w,x0,x1,tx};
+  }
+  cnv.addEventListener('pointermove',e=>{ const r=cnv.getBoundingClientRect(), m=cnv._m; const px=e.clientX-r.left;
+    if(px<m.L||px>m.w-m.R){ hov=null; tip.style.display='none'; draw(); return; }
+    const xv=m.x0+(px-m.L)/(m.w-m.L-m.R)*(m.x1-m.x0); let rows=[], sx=null;
+    o.series.forEach(s=>{ let best=null,bd=1e9; s.pts.forEach(p=>{ const d=Math.abs(m.tx(p[0])-xv); if(d<bd){bd=d;best=p;} }); if(best){ sx=best[0]; rows.push(`<span style="color:${css(s.c)}">■</span> ${s.name}: <b>${fmt(best[1])}</b>`); } });
+    if(!o.snap) sx=o.xlog?10**xv:xv; hov=m.X(sx);
+    tip.innerHTML=`${o.xname.split(' (')[0]} = ${fmt(sx)}<br>`+rows.join('<br>'); tip.style.display='block';
+    tip.style.left=Math.min(e.clientX+14,window.innerWidth-tip.offsetWidth-8)+'px'; tip.style.top=(e.clientY+14)+'px'; draw(); });
+  cnv.addEventListener('pointerleave',()=>{ hov=null; tip.style.display='none'; draw(); });
+  draw(); return draw;
+}
+const draws=[], range=(a,b,n)=>Array.from({length:n},(_,i)=>a+(b-a)*i/(n-1)), geom=(a,b,n)=>range(Math.log10(a),Math.log10(b),n).map(v=>10**v);
+const NM=['Euler','RK4','Crank–Nicolson','Gauss–Legendre'], SC=['--s1','--s2','--s3','--s4'], RFs=NE.METH.map(m=>y=>NE.RF[m]([0,y]));
+
+draws.push(chart('cE',{x:[1,16],y:[1e-16,1],ylog:true,xt:[1,2,4,6,8,10,12,14,16],xname:'항 수 n',yname:'꼬리',snap:true,
+  series:[{name:'e − S_n',c:'--s1',dots:true,pts:FR.eTail.map(r=>[r.n,r.tail])},{name:'1/(n!·n)',c:'--s2',dash:true,pts:FR.eTail.map(r=>[r.n,r.bound])}]}));
+
+(function(){ const cnv=document.getElementById('cC'), sl=document.getElementById('yC'); let m=0, y=1.2;
+  document.querySelectorAll('#figC button').forEach(b=>b.addEventListener('click',()=>{ m=+b.dataset.m; document.querySelectorAll('#figC button').forEach(x=>x.classList.toggle('on',x===b)); draw(); }));
+  sl.addEventListener('input',()=>{ y=+sl.value; document.getElementById('yCv').textContent=y.toFixed(2); draw(); });
+  function draw(){ const {g,w,h}=setup(cnv); const s=Math.min(w,h)/4.6, ox=w/2-0.2*s, oy=h/2+0.35*s; const P=c=>[ox+c[0]*s, oy-c[1]*s];
+    g.strokeStyle=css('--grid'); g.lineWidth=1; g.beginPath(); g.moveTo(ox-2.2*s,oy); g.lineTo(ox+2.2*s,oy); g.moveTo(ox,oy-2.1*s); g.lineTo(ox,oy+1.3*s); g.stroke();
+    g.fillStyle=css('--muted'); g.font='11px "Noto Sans KR",sans-serif'; g.fillText('Re',ox+2.1*s,oy-6); g.fillText('Im',ox+6,oy-2.0*s);
+    g.strokeStyle=css('--muted'); g.setLineDash([4,4]); g.beginPath(); g.arc(ox,oy,s,0,2*Math.PI); g.stroke(); g.setLineDash([]);
+    RFs.forEach((f,k)=>{ g.strokeStyle=css(SC[k]); g.lineWidth=k===m?2.6:1.4; g.globalAlpha=k===m?1:0.55; g.beginPath(); for(let i=0;i<=240;i++){ const q=P(f(3.6*i/240)); i?g.lineTo(...q):g.moveTo(...q);} g.stroke(); });
+    g.globalAlpha=1;
+    const R=RFs[m](y), E=[Math.cos(y),Math.sin(y)], A=NE.cabs(R), ph=NE.carg(R), onc=[Math.cos(ph),Math.sin(ph)];
+    g.strokeStyle=css('--ink'); g.lineWidth=3; g.beginPath(); g.moveTo(...P(onc)); g.lineTo(...P(R)); g.stroke();
+    let d=ph-y; d=Math.atan2(Math.sin(d),Math.cos(d));
+    g.strokeStyle=css('--warn'); g.lineWidth=3; g.beginPath(); g.arc(ox,oy,s,-y,-(y+d),d>0); g.stroke();
+    g.fillStyle=css('--paper'); g.strokeStyle=css('--ink'); g.lineWidth=2; g.beginPath(); g.arc(...P(E),5.5,0,7); g.fill(); g.stroke();
+    g.fillStyle=css(SC[m]); g.beginPath(); g.arc(...P(R),6,0,7); g.fill(); g.strokeStyle=css('--paper'); g.lineWidth=2; g.stroke();
+    g.fillStyle=css('--ink'); g.font='12px "Noto Sans KR",sans-serif'; const pe=P(E); g.fillText('e^{iy}',pe[0]+8,pe[1]-8); const pr=P(R); g.fillText('R(iy)',pr[0]+8,pr[1]+14);
+    const tot=Math.hypot(R[0]-E[0],R[1]-E[1]), amp=Math.abs(A-1), phe=2*Math.abs(Math.sin(d/2));
+    document.getElementById('rC').innerHTML=`${NM[m]} · y = ${y.toFixed(2)} · |R| = ${A.toFixed(5)} · 진폭 오차 ||R|−1| = ${fmt(amp)} · 위상 오차 Δφ = ${fmt(d)} rad · 전체 |R−e^{iy}| = ${fmt(tot)} · 상·하한 [${fmt(amp)}, ${fmt(amp+phe)}]`+(m===1&&y>2*Math.SQRT2?' · <b>y &gt; 2√2: |R|≤1 깨짐 (국소)</b>':''); }
+  draws.push(draw); draw(); })();
+
+(function(){ const ys=range(0,3.6,361);
+  draws.push(chart('cA',{x:[0,3.6],y:[0.6,2.0],xt:[0,0.5,1,1.5,2,2.5,3,3.5],yt:[0.6,0.8,1,1.2,1.4,1.6,1.8,2.0],xname:'y = λΔt',yname:'|R(iy)|',
+    series:RFs.map((f,k)=>({name:NM[k],c:SC[k],pts:ys.map(y=>[y,NE.cabs(f(y))])})),
+    pre:(g,X,Y)=>{ g.strokeStyle=css('--muted'); g.setLineDash([4,4]); g.beginPath(); g.moveTo(X(0),Y(1)); g.lineTo(X(3.6),Y(1)); g.moveTo(X(2*Math.SQRT2),Y(0.6)); g.lineTo(X(2*Math.SQRT2),Y(2)); g.stroke(); g.setLineDash([]);
+      g.fillStyle=css('--muted'); g.textAlign='left'; g.fillText('2√2',X(2*Math.SQRT2)+4,Y(1.93)); }})); })();
+(function(){ const ys=geom(0.01,4,120);
+  draws.push(chart('cP',{x:[0.01,4],y:[1e-8,30],xlog:true,ylog:true,xt:[0.01,0.1,1,4],xname:'y = λΔt (로그)',yname:'위상 오차 (rad)',
+    series:[{name:'Euler',c:'--s1',pts:ys.map(y=>[y,y-Math.atan(y)])},{name:'y³/3',c:'--s1',dash:true,pts:ys.map(y=>[y,y**3/3])},
+            {name:'CN',c:'--s3',pts:ys.map(y=>[y,y-2*Math.atan(y/2)])},{name:'y³/12',c:'--s3',dash:true,pts:ys.map(y=>[y,y**3/12])}]})); })();
+draws.push(chart('cN',{x:[0,16],y:[1e-10,1e5],ylog:true,xt:[0,2,4,6,8,10,12,14,16],xname:'절단 차수 K',yname:'|v_K − v| / c',snap:true,
+  series:[0.6,0.9,1.0,1.2].map((x,k)=>({name:'x = '+x,c:SC[k],dots:true,pts:Array.from({length:17},(_,K)=>[K,Math.max(PN.err(x,K),1e-16)])}))}));
+draws.push(chart('cF',{x:[80,2000],y:[5e-4,3],xlog:true,ylog:true,xt:[100,200,400,800,1600],xname:'격자점 수 N (로그)',yname:'오차',snap:true,
+  series:[['FDM L²','fdm','L2','--s1',0],['FEM L²','fem','L2','--s2',0],['FDM H¹','fdm','H1','--s1',1],['FEM H¹','fem','H1','--s2',1]].map(([n,m,k,c,d])=>({name:n,c,dash:!!d,dots:true,pts:SP.Ns.map((N,i)=>[N,SP[m][i][k]])}))}));
+/* PINN: PyTorch 실행 기록 */
+draws.push(chart('cK',{x:[6,700],y:[1e-5,2e-2],xlog:true,ylog:true,xt:[8,32,128,512],xname:'collocation point 수 (로그)',yname:'final error L∞',snap:true,
+  series:[{name:'무작위',c:'--s1',dots:true,pts:[[8,6.40e-3],[32,7.35e-4],[128,4.97e-5],[512,4.11e-5]],err:[3.6e-3,6.9e-4,7.5e-6,4.1e-6]},
+          {name:'균등 격자',c:'--s2',dots:true,pts:[[8.5,2.66e-3],[34,6.45e-5],[136,3.23e-5],[543,3.08e-5]],err:[3.1e-4,2.6e-5,1.5e-5,1.1e-5]}]}));
+(function(){ const cnv=document.getElementById('cS');
+  const rows=[['activation','tanh',4.97e-5,7.5e-6,0],['','sin',3.01e-4,1.4e-4,0],['','GELU',6.90e-5,5.3e-6,0],['','ReLU',4.85e-3,2.0e-3,0],
+    ['layer×node','1×16',9.23e-5,2.4e-5,1],['','2×32',6.08e-5,2.8e-5,1],['','3×32',4.97e-5,7.5e-6,1],['','4×64',1.23e-4,9.8e-5,1],
+    ['optimizer','Adam 1e-2',1.63e-3,5.5e-4,2],['','Adam 1e-3',1.01e-2,8.1e-3,2],['','Adam 1e-4',1.23e-1,1.1e-1,2],['','Adam+L-BFGS',4.97e-5,7.5e-6,2]];
+  let hov=-1; cnv.style.height=(rows.length*24+50)+'px';
+  function draw(){ const {g,w,h}=setup(cnv); const L=Math.min(190,w*0.38), R=14, T=8, B=34, rh=(h-T-B)/rows.length; const lx=v=>L+(w-L-R)*(Math.log10(v)+5.2)/5.8;
+    g.font='11px "Noto Sans KR",sans-serif';
+    [1e-5,1e-4,1e-3,1e-2,1e-1].forEach(v=>{ g.strokeStyle=css('--grid'); g.beginPath(); g.moveTo(lx(v),T); g.lineTo(lx(v),h-B); g.stroke(); g.fillStyle=css('--muted'); g.textAlign='center'; g.fillText('1e'+Math.log10(v),lx(v),h-B+15); });
+    g.fillText('final error L∞ (로그)',(L+w-R)/2,h-4);
+    rows.forEach((r,i)=>{ const yy=T+rh*(i+0.5);
+      if(r[0]&&i){ g.strokeStyle=css('--line'); g.beginPath(); g.moveTo(4,T+rh*i); g.lineTo(w-R,T+rh*i); g.stroke(); }
+      g.fillStyle=css('--muted'); g.textAlign='left'; if(r[0]) g.fillText(r[0],4,yy+4);
+      g.fillStyle=css('--ink'); g.textAlign='right'; g.fillText(r[1],L-8,yy+4);
+      const c=css(SC[r[4]]); g.strokeStyle=c; g.lineWidth=1.5; g.beginPath(); g.moveTo(lx(Math.max(r[2]-r[3],1e-5)),yy); g.lineTo(lx(r[2]+r[3]),yy); g.stroke();
+      g.fillStyle=c; g.beginPath(); g.arc(lx(r[2]),yy,i===hov?6:4.5,0,7); g.fill(); g.strokeStyle=css('--paper'); g.lineWidth=2; g.stroke(); });
+    cnv._r={T,rh}; }
+  cnv.addEventListener('pointermove',e=>{ const b=cnv.getBoundingClientRect(), m=cnv._r, i=Math.floor((e.clientY-b.top-m.T)/m.rh);
+    if(i<0||i>=rows.length){hov=-1;tip.style.display='none';draw();return;} hov=i; const q=rows[i];
+    tip.innerHTML=`${q[1]}<br>L∞ = <b>${fmt(q[2])}</b> ± ${fmt(q[3])}`; tip.style.display='block'; tip.style.left=Math.min(e.clientX+14,window.innerWidth-tip.offsetWidth-8)+'px'; tip.style.top=(e.clientY+14)+'px'; draw(); });
+  cnv.addEventListener('pointerleave',()=>{hov=-1;tip.style.display='none';draw();});
+  draws.push(draw); draw(); })();
+(function(){ const ep=[1,250,500,750,1000,1250,1500,1750,2000,2250,2500,2750,3000,3300];
+  const loss=[184.5,0.2363,0.0456,0.0553,0.0456,0.0411,0.0327,0.0273,0.0296,0.0273,0.0249,0.0276,0.0151,4.29e-7];
+  const err=[1.088,0.2746,0.0561,0.0422,0.0378,0.0355,0.0343,0.0318,0.0302,0.0282,0.0268,0.0244,0.0209,5.85e-5];
+  draws.push(chart('cT',{x:[0,3300],y:[1e-7,1e3],ylog:true,xt:[0,500,1000,1500,2000,2500,3000],xname:'epoch',yname:'값',snap:true,
+    pre:(g,X,Y,a)=>{ g.fillStyle=css('--box'); g.fillRect(X(3000),a.T,X(3300)-X(3000),a.h-a.T-a.B); g.fillStyle=css('--muted'); g.textAlign='right'; g.fillText('L-BFGS',X(3300)-4,a.T+14); },
+    series:[{name:'손실',c:'--s1',dots:true,pts:ep.map((e,i)=>[e,loss[i]])},{name:'L∞',c:'--s2',dots:true,pts:ep.map((e,i)=>[e,err[i]])}]})); })();
+
+let rt; window.addEventListener('resize',()=>{ clearTimeout(rt); rt=setTimeout(()=>draws.forEach(d=>d()),120); });
+if(window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>draws.forEach(d=>d()));
+})();
+
+</script>
+<script>
+/* ===== 엔진 확장: 차원·차수의 대수적 구분 검증 ===== */
+const NE2=(function(){
+const cm=(a,b)=>[a[0]*b[0]-a[1]*b[1],a[0]*b[1]+a[1]*b[0]], cabs=a=>Math.hypot(a[0],a[1]), carg=a=>Math.atan2(a[1],a[0]);
+/* (a) 편각 원리: 다항식의 회전수 = 원 안 영점 수, 큰 원에서 = 차수 */
+function winding(){
+  const Z=[[0.2,0],[0,-0.5],[1.3,0],[-1.1,-0.4],[0,2.5]];
+  const f=z=>Z.reduce((acc,r)=>cm(acc,[z[0]-r[0],z[1]-r[1]]),[1,0]);
+  return [0.3,0.8,1.25,2.0,10].map(Rr=>{ const K=20000; let tot=0, prev=carg(f([Rr,0]));
+    for(let k=1;k<=K;k++){ const t=2*Math.PI*k/K, a=carg(f([Rr*Math.cos(t),Rr*Math.sin(t)])); let d=a-prev; if(d>Math.PI) d-=2*Math.PI; if(d<-Math.PI) d+=2*Math.PI; tot+=d; prev=a; }
+    return {R:Rr, inside:Z.filter(z=>Math.hypot(...z)<Rr).length, wind:tot/(2*Math.PI)}; });
+}
+/* (b) 스텝의 차수: log R(z) − z = C z^{p+1} + … 의 접촉 차수 */
+function stepContact(RF){
+  const D=(m,y)=>{ const R=RF[m]([0,y]); return [Math.log(cabs(R)), carg(R)-y]; };
+  const powI=(y,k)=>{ const r=Math.pow(y,k), ph=k*Math.PI/2; return [r*Math.cos(ph), r*Math.sin(ph)]; };
+  const cdv=(a,b)=>{const d=b[0]*b[0]+b[1]*b[1];return [(a[0]*b[0]+a[1]*b[1])/d,(a[1]*b[0]-a[0]*b[1])/d];};
+  return ['euler','rk4','cn','gl'].map(m=>{ const y1=0.04, y2=0.02, d1=D(m,y1), d2=D(m,y2);
+    const p=Math.round(Math.log(cabs(d1)/cabs(d2))/Math.log(2))-1, pObs=Math.log(cabs(d1)/cabs(d2))/Math.log(2)-1;
+    const C=cdv(D(m,0.01),powI(0.01,p+1));
+    const n=400, y=Math.PI/1600, glob=n*cabs(D(m,y));
+    return {m, p, pObs, C, glob}; });
+}
+/* (c) 차원과 차수가 만나는 지점: 오차 ∝ M^{-p/d} (텐서곱 사다리꼴, p=2) 대 몬테카를로 M^{-1/2} */
+function dimCost(){
+  const ex=d=>Math.pow(Math.sin(1),d);
+  const trap=(N,d)=>{ const w=i=>(i===0||i===N)?0.5/N:1/N; const c=Array.from({length:N+1},(_,i)=>Math.cos(i/N)*w(i)); const s=c.reduce((a,b)=>a+b,0); return Math.abs(Math.pow(s,d)-ex(d)); };
+  const fit=pts=>{ const n=pts.length, X=pts.map(p=>Math.log(p[0])), Y=pts.map(p=>Math.log(p[1])), mx=X.reduce((a,b)=>a+b)/n, my=Y.reduce((a,b)=>a+b)/n;
+    return X.reduce((s,x,i)=>s+(x-mx)*(Y[i]-my),0)/X.reduce((s,x)=>s+(x-mx)**2,0); };
+  const out={};
+  for(const d of [1,2,3]){ const Ns=d===1?[8,16,32,64,128,256,512,1024]:d===2?[4,8,16,32,64,128,256]:[4,8,16,32,64]; 
+    out['t'+d]=Ns.map(N=>[Math.pow(N+1,d),trap(N,d)]); out['s'+d]=fit(out['t'+d]); }
+  let st=12345; const rnd=()=>{ st|=0; st=st+0x6D2B79F5|0; let t=Math.imul(st^st>>>15,1|st); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; };
+  const mc=[]; for(const M of [64,256,1024,4096,16384,65536]){ let s2=0; const R=16; for(let r=0;r<R;r++){ let s=0; for(let k=0;k<M;k++) s+=Math.cos(rnd())*Math.cos(rnd())*Math.cos(rnd()); s2+=(s/M-ex(3))**2; } mc.push([M,Math.sqrt(s2/R)]); }
+  out.mc=mc; out.smc=fit(mc); return out;
+}
+/* (d) 차원이 로그 지수가 되는 반례: 바이어슈트라스 그래프의 박스 차원 */
+function weierstrass(){
+  const a=0.5,b=3,K=16, L=11, Np=Math.pow(3,L), W=new Float64Array(Np+1);
+  for(let i=0;i<=Np;i++){ const x=i/Np; let s=0, an=1, bn=1; for(let n=0;n<K;n++){ s+=an*Math.cos(bn*Math.PI*x); an*=a; bn*=b; } W[i]=s; }
+  const pts=[]; for(let k=2;k<=8;k++){ const nb=Math.pow(3,k), eps=1/nb, step=Np/nb; let N=0;
+    for(let j=0;j<nb;j++){ let mn=Infinity,mx=-Infinity; for(let i=j*step;i<=(j+1)*step;i++){ if(W[i]<mn) mn=W[i]; if(W[i]>mx) mx=W[i]; } N+=Math.ceil((mx-mn)/eps)||1; }
+    pts.push([eps,N]); }
+  const X=pts.map(p=>Math.log(1/p[0])), Y=pts.map(p=>Math.log(p[1])), n=X.length, mx=X.reduce((s,v)=>s+v)/n, my=Y.reduce((s,v)=>s+v)/n;
+  const slope=X.reduce((s,x,i)=>s+(x-mx)*(Y[i]-my),0)/X.reduce((s,x)=>s+(x-mx)**2,0);
+  return {pts, est:slope, theory:2+Math.log(a)/Math.log(b)};
+}
+return {winding, stepContact, dimCost, weierstrass};
+})();
+
+
+
+(function(){
+const t0=performance.now();
+const W=NE2.winding(), ST=NE2.stepContact(NE.RF), DC=NE2.dimCost(), WS=NE2.weierstrass();
+const ms=performance.now()-t0;
+const sci=(v,d=2)=>{ if(v===0) return '0'; const [m,e]=v.toExponential(d).split('e'); const x=parseInt(e,10); return x===0?m:`${m}e${x}`; };
+function tbl(id, head, rows){ const t=document.getElementById(id); let h='<thead><tr>'+head.map(x=>`<th>${x}</th>`).join('')+'</tr></thead><tbody>';
+  rows.forEach(r=>{ h+='<tr>'+r.map((c,i)=>i?`<td class="n">${c}</td>`:`<td>${c}</td>`).join('')+'</tr>'; }); t.insertAdjacentHTML('beforeend',h+'</tbody>'); }
+tbl('t-wind',['반지름 $r$','원 안 영점 수','회전수 $\\Delta\\arg f/2\\pi$','판정'],W.map(w=>[w.R,w.inside,w.wind.toFixed(6),Math.abs(w.wind-w.inside)<1e-6?'일치':'불일치']));
+const MN={euler:'명시적 Euler',rk4:'RK4',cn:'Crank–Nicolson',gl:'Gauss–Legendre 2단'}, CT={euler:'$-1/2$',rk4:'$-1/120$',cn:'$1/12$',gl:'$-1/720$'};
+tbl('t-step',['방법','접촉 차수 $p$ (관측)','$C$ (계산)','$C$ (이론)','예측 $n|D(y)|$'],ST.map(r=>[MN[r.m],`${r.p} (${r.pObs.toFixed(3)})`,r.C[0].toPrecision(5)+(Math.abs(r.C[1])>1e-6?` ${r.C[1]>=0?'+':'−'} ${Math.abs(r.C[1]).toPrecision(2)}i`:''),CT[r.m],sci(r.glob)]));
+tbl('t-dim',['방법','$d$','$M$ 범위','관측 기울기','이론 $-p/d$'],[
+  ['사다리꼴 ($p=2$)',1,`${DC.t1[0][0]}–${DC.t1[DC.t1.length-1][0]}`,DC.s1.toFixed(3),'−2'],
+  ['사다리꼴 ($p=2$)',2,`${DC.t2[0][0]}–${DC.t2[DC.t2.length-1][0]}`,DC.s2.toFixed(3),'−1'],
+  ['사다리꼴 ($p=2$)',3,`${DC.t3[0][0]}–${DC.t3[DC.t3.length-1][0]}`,DC.s3.toFixed(3),'−0.667'],
+  ['몬테카를로',3,`${DC.mc[0][0]}–${DC.mc[DC.mc.length-1][0]}`,DC.smc.toFixed(3),'−0.5 ($d$ 무관)']]);
+document.getElementById('wEst').textContent=WS.est.toFixed(3); document.getElementById('wTh').textContent=WS.theory.toFixed(3);
+const em=document.getElementById('engineMs'); if(em) em.textContent=em.textContent+' + '+ms.toFixed(0)+' ms';
+/* 그림 12 */
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const cnv=document.getElementById('cD');
+function draw(){ const dpr=window.devicePixelRatio||1, w=cnv.clientWidth, h=cnv.clientHeight; cnv.width=Math.round(w*dpr); cnv.height=Math.round(h*dpr);
+  const g=cnv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,w,h);
+  const L=58,Rr=14,T=10,B=38, lx0=Math.log10(4), lx1=Math.log10(3e5), ly0=-8, ly1=0;
+  const X=v=>L+(w-L-Rr)*(Math.log10(v)-lx0)/(lx1-lx0), Y=v=>T+(h-T-B)*(1-(Math.log10(v)-ly0)/(ly1-ly0));
+  g.font='11px "Noto Sans KR",sans-serif';
+  for(let e=ly0;e<=ly1;e+=2){ g.strokeStyle=css('--grid'); g.beginPath(); g.moveTo(L,Y(10**e)); g.lineTo(w-Rr,Y(10**e)); g.stroke(); g.fillStyle=css('--muted'); g.textAlign='right'; g.fillText('1e'+e,L-5,Y(10**e)+4); }
+  [10,100,1e3,1e4,1e5].forEach(v=>{ g.fillStyle=css('--muted'); g.textAlign='center'; g.fillText(v>=1e3?('1e'+Math.log10(v)):v,X(v),h-B+15); });
+  g.strokeStyle=css('--line'); g.beginPath(); g.moveTo(L,T); g.lineTo(L,h-B); g.lineTo(w-Rr,h-B); g.stroke();
+  g.fillStyle=css('--muted'); g.textAlign='center'; g.fillText('평가점 수 M (로그)',(L+w-Rr)/2,h-4);
+  g.save(); g.translate(12,(T+h-B)/2); g.rotate(-Math.PI/2); g.fillText('구적 오차',0,0); g.restore();
+  [[DC.t1,'--s1',0],[DC.t2,'--s2',0],[DC.t3,'--s3',0],[DC.mc,'--s4',1]].forEach(([pts,c,d])=>{ const col=css(c); g.strokeStyle=col; g.fillStyle=col; g.lineWidth=2; g.setLineDash(d?[5,4]:[]);
+    g.beginPath(); pts.forEach((p,i)=>i?g.lineTo(X(p[0]),Y(p[1])):g.moveTo(X(p[0]),Y(p[1]))); g.stroke(); g.setLineDash([]);
+    pts.forEach(p=>{ g.beginPath(); g.arc(X(p[0]),Y(p[1]),4.5,0,7); g.fill(); g.strokeStyle=css('--paper'); g.lineWidth=2; g.stroke(); g.strokeStyle=col; }); });
+}
+draw(); let rt; window.addEventListener('resize',()=>{clearTimeout(rt); rt=setTimeout(draw,120);});
+if(window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',draw);
+})();
+
+</script>
+<script>
+(function(){
+  const T = 4, c = 1;
+  let alpha = 1, t = 0, playing = true, last = null;
+  const cv = {v: document.getElementById('f1-v'), p: document.getElementById('f1-p'), e: document.getElementById('f1-e')};
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const rel = s => { const g = Math.sqrt(1 + (alpha*s/c)**2); return {g, v: alpha*s/g, a: alpha/g**3}; };
+
+  function setup(cnv){
+    const dpr = window.devicePixelRatio || 1, w = cnv.clientWidth, h = cnv.clientHeight;
+    if (cnv.width !== Math.round(w*dpr) || cnv.height !== Math.round(h*dpr)){ cnv.width = Math.round(w*dpr); cnv.height = Math.round(h*dpr); }
+    const x = cnv.getContext('2d'); x.setTransform(dpr,0,0,dpr,0,0); x.clearRect(0,0,w,h);
+    return {x, w, h};
+  }
+  function frame(ctx, xmax, ymax, xl, yl, xticks, yticks){
+    const {x, w, h} = ctx, L = 42, R = 12, Tp = 8, B = 30;
+    const X = v => L + (w-L-R) * v / xmax, Y = v => h - B - (h-B-Tp) * v / ymax;
+    x.strokeStyle = css('--line'); x.fillStyle = css('--muted'); x.lineWidth = 1;
+    x.font = '11px "Noto Sans KR", sans-serif';
+    x.beginPath(); x.moveTo(L, Tp); x.lineTo(L, h-B); x.lineTo(w-R, h-B); x.stroke();
+    x.textAlign = 'center'; xticks.forEach(v => x.fillText(v, X(v), h-B+14));
+    x.textAlign = 'right'; yticks.forEach(v => x.fillText(v, L-5, Y(v)+4));
+    x.textAlign = 'center'; x.fillText(xl, (L+w-R)/2, h-3);
+    x.save(); x.translate(11, (Tp+h-B)/2); x.rotate(-Math.PI/2); x.fillText(yl, 0, 0); x.restore();
+    return {X, Y, clip(){ x.save(); x.beginPath(); x.rect(L, Tp, w-L-R, h-B-Tp); x.clip(); }};
+  }
+  function line(x, pts, color, width, dash){
+    x.strokeStyle = color; x.lineWidth = width; x.setLineDash(dash || []);
+    x.beginPath(); pts.forEach((p,i) => i ? x.lineTo(p[0],p[1]) : x.moveTo(p[0],p[1])); x.stroke(); x.setLineDash([]);
+  }
+  function dot(x, px, py, color){ x.fillStyle = color; x.beginPath(); x.arc(px, py, 4.5, 0, 2*Math.PI); x.fill(); }
+
+  function draw(){
+    const cN = css('--newton'), cE = css('--einstein'), cM = css('--muted'), cY = css('--energy2');
+    const S = 160, ts = Array.from({length: S+1}, (_, i) => t * i / S);
+
+    // (a) v(t)
+    let ctx = setup(cv.v), f = frame(ctx, T, 2, '시간 t', 'v / c', [0,1,2,3,4], [0,1,2]);
+    f.clip();
+    line(ctx.x, [[f.X(0), f.Y(1)], [f.X(T), f.Y(1)]], cM, 1, [4,4]);
+    line(ctx.x, ts.map(s => [f.X(s), f.Y(alpha*s)]), cN, 2.2);
+    line(ctx.x, ts.map(s => [f.X(s), f.Y(rel(s).v)]), cE, 2.2);
+    dot(ctx.x, f.X(t), f.Y(Math.min(alpha*t, 2.05)), cN); dot(ctx.x, f.X(t), f.Y(rel(t).v), cE);
+    ctx.x.restore(); ctx.x.fillStyle = cM; ctx.x.textAlign = 'left'; ctx.x.fillText('c', f.X(T)-10, f.Y(1)-5);
+
+    // (b) phase plane (v, a)
+    ctx = setup(cv.p); const amax = 3.2;
+    f = frame(ctx, 2, amax, '속도 v / c', '가속도 a', [0,0.5,1,1.5,2], [0,1,2,3]);
+    f.clip();
+    line(ctx.x, [[f.X(1), f.Y(0)], [f.X(1), f.Y(amax)]], cM, 1, [4,4]);
+    const vs = Array.from({length: 121}, (_, i) => i/120 * 0.9999);
+    line(ctx.x, vs.map(v => [f.X(v), f.Y(alpha*(1-v*v)**1.5)]), cE, 1, [2,3]);
+    line(ctx.x, ts.map(s => [f.X(alpha*s), f.Y(alpha)]), cN, 2.2);
+    line(ctx.x, ts.map(s => { const r = rel(s); return [f.X(r.v), f.Y(r.a)]; }), cE, 2.2);
+    dot(ctx.x, f.X(Math.min(alpha*t, 2.05)), f.Y(alpha), cN); const r = rel(t); dot(ctx.x, f.X(r.v), f.Y(r.a), cE);
+    ctx.x.restore();
+
+    // (c) energy split vs time
+    ctx = setup(cv.e);
+    f = frame(ctx, T, 1, '시간 t', '비율', [0,1,2,3,4], [0,0.5,1]);
+    f.clip();
+    const share = s => { const q = rel(s); const W = q.g - 1; return W > 1e-12 ? 0.5*q.v*q.v / W : 1; };
+    const top = ts.map(s => [f.X(s), f.Y(share(s))]);
+    const x = ctx.x;
+    x.globalAlpha = 0.28; x.fillStyle = cE; x.beginPath(); x.moveTo(f.X(0), f.Y(0)); top.forEach(p => x.lineTo(p[0], p[1])); x.lineTo(f.X(t), f.Y(0)); x.fill();
+    x.fillStyle = cY; x.beginPath(); x.moveTo(f.X(0), f.Y(1)); top.forEach(p => x.lineTo(p[0], p[1])); x.lineTo(f.X(t), f.Y(1)); x.fill();
+    x.globalAlpha = 1; line(x, top, cE, 2.2);
+    x.restore();
+    x.font = '11px "Noto Sans KR", sans-serif'; x.textAlign = 'right';
+    x.fillStyle = cE; x.fillText('속도에 대응하는 몫 ½mv²', ctx.w-16, f.Y(0.1));
+    x.fillStyle = css('--ink'); x.fillText('관성(γ³m) 증가로 흡수되는 몫', ctx.w-16, f.Y(0.9));
+
+    const q = rel(t);
+    document.getElementById('f1-read').textContent =
+      `t = ${t.toFixed(2)}   ·   뉴턴 v/c = ${(alpha*t).toFixed(2)}   ·   상대론 v/c = ${q.v.toFixed(3)}   ·   γ = ${q.g.toFixed(2)}   ·   a/α = ${(1/q.g**3).toFixed(3)}   ·   유효 관성 γ³m = ${(q.g**3).toFixed(1)} m   ·   속도 몫 = ${(100*share(t)).toFixed(1)}%`;
+  }
+
+  function tick(ts){
+    if (last === null) last = ts;
+    const dt = (ts - last) / 1000; last = ts;
+    if (playing){ t += dt * 0.8; if (t > T){ t = 0; } }
+    draw(); requestAnimationFrame(tick);
+  }
+  const btn = document.getElementById('f1-play');
+  btn.addEventListener('click', () => { playing = !playing; btn.textContent = playing ? '❚❚ 정지' : '▶ 재생'; });
+  const sl = document.getElementById('f1-alpha');
+  sl.addEventListener('input', () => { alpha = +sl.value; document.getElementById('f1-alpha-v').textContent = alpha.toFixed(1); t = 0; });
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches){ playing = false; t = T; btn.textContent = '▶ 재생'; }
+  requestAnimationFrame(tick);
+})();
+</script>
+<script>
+(function(){
+  const cnv=document.getElementById('f2-c'), css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  let stage=2, m=[0,0,1], cur=[0,0,1], s=0.4, playing=true, phi=0.8, th=0.35, last=null, drag=null;
+  // cur[0]: 시간축 등장(0=z, 1=t), cur[1]: 상대론 정도
+  const target=st=>[st>=1?1:0, st>=2?1:0, st===3?1:0];
+  function setStage(st){ stage=st; document.querySelectorAll('#fig2 .seg button').forEach(b=>b.classList.toggle('on', +b.dataset.stage===st)); }
+  document.querySelectorAll('#fig2 .seg button').forEach(b=>b.addEventListener('click',()=>setStage(+b.dataset.stage)));
+  const pb=document.getElementById('f2-play'), sl=document.getElementById('f2-s');
+  pb.addEventListener('click',()=>{playing=!playing; pb.textContent=playing?'❚❚ 정지':'▶ 재생';});
+  sl.addEventListener('input',()=>{s=+sl.value;});
+  cnv.addEventListener('pointerdown',e=>{drag=[e.clientX,e.clientY,phi,th]; cnv.setPointerCapture(e.pointerId);});
+  cnv.addEventListener('pointermove',e=>{ if(!drag) return; phi=drag[2]+(e.clientX-drag[0])*0.01; th=Math.max(-0.2,Math.min(1.3,drag[3]+(e.clientY-drag[1])*0.01)); });
+  cnv.addEventListener('pointerup',()=>drag=null);
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches){ playing=false; pb.textContent='▶ 재생'; }
+
+  function state(){
+    const T=cur[0], R=cur[1], C=cur[2];
+    const tau=1.4*s, tN=2.1*s;
+    const E={w:Math.sinh(tau), x:Math.cosh(tau)-1, b:Math.tanh(tau), u:[Math.cosh(tau),Math.sinh(tau)], A:[Math.sinh(tau),Math.cosh(tau)], g:Math.cosh(tau)};
+    const N={w:tN, x:0.5*tN*tN, b:tN, u:[1,tN], A:[0,1]};
+    const L=(a,b)=>a+(b-a)*R;
+    return {T,R,C,tau,tN,E,N,
+      w:L(N.w,E.w)*T, x:L(N.x,E.x)*T, slope:E.b*R,
+      u:[L(N.u[0],E.u[0]),L(N.u[1],E.u[1])], A:[L(N.A[0],E.A[0]),L(N.A[1],E.A[1])]};
+  }
+  function draw(){
+    const dpr=window.devicePixelRatio||1, W=cnv.clientWidth, H=cnv.clientHeight;
+    if(cnv.width!==Math.round(W*dpr)||cnv.height!==Math.round(H*dpr)){cnv.width=Math.round(W*dpr);cnv.height=Math.round(H*dpr);}
+    const g=cnv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,W,H);
+    const sc=Math.min(W,H*1.25)/7.2, ox=W*0.42, oy=H*0.78;
+    const P=(x,y,w)=>{ const X=x*Math.cos(phi)-y*Math.sin(phi), d=x*Math.sin(phi)+y*Math.cos(phi); return [ox+X*sc, oy-(w*Math.cos(th)+d*Math.sin(th))*sc]; };
+    const seg=(a,b,col,wd,dash)=>{g.strokeStyle=col;g.lineWidth=wd;g.setLineDash(dash||[]);g.beginPath();g.moveTo(...P(...a));g.lineTo(...P(...b));g.stroke();g.setLineDash([]);};
+    const poly=(pts,col,wd,dash)=>{g.strokeStyle=col;g.lineWidth=wd;g.setLineDash(dash||[]);g.beginPath();pts.forEach((q,i)=>{const r=P(...q); i?g.lineTo(...r):g.moveTo(...r);});g.stroke();g.setLineDash([]);};
+    const arrow=(o,dv,col,lab)=>{ const a=P(...o), b=P(o[0]+dv[0],o[1]+dv[1],o[2]+dv[2]); g.strokeStyle=col; g.fillStyle=col; g.lineWidth=2.4;
+      g.beginPath(); g.moveTo(...a); g.lineTo(...b); g.stroke(); const an=Math.atan2(b[1]-a[1],b[0]-a[0]);
+      g.beginPath(); g.moveTo(...b); g.lineTo(b[0]-9*Math.cos(an-0.4),b[1]-9*Math.sin(an-0.4)); g.lineTo(b[0]-9*Math.cos(an+0.4),b[1]-9*Math.sin(an+0.4)); g.fill();
+      g.font='italic 600 14px "Noto Serif KR",serif'; g.fillText(lab,b[0]+5,b[1]-5); };
+    const S=state(), ink=css('--ink'), mu=css('--muted'), ln=css('--line'), cN=css('--newton'), cE=css('--einstein'), cP=css('--plane'), cY=css('--energy2');
+    const wlCol = S.R>0.5?cE:cN;
+
+    // 바닥 격자 (x,y 평면)
+    g.globalAlpha=0.9; for(let k=-1;k<=3;k++){ seg([k,-1.5,0],[k,1.5,0],ln,1); } for(let k=-1.5;k<=1.5;k+=0.75){ seg([-1,k,0],[3,k,0],ln,1); }
+    const fade=1-S.C; g.globalAlpha=1;
+    // 3차원 정적 공간의 상자 (단계 ①에서 보임)
+    const box=1-S.T; if(box>0.01){ g.globalAlpha=box*0.8; for(const [x0,y0] of [[-1,-1.5],[3,-1.5],[-1,1.5],[3,1.5]]) seg([x0,y0,0],[x0,y0,3],ln,1); poly([[-1,-1.5,3],[3,-1.5,3],[3,1.5,3],[-1,1.5,3],[-1,-1.5,3]],ln,1); g.globalAlpha=1; }
+    // 광원뿔
+    if(S.R*fade>0.01){ g.globalAlpha=S.R*fade; for(let k=1;k<=3;k++){ const pts=[]; for(let i=0;i<=64;i++){const a=2*Math.PI*i/64; pts.push([k*Math.cos(a),k*Math.sin(a),k]);} poly(pts,mu,1,[3,4]); }
+      for(let i=0;i<8;i++){const a=2*Math.PI*i/8; seg([0,0,0],[3.2*Math.cos(a),3.2*Math.sin(a),3.2],mu,0.8,[3,4]);} g.globalAlpha=1; }
+    // 축
+    seg([-1,0,0],[3.4,0,0],ink,1.4); seg([0,-1.8,0],[0,1.8,0],ink,1.4); seg([0,0,0],[0,0,3.4],ink,1.4);
+    g.fillStyle=ink; g.font='italic 15px "Noto Serif KR",serif';
+    let q=P(3.55,0,0); g.fillText('x',q[0],q[1]); q=P(0,2.0,0); g.fillText('y',q[0],q[1]);
+    q=P(0,0,3.6); const vl = S.T<0.5 ? 'z' : (S.R<0.5 ? 't (절대시간)' : (S.C<0.5 ? 'ct' : 't (우주 시간)'));
+    g.globalAlpha=Math.min(Math.abs(S.T-0.5), Math.abs(S.C-0.5))*2; g.fillText(vl,q[0]-6,q[1]); g.globalAlpha=1;
+
+    if(S.T*fade>0.01){
+      g.globalAlpha=S.T*fade;
+      // 린들러 지평선: 과거 동시성 평면들이 모두 한 직선(x=-c²/α, ct=0)을 지난다
+      if(S.R>0.02){ const cW=css('--warn'); g.globalAlpha=S.R*fade;
+        for(const tk of [0.3,0.6,0.9,1.2]){ const b=Math.tanh(tk); seg([-1,0,0],[3,0,4*b],cE,0.9,[1,3]); }
+        seg([-1,0,0],[2.4,0,3.4],cW,1,[6,4]);
+        seg([-1,-1.6,0],[-1,1.6,0],cW,2.2,[7,4]);
+        const hp=P(-1,-1.6,0); g.fillStyle=cW; g.font='12px "Noto Sans KR",sans-serif'; g.fillText('린들러 지평선 (좌표 특이점)',hp[0]+6,hp[1]+14);
+        g.globalAlpha=S.T*fade; }
+      // 세계선
+      const pts=[]; for(let i=0;i<=80;i++){ const f=i/80, tau=1.4*f, tN=2.1*f;
+        const wE=Math.sinh(tau), xE=Math.cosh(tau)-1, wN=tN, xN=0.5*tN*tN; pts.push([xN+(xE-xN)*S.R,0,wN+(wE-wN)*S.R]); }
+      poly(pts,wlCol,2.6);
+      // 동시성 2차원 평면
+      const x0=S.x, w0=S.w, hw=1.4, hy=1.4, pw=x=>w0+S.slope*(x-x0);
+      const quad=[[x0-hw,-hy,pw(x0-hw)],[x0+hw,-hy,pw(x0+hw)],[x0+hw,hy,pw(x0+hw)],[x0-hw,hy,pw(x0-hw)]];
+      g.fillStyle=cP; g.beginPath(); quad.forEach((c,i)=>{const r=P(...c); i?g.lineTo(...r):g.moveTo(...r);}); g.closePath(); g.fill();
+      poly([...quad,quad[0]],cY,1.2);
+      // 점과 벡터
+      const n=v=>{const l=Math.hypot(v[0],v[1]); return [v[0]/l,v[1]/l];};
+      const un=n(S.u), An=n(S.A);
+      arrow([x0,0,w0],[un[1]*1.1,0,un[0]*1.1],wlCol,'u');
+      arrow([x0,0,w0],[An[1]*1.1,0,An[0]*1.1],cY,'A');
+      const c0=P(x0,0,w0); g.fillStyle=ink; g.beginPath(); g.arc(c0[0],c0[1],4,0,7); g.fill();
+      g.globalAlpha=1;
+    } else if(S.T<0.01){
+      const c0=P(0.8,0.3,1.2); g.fillStyle=ink; g.beginPath(); g.arc(c0[0],c0[1],5,0,7); g.fill();
+      g.font='13px "Noto Sans KR",sans-serif'; g.fillStyle=mu; g.fillText('정지한 물체 (시간 없음)',c0[0]+8,c0[1]-6);
+    }
+
+    // ④ 우주론: 우주 시간 일정 초곡면 (외재 곡률 K = -3H)
+    const OLc=0.69, sq=Math.sqrt(OLc), Hc=t=>sq/Math.tanh(1.5*sq*t), tNow=0.9553, tAcc=0.5285, WS=3, KD=0.12;
+    const tc=0.03+s*(tNow-0.03);
+    if(S.C>0.01){
+      const cW=css('--warn');
+      const surf=(t,col,wd,alpha,lab)=>{ g.globalAlpha=S.C*alpha; const h=Hc(t), wf=r=>WS*t+KD*h*r*r, top=3.9;
+        for(let r=0.3;r<=1.5001;r+=0.3){ if(wf(r)>top) break; const pts=[]; for(let i=0;i<=64;i++){const a=2*Math.PI*i/64; pts.push([r*Math.cos(a),r*Math.sin(a),wf(r)]);} poly(pts,col,wd); }
+        for(let i=0;i<12;i++){ const a=2*Math.PI*i/12, pts=[]; for(let r=0;r<=1.5001;r+=0.05){ if(wf(r)>top) break; pts.push([r*Math.cos(a),r*Math.sin(a),wf(r)]);} if(pts.length>1) poly(pts,col,wd*0.7); }
+        if(lab){ const q=P(1.6,0,WS*t); g.fillStyle=col; g.font='12px "Noto Sans KR",sans-serif'; g.fillText(lab,q[0]+4,q[1]+4); } };
+      surf(0.1,cN,0.8,0.35); surf(0.3,cN,0.8,0.35); surf(tAcc,cY,1,0.6,'감속→가속 전환'); surf(tNow,cN,1,0.45,'현재');
+      surf(tc,cE,1.8,1);
+      g.globalAlpha=S.C; seg([0,0,0],[0,0,3.3],cE,2.4);
+      const b0=P(0,0,0); g.fillStyle=cW; g.beginPath(); g.arc(b0[0],b0[1],5,0,7); g.fill();
+      g.font='12px "Noto Sans KR",sans-serif'; g.fillText('빅뱅: K → −∞ (물리적 특이점)',b0[0]+8,b0[1]+16);
+      g.globalAlpha=1;
+    }
+    // 판독값
+    const rd=document.getElementById('f2-read');
+    if(stage===0) rd.textContent='3차원 유클리드 공간 (x, y, z) · 시간은 매개변수일 뿐 축이 아니다';
+    else if(stage===1) rd.textContent=`t = ${S.tN.toFixed(2)} · v = ${S.N.b.toFixed(2)} c (제한 없음) · 동시성 평면 기울기 = 0 (항상 수평) · a는 평면 안, 그러나 시공간 내적이 없어 직교 개념 없음`;
+    else if(stage===3){ const h=Hc(tc), acc=tc>tAcc, sh=Math.sinh(1.5*sq*tc), dd=-0.5*(OLc/(sh*sh)-2*OLc), Kr=12*(dd*dd+h**4);
+      rd.textContent=`t = ${(tc*14.443).toFixed(2)} Gyr · H = ${h.toFixed(2)} H₀ · 외재 곡률 K = −3H = ${(-3*h).toFixed(2)} H₀ · 내재 곡률 = 0 (평탄) · 우주 ${acc?'가속':'감속'} 팽창 · 크레치만 불변량 R_abcd R^abcd = ${Kr.toExponential(2)} H₀⁴ (t→0에서 발산 → 물리적 특이점)`; }
+    else { const e=S.E, ua=-e.u[0]*e.A[0]+e.u[1]*e.A[1];
+      rd.textContent=`τ = ${S.tau.toFixed(2)} · β = v/c = ${e.b.toFixed(3)} · γ = ${e.g.toFixed(2)} · 평면 기울기 = β = ${e.b.toFixed(3)} (광원뿔 = 1) · 민코프스키 내적 η(u,A) = ${Math.abs(ua)<1e-12?'0':ua.toExponential(1)}`; }
+  }
+  function tick(ts){
+    if(last===null) last=ts; const dt=Math.min(0.05,(ts-last)/1000); last=ts;
+    const tg=target(stage); for(let i=0;i<3;i++){ const d=tg[i]-cur[i]; cur[i]+=Math.sign(d)*Math.min(Math.abs(d),dt*1.2); }
+    if(playing){ s+=dt*0.18; if(s>1) s=0; sl.value=s; if(!drag) phi=0.8+0.25*Math.sin(ts/6000); }
+    draw(); requestAnimationFrame(tick);
+  }
+  cur=[1,1,0]; requestAnimationFrame(tick);
+})();
+</script>
+
+<script>
+(function(){ let st=20260929; const rnd=()=>{ st|=0; st=st+0x6D2B79F5|0; let t=Math.imul(st^st>>>15,1|st); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; };
+  const out=[], R=100;
+  for(const N of [100,1000,10000,100000]){ let s2=0; for(let r=0;r<R;r++){ let h=0; for(let k=0;k<N;k++) if(rnd()<0.3) h++; s2+=(h/N-0.3)**2; } const rms=Math.sqrt(s2/R);
+    out.push(`N = ${N.toLocaleString()}: ${rms.toExponential(2)} (√N × 편차 = ${(rms*Math.sqrt(N)).toFixed(3)})`); }
+  const e=document.getElementById('lln'); if(e) e.textContent=out.join(' · ');
+})();
+</script>
+<script>
+/* ===== 11절 재실험 엔진 (engine_v4.js) ===== */
+/* 재실험 v4 수치 엔진 — 1D·2D 열방정식, Burgers, 슈뢰딩거, Euler–Bernoulli 보, 교차 차원.
+   브라우저와 Node 모두에서 동작. 외부 라이브러리 없음. 사전 예측: predictions_v4.md */
+const ENGINE = (function () {
+  'use strict';
+  const PI = Math.PI, EPS_FLOOR = 2.2e-13;
+  // ---------- 공통 도구
+  const linspace = (a, b, n) => Array.from({ length: n }, (_, i) => a + (b - a) * i / (n - 1));
+  const maxAbs = v => { let m = 0; for (const x of v) { const a = Math.abs(x); if (a > m) m = a; } return m; };
+  const l2 = (v, h) => { let s = 0; for (const x of v) s += x * x; return Math.sqrt(s * h); };
+  const order = (e, h) => e.slice(1).map((x, i) => (e[i] >= EPS_FLOOR && x >= EPS_FLOOR) ? Math.log(e[i] / x) / Math.log(h[i] / h[i + 1]) : null);
+  const slopeFit = (xs, ys) => { const lx = xs.map(Math.log), ly = ys.map(Math.log), n = xs.length; const mx = lx.reduce((a, b) => a + b) / n, my = ly.reduce((a, b) => a + b) / n; let sxy = 0, sxx = 0; for (let i = 0; i < n; i++) { sxy += (lx[i] - mx) * (ly[i] - my); sxx += (lx[i] - mx) ** 2; } return sxy / sxx; };
+  function thomas(a, b, c, d) { // 부대각 a[i](i≥1), 대각 b, 초대각 c, 우변 d
+    const n = d.length, cp = new Float64Array(n), dp = new Float64Array(n), x = new Float64Array(n);
+    cp[0] = c[0] / b[0]; dp[0] = d[0] / b[0];
+    for (let i = 1; i < n; i++) { const m = b[i] - a[i] * cp[i - 1]; cp[i] = c[i] / m; dp[i] = (d[i] - a[i] * dp[i - 1]) / m; }
+    x[n - 1] = dp[n - 1]; for (let i = n - 2; i >= 0; i--) x[i] = dp[i] - cp[i] * x[i + 1];
+    return x;
+  }
+  function constTri(n, lo, di, up) { // 상수 계수 삼중대각 LU를 한 번 계산해 재사용
+    const cp = new Float64Array(n), m = new Float64Array(n);
+    m[0] = di; cp[0] = up / di;
+    for (let i = 1; i < n; i++) { m[i] = di - lo * cp[i - 1]; cp[i] = up / m[i]; }
+    return d => { const x = new Float64Array(n); x[0] = d[0] / m[0]; for (let i = 1; i < n; i++) x[i] = (d[i] - lo * x[i - 1]) / m[i]; for (let i = n - 2; i >= 0; i--) x[i] -= cp[i] * x[i + 1]; return x; };
+  }
+  function constTriC(n, lo, di, up) { // 복소수 상수 계수 (lo,di,up = [re,im])
+    const mul = (a, b) => [a[0] * b[0] - a[1] * b[1], a[0] * b[1] + a[1] * b[0]], div = (a, b) => { const q = b[0] * b[0] + b[1] * b[1]; return [(a[0] * b[0] + a[1] * b[1]) / q, (a[1] * b[0] - a[0] * b[1]) / q]; }, sub = (a, b) => [a[0] - b[0], a[1] - b[1]];
+    const m = [di], cp = [div(up, di)];
+    for (let i = 1; i < n; i++) { m[i] = sub(di, mul(lo, cp[i - 1])); cp[i] = div(up, m[i]); }
+    return (dr, di_) => { const xr = new Float64Array(n), xi = new Float64Array(n); let t = div([dr[0], di_[0]], m[0]); xr[0] = t[0]; xi[0] = t[1];
+      for (let i = 1; i < n; i++) { const p = mul(lo, [xr[i - 1], xi[i - 1]]); t = div([dr[i] - p[0], di_[i] - p[1]], m[i]); xr[i] = t[0]; xi[i] = t[1]; }
+      for (let i = n - 2; i >= 0; i--) { const p = mul(cp[i], [xr[i + 1], xi[i + 1]]); xr[i] -= p[0]; xi[i] -= p[1]; }
+      return [xr, xi]; };
+  }
+  function cyclicTri(n, lo, di, up) { // 주기 경계 상수 계수 (셔먼-모리슨)
+    const gam = -di, bb = new Float64Array(n).fill(di); bb[0] = di - gam; bb[n - 1] = di - lo * up / gam;
+    const a = new Float64Array(n).fill(lo), c = new Float64Array(n).fill(up);
+    const u = new Float64Array(n); u[0] = gam; u[n - 1] = up;
+    const z = thomas(a, bb, c, u);
+    return d => { const y = thomas(a, bb, c, d); const f = (y[0] + lo * y[n - 1] / gam) / (1 + z[0] + lo * z[n - 1] / gam); return y.map((v, i) => v - f * z[i]); };
+  }
+  function dstTable(N) { const s = new Float64Array(2 * N); for (let j = 0; j < 2 * N; j++) s[j] = Math.sin(PI * j / N); return s; }
+  function dst(x, N, S) { // DST-I: X_k = Σ_n x_n sin(πkn/N), k,n = 1..N-1 (O(N²))
+    const m = N - 1, X = new Float64Array(m), M2 = 2 * N;
+    for (let k = 1; k <= m; k++) { let s = 0, idx = 0; for (let n = 1; n <= m; n++) { idx += k; if (idx >= M2) idx -= M2; s += x[n - 1] * S[idx]; } X[k - 1] = s; }
+    return X;
+  }
+  const idst = (X, N, S) => dst(X, N, S).map(v => v * 2 / N);
+  function rng(seed) { let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+  // ================= H1: 1차원 열방정식
+  function heatSeries(x, t, nterm = 400) { let u = 0; for (let n = 1; n < 2 * nterm; n += 2) u += 8 / (n * PI) ** 3 * Math.sin(n * PI * x) * Math.exp(-((n * PI) ** 2) * t); return u; }
+  function H1() {
+    const T = 0.1, out = { space: [], time: [], fem: [], explicit: [], deficit: [] };
+    // 공간 (시간 정확) + FEM 질량행렬 세 가지
+    for (const N of [10, 20, 40, 80, 160, 320]) {
+      const h = 1 / N, S = dstTable(N), x = linspace(0, 1, N + 1).slice(1, -1), U0 = x.map(v => v * (1 - v)), c = dst(U0, N, S), ex = x.map(v => heatSeries(v, T));
+      const run = f => idst(c.map((v, j) => { const th = (j + 1) * PI / N, lS = (2 - 2 * Math.cos(th)) / h ** 2; return v * Math.exp(-lS * f(th) * T); }), N, S);
+      const Uf = run(() => 1), Uc = run(th => 6 / (4 + 2 * Math.cos(th))), Um = run(th => 12 / (10 + 2 * Math.cos(th)));
+      const err = Uf.map((v, i) => v - ex[i]); const inner = x.map(v => v > 0.1 && v < 0.9);
+      out.space.push({ N, h, Linf: maxAbs(err), L2: l2(err, h), LinfInterior: maxAbs(err.filter((_, i) => inner[i])), LinfNearBdry: maxAbs(err.filter((_, i) => !inner[i])) });
+      out.fem.push({ N, h, diffConsistent: maxAbs(Uc.map((v, i) => v - Uf[i])), errConsistent: maxAbs(Uc.map((v, i) => v - ex[i])), errMixed: maxAbs(Um.map((v, i) => v - ex[i])) });
+    }
+    ['Linf', 'L2'].forEach(k => order(out.space.map(r => r[k]), out.space.map(r => r.h)).forEach((p, i) => out.space[i + 1]['p_' + k] = p));
+    ['diffConsistent', 'errConsistent', 'errMixed'].forEach(k => order(out.fem.map(r => r[k]), out.fem.map(r => r.h)).forEach((p, i) => out.fem[i + 1]['p_' + k] = p));
+    // lumped FEM (M=hI, K=(1/h)[-1,2,-1]) 시간전진 vs FDM 시간전진
+    { const N = 50, h = 1 / N, k = 1e-3, m = N - 1, x = linspace(0, 1, N + 1).slice(1, -1);
+      const sF = constTri(m, -k / h ** 2, 1 + 2 * k / h ** 2, -k / h ** 2), sE = constTri(m, -k / h, h + 2 * k / h, -k / h);
+      let Uf = Float64Array.from(x, v => v * (1 - v)), Ue = Float64Array.from(Uf);
+      for (let n = 0; n < Math.round(T / k); n++) { Uf = sF(Uf); Ue = sE(Ue.map(v => v * h)); }
+      out.lumpedStepDiff = maxAbs(Uf.map((v, i) => v - Ue[i])); }
+    // 반이산 공간 lumped = FDM 은 정의상 같은 행렬 → 차이 0 (위 시간전진 비교가 실측)
+    // 시간 (N=100, 반이산 정확해 기준) + 결손 예측
+    { const N = 100, h = 1 / N, m = N - 1, S = dstTable(N), x = linspace(0, 1, N + 1).slice(1, -1), U0 = x.map(v => v * (1 - v)), c = dst(U0, N, S);
+      const lam = c.map((_, j) => -4 / h ** 2 * Math.sin((j + 1) * PI / (2 * N)) ** 2), ref = idst(c.map((v, j) => v * Math.exp(lam[j] * T)), N, S);
+      for (const nst of [10, 20, 40, 80, 160, 320]) {
+        const k = T / nst, sol = constTri(m, -k / h ** 2, 1 + 2 * k / h ** 2, -k / h ** 2); let U = Float64Array.from(U0);
+        for (let n = 0; n < nst; n++) U = sol(U);
+        const meas = maxAbs(U.map((v, i) => v - ref[i]));
+        const pred = maxAbs(idst(c.map((v, j) => v * Math.exp(lam[j] * T) * nst * 0.5 * (lam[j] * k) ** 2), N, S));
+        out.time.push({ N, dt: k, r: k / h ** 2, Linf: meas });
+        out.deficit.push({ dt: k, measured: meas, predicted: pred, rel: Math.abs(pred / meas - 1) });
+      }
+      order(out.time.map(r => r.Linf), out.time.map(r => r.dt)).forEach((p, i) => out.time[i + 1].p_Linf = p);
+      order(out.deficit.map(r => r.rel), out.deficit.map(r => r.dt)).forEach((p, i) => out.deficit[i + 1].p_rel = p);
+    }
+    // 명시적 Euler 안정성
+    for (const r of [0.4, 0.5, 0.51, 0.6]) {
+      const N = 50, x = linspace(0, 1, N + 1); let U = x.map(v => v * (1 - v)), mx = 0, n = 0; const nst = Math.round(0.5 / (r / N ** 2));
+      for (n = 0; n < nst; n++) { const V = U.slice(); for (let i = 1; i < N; i++) V[i] = U[i] + r * (U[i - 1] - 2 * U[i] + U[i + 1]); U = V; mx = Math.max(mx, maxAbs(U)); if (mx > 1e6 || !isFinite(mx)) break; }
+      out.explicit.push({ r, steps: Math.min(n + 1, nst), maxAbs: mx, stable: mx <= 0.25 + 1e-12, Rsaw: 1 - 4 * r * Math.sin((N - 1) * PI / (2 * N)) ** 2 });
+    }
+    return out;
+  }
+
+  // ================= H2: 2차원 열방정식 (5점 + 명시적 Euler)
+  function H2() {
+    const T = 0.05, out = { refine: [], stability: [] };
+    const v = (x, t) => heatSeries(x, t);   // u = v(x,t)·v(y,t)
+    for (const N of [10, 20, 40, 80]) {
+      const h = 1 / N, r = 0.2, k = r * h * h, nst = Math.round(T / k), n1 = N + 1; let U = new Float64Array(n1 * n1), V = new Float64Array(n1 * n1);
+      for (let i = 0; i <= N; i++) for (let j = 0; j <= N; j++) { const x = i * h, y = j * h; U[i * n1 + j] = x * (1 - x) * y * (1 - y); }
+      const t0 = Date.now();
+      for (let n = 0; n < nst; n++) { for (let i = 1; i < N; i++) for (let j = 1; j < N; j++) { const q = i * n1 + j; V[q] = U[q] + r * (U[q - n1] + U[q + n1] + U[q - 1] + U[q + 1] - 4 * U[q]); } [U, V] = [V, U]; }
+      const Tn = nst * k, vx = Array.from({ length: n1 }, (_, i) => v(i * h, Tn)); let e = 0;
+      for (let i = 1; i < N; i++) for (let j = 1; j < N; j++) e = Math.max(e, Math.abs(U[i * n1 + j] - vx[i] * vx[j]));
+      out.refine.push({ N, h, M: (N - 1) ** 2, r, dt: k, steps: nst, Linf: e, runtimeMs: Date.now() - t0 });
+    }
+    order(out.refine.map(r => r.Linf), out.refine.map(r => r.h)).forEach((p, i) => out.refine[i + 1].p_Linf = p);
+    for (const r of [0.24, 0.25, 0.26, 0.3]) {
+      const N = 20, n1 = N + 1, h = 1 / N; let U = new Float64Array(n1 * n1), V = new Float64Array(n1 * n1);
+      for (let i = 0; i <= N; i++) for (let j = 0; j <= N; j++) { const x = i * h, y = j * h; U[i * n1 + j] = x * (1 - x) * y * (1 - y); }
+      const m0 = maxAbs(U); let n = 0, mx = m0;
+      for (n = 0; n < 4000; n++) { for (let i = 1; i < N; i++) for (let j = 1; j < N; j++) { const q = i * n1 + j; V[q] = U[q] + r * (U[q - n1] + U[q + n1] + U[q - 1] + U[q + 1] - 4 * U[q]); } [U, V] = [V, U]; mx = Math.max(mx, maxAbs(U)); if (mx > 1e6) break; }
+      out.stability.push({ r, N, steps: Math.min(n + 1, 4000), maxAbs: mx, stable: mx <= m0 + 1e-12, Rsaw: 1 - 8 * r * Math.sin((N - 1) * PI / (2 * N)) ** 2 });
+    }
+    return out;
+  }
+
+  // ================= B: Burgers
+  function burgersIMEX(N, k, T, nu = 0.05) {
+    const h = 1 / N, m = N - 1, s = nu * k / h ** 2, sol = constTri(m, -s, 1 + 2 * s, -s), U = Float64Array.from(linspace(0, 1, N + 1), x => Math.sin(PI * x)); let cfl = 0;
+    const nst = Math.round(T / k), rhs = new Float64Array(m);
+    for (let n = 0; n < nst; n++) { let mu = 0; for (let i = 0; i <= N; i++) mu = Math.max(mu, Math.abs(U[i])); cfl = Math.max(cfl, mu * k / h);
+      for (let i = 1; i < N; i++) rhs[i - 1] = U[i] - k * (U[i + 1] ** 2 / 2 - U[i - 1] ** 2 / 2) / (2 * h);
+      const x = sol(rhs); for (let i = 1; i < N; i++) U[i] = x[i - 1]; }
+    return { U, cfl };
+  }
+  function B() {
+    const out = { space: [], time: [], shock: [], imex: [] }, T = 0.5, k = 1e-4, NR = 2560;
+    const ref = burgersIMEX(NR, k, T).U;
+    for (const N of [20, 40, 80, 160, 320]) { const { U, cfl } = burgersIMEX(N, k, T), st = NR / N; const e = []; for (let i = 0; i <= N; i++) e.push(U[i] - ref[i * st]); out.space.push({ N, h: 1 / N, dt: k, Linf: maxAbs(e), L2: l2(e, 1 / N), CFL: cfl }); }
+    ['Linf', 'L2'].forEach(key => order(out.space.map(r => r[key]), out.space.map(r => r.h)).forEach((p, i) => out.space[i + 1]['p_' + key] = p));
+    const Nt = 200, nsts = [50, 100, 200, 400, 800, 1600], refT = burgersIMEX(Nt, T / (1600 * 200), T).U;
+    for (const nst of nsts) { const { U, cfl } = burgersIMEX(Nt, T / nst, T); out.time.push({ N: Nt, dt: T / nst, Linf: maxAbs(U.map((v, i) => v - refT[i])), CFL: cfl }); }
+    out.timeRefDt = T / (1600 * 200);
+    order(out.time.map(r => r.Linf), out.time.map(r => r.dt)).forEach((p, i) => out.time[i + 1].p_Linf = p);
+    for (const N of [100, 200, 400, 800, 1600, 3200]) {
+      const h = 1 / N, cflT = 0.5, nst = Math.ceil(T / (cflT * h)), kk = T / nst; let U = new Float64Array(N), m0 = 0, fin = 0, fout = 0; const xc = Array.from({ length: N }, (_, i) => (i + 0.5) * h);
+      for (let i = 0; i < N; i++) { U[i] = xc[i] < 0.25 ? 1 : 0; m0 += U[i] * h; }
+      const tr = [];
+      for (let n = 0; n < nst; n++) { const f = U.map(v => v * v / 2), V = new Float64Array(N); V[0] = U[0] - kk / h * (f[0] - 0.5); for (let i = 1; i < N; i++) V[i] = U[i] - kk / h * (f[i] - f[i - 1]); fin += kk * 0.5; fout += kk * f[N - 1]; U = V;
+        if ((n + 1) % Math.max(1, Math.floor(nst / 20)) === 0) { let pos = null; for (let i = N - 1; i > 0; i--) if (U[i - 1] >= 0.5 && U[i] < 0.5) { pos = xc[i - 1] + (U[i - 1] - 0.5) / (U[i - 1] - U[i]) * h; break; } tr.push([(n + 1) * kk, pos]); } }
+      const e = U.map((v, i) => v - (xc[i] < 0.25 + 0.5 * T ? 1 : 0)); let mass = 0; for (const v of U) mass += v * h;
+      const tt = tr.slice(Math.floor(tr.length / 4)); const speed = slopeLin(tt.map(a => a[0]), tt.map(a => a[1]));
+      out.shock.push({ N, h, Linf: maxAbs(e), L2: l2(e, h), L1: e.reduce((a, b) => a + Math.abs(b), 0) * h, massChange: mass - m0, inMinusOut: fin - fout, conservationErr: Math.abs(mass - m0 - (fin - fout)), speed });
+    }
+    ['Linf', 'L2', 'L1'].forEach(key => order(out.shock.map(r => r[key]), out.shock.map(r => r.h)).forEach((p, i) => out.shock[i + 1]['p_' + key] = p));
+    for (const [nu, k2, Ns] of [[0.05, 0.09, [50, 200, 800]], [0.05, 0.12, [50, 200, 800]], [0.0, null, [200]]]) for (const N of Ns) {
+      const h = 1 / N, kk = k2 ?? 0.5 * h, mu = nu * kk / h ** 2, sol = cyclicTri(N, -mu, 1 + 2 * mu, -mu), R = rng(0); let U = Float64Array.from({ length: N }, (_, i) => Math.sin(2 * PI * i * h) + 1e-6 * (2 * R() - 1)); const m0 = maxAbs(U); let n;
+      for (n = 0; n < 5000; n++) { const rhs = U.map((v, i) => v - kk * (U[(i + 1) % N] - U[(i - 1 + N) % N]) / (2 * h)); U = sol(rhs); if (maxAbs(U) > 1e8) break; }
+      let G = 0; const C = kk / h; for (let q = 0; q <= 2000; q++) { const th = PI * q / 2000; G = Math.max(G, Math.sqrt(1 + C * C * Math.sin(th) ** 2) / (1 + 4 * mu * Math.sin(th / 2) ** 2)); }
+      out.imex.push({ nu, k: kk, N, CFL: kk / h, Gmax: G, maxT: maxAbs(U), steps: Math.min(n + 1, 5000), stable: maxAbs(U) <= m0 });
+    }
+    return out;
+  }
+  function slopeLin(x, y) { const n = x.length, mx = x.reduce((a, b) => a + b) / n, my = y.reduce((a, b) => a + b) / n; let a = 0, b = 0; for (let i = 0; i < n; i++) { a += (x[i] - mx) * (y[i] - my); b += (x[i] - mx) ** 2; } return a / b; }
+
+  // ================= S: 1차원 슈뢰딩거
+  function psiEx(x, t) { // i u_t = -u_xx 의 가우스 해 (σ=1, k0=2): 표준해의 t→2t
+    const s = 2 * t, ar = 1, ai = s, k0 = 2; // a = 1 + i s
+    const q = ar * ar + ai * ai, invr = ar / q, invi = -ai / q;         // 1/a
+    const d = x - k0 * s, er = -d * d / 2 * invr, ei = -d * d / 2 * invi + k0 * x - k0 * k0 * s / 2;
+    const mod = Math.pow(q, -0.25), arg = -0.5 * Math.atan2(ai, ar);   // a^{-1/2}
+    const A = Math.pow(PI, -0.25) * mod * Math.exp(er); return [A * Math.cos(ei + arg), A * Math.sin(ei + arg)];
+  }
+  function S() {
+    const L = 20, T = 1, out = { space: [], time: [], eeNorm: [], deficit: [] };
+    const semi = (N, h, Sx, U0r, U0i, t, fac) => { const cr = dst(U0r, N, Sx), ci = dst(U0i, N, Sx), vr = new Float64Array(N - 1), vi = new Float64Array(N - 1);
+      for (let j = 0; j < N - 1; j++) { const th = (j + 1) * PI / N, lam = (2 - 2 * Math.cos(th)) / h ** 2 * fac(th), co = Math.cos(lam * t), si = Math.sin(lam * t); vr[j] = cr[j] * co + ci[j] * si; vi[j] = ci[j] * co - cr[j] * si; }
+      return [idst(vr, N, Sx), idst(vi, N, Sx), cr, ci]; };
+    const grid = N => { const x = linspace(-L, L, N + 1).slice(1, -1); return [x, 2 * L / N]; };
+    for (const N of [400, 800, 1600, 3200]) {
+      const [x, h] = grid(N), Sx = dstTable(N), U0 = x.map(v => psiEx(v, 0)), ex = x.map(v => psiEx(v, T)), U0r = U0.map(z => z[0]), U0i = U0.map(z => z[1]);
+      const row = { N, h, k0h: 2 * h };
+      for (const [name, f] of [['fdm', () => 1], ['consistent', th => 6 / (4 + 2 * Math.cos(th))], ['mixed', th => 12 / (10 + 2 * Math.cos(th))]]) {
+        const [Ur, Ui] = semi(N, h, Sx, U0r, U0i, T, f); row[name] = l2(Ur.map((v, i) => Math.hypot(v - ex[i][0], Ui[i] - ex[i][1])), h);
+      }
+      out.space.push(row);
+    }
+    ['fdm', 'consistent', 'mixed'].forEach(k => order(out.space.map(r => r[k]), out.space.map(r => r.h)).forEach((p, i) => out.space[i + 1]['p_' + k] = p));
+    { const N = 1600, [x, h] = grid(N), m = N - 1, Sx = dstTable(N), U0 = x.map(v => psiEx(v, 0)), U0r = Float64Array.from(U0, z => z[0]), U0i = Float64Array.from(U0, z => z[1]);
+      const [Rr, Ri, cr, ci] = semi(N, h, Sx, U0r, U0i, T, () => 1);
+      for (const nst of [25, 50, 100, 200, 400, 800]) {
+        const k = T / nst, a = k / 2 / h ** 2, sol = constTriC(m, [0, -a], [1, 2 * a], [0, -a]); let ur = Float64Array.from(U0r), ui = Float64Array.from(U0i); const n0 = l2(Array.from(ur, (v, i) => Math.hypot(v, ui[i])), h); let drift = 0;
+        for (let n = 0; n < nst; n++) { const br = new Float64Array(m), bi = new Float64Array(m); // (I - i k/2 H)U, H = -D2
+          for (let i = 0; i < m; i++) { const Hr = (2 * ur[i] - (i > 0 ? ur[i - 1] : 0) - (i < m - 1 ? ur[i + 1] : 0)) / h ** 2, Hi = (2 * ui[i] - (i > 0 ? ui[i - 1] : 0) - (i < m - 1 ? ui[i + 1] : 0)) / h ** 2; br[i] = ur[i] + k / 2 * Hi; bi[i] = ui[i] - k / 2 * Hr; }
+          [ur, ui] = sol(br, bi); drift = Math.max(drift, Math.abs(l2(Array.from(ur, (v, i) => Math.hypot(v, ui[i])), h) ** 2 / n0 ** 2 - 1)); }
+        const meas = l2(Array.from(ur, (v, i) => Math.hypot(v - Rr[i], ui[i] - Ri[i])), h);
+        // 결손 예측: 모드 j 위상 결손 i·T·λ³·Δt²/12
+        const pr = new Float64Array(m), pi_ = new Float64Array(m);
+        for (let j = 0; j < m; j++) { const lam = (2 - 2 * Math.cos((j + 1) * PI / N)) / h ** 2, co = Math.cos(lam * T), si = Math.sin(lam * T), er = cr[j] * co + ci[j] * si, ei = ci[j] * co - cr[j] * si, D = T * lam ** 3 * k * k / 12; pr[j] = -ei * D; pi_[j] = er * D; }
+        const Er = idst(pr, N, Sx), Ei = idst(pi_, N, Sx), pred = l2(Array.from(Er, (v, i) => Math.hypot(v, Ei[i])), h);
+        out.time.push({ N, dt: k, L2: meas, normDrift: drift }); out.deficit.push({ dt: k, measured: meas, predicted: pred, rel: Math.abs(pred / meas - 1) });
+      }
+      order(out.time.map(r => r.L2), out.time.map(r => r.dt)).forEach((p, i) => out.time[i + 1].p_L2 = p);
+      order(out.deficit.map(r => r.rel), out.deficit.map(r => r.dt)).forEach((p, i) => out.deficit[i + 1].p_rel = p);
+    }
+    { const N = 400, [x, h] = grid(N), m = N - 1, Sx = dstTable(N), U0 = x.map(v => psiEx(v, 0)), cr = dst(U0.map(z => z[0]), N, Sx), ci = dst(U0.map(z => z[1]), N, Sx);
+      let W = 0; const w = cr.map((v, j) => { const q = v * v + ci[j] * ci[j]; W += q; return q; }).map(q => q / W), lam = cr.map((_, j) => (2 - 2 * Math.cos((j + 1) * PI / N)) / h ** 2);
+      let m2 = 0; w.forEach((q, j) => m2 += q * lam[j] ** 2); out.meanLambda2 = m2;
+      for (const k of [4e-4, 2e-4, 1e-4, 5e-5, 2.5e-5]) {
+        const nst = Math.round(T / k); let ur = Float64Array.from(U0, z => z[0]), ui = Float64Array.from(U0, z => z[1]); const n0 = ur.reduce((a, v, i) => a + v * v + ui[i] * ui[i], 0);
+        for (let n = 0; n < nst; n++) { const vr = new Float64Array(m), vi = new Float64Array(m); // U += i k D2 U
+          for (let i = 0; i < m; i++) { const Dr = ((i > 0 ? ur[i - 1] : 0) - 2 * ur[i] + (i < m - 1 ? ur[i + 1] : 0)) / h ** 2, Di = ((i > 0 ? ui[i - 1] : 0) - 2 * ui[i] + (i < m - 1 ? ui[i + 1] : 0)) / h ** 2; vr[i] = ur[i] - k * Di; vi[i] = ui[i] + k * Dr; } ur = vr; ui = vi; }
+        const meas = ur.reduce((a, v, i) => a + v * v + ui[i] * ui[i], 0) / n0 - 1;
+        let exact = 0; w.forEach((q, j) => exact += q * (Math.pow(1 + k * k * lam[j] ** 2, nst) - 1));
+        out.eeNorm.push({ dt: k, measured: meas, exact, leading: T * k * m2, relDiff: Math.abs(meas / exact - 1), ampTop: Math.exp(T * k * lam[m - 1] ** 2 / 2) });
+      }
+    }
+    return out;
+  }
+
+  // ================= EB: Euler–Bernoulli 보 (u_tt + u_xxxx = 0, 단순지지)
+  function penta(n, e, d, c, rhs) { // 대칭 5대각 [e,d,c,d,e] 가우스 소거 (상수 계수 + 첫/끝 행 보정은 호출자가 d 배열로)
+    const A = Array.from({ length: n }, (_, i) => [i > 1 ? e : 0, i > 0 ? d[i][0] : 0, d[i][1], i < n - 1 ? d[i][2] : 0, i < n - 2 ? e : 0]);
+    const b = Float64Array.from(rhs);
+    for (let k = 0; k < n - 1; k++) for (let r = 1; r <= 2 && k + r < n; r++) { const f = A[k + r][2 - r] / A[k][2]; for (let s = 0; s <= 2; s++) if (2 - r + s <= 4) A[k + r][2 - r + s] -= f * A[k][2 + s]; b[k + r] -= f * b[k]; }
+    const x = new Float64Array(n); for (let k = n - 1; k >= 0; k--) { let s = b[k]; for (let s2 = 1; s2 <= 2; s2++) if (k + s2 < n) s -= A[k][2 + s2] * x[k + s2]; x[k] = s / A[k][2]; }
+    return x;
+  }
+  function EB() {
+    const T = 0.25, out = { space: [], time: [], leapfrog: [], deficit: [] };
+    const u0 = x => Math.sin(PI * x) + 0.3 * Math.sin(2 * PI * x), exact = (x, t) => Math.cos(PI ** 2 * t) * Math.sin(PI * x) + 0.3 * Math.cos(4 * PI ** 2 * t) * Math.sin(2 * PI * x);
+    const K4 = (U, h) => { const m = U.length, D = new Float64Array(m), R = new Float64Array(m); for (let i = 0; i < m; i++) D[i] = ((i > 0 ? U[i - 1] : 0) - 2 * U[i] + (i < m - 1 ? U[i + 1] : 0)) / h ** 2; for (let i = 0; i < m; i++) R[i] = ((i > 0 ? D[i - 1] : 0) - 2 * D[i] + (i < m - 1 ? D[i + 1] : 0)) / h ** 2; return R; }; // D2² (양정부호)
+    const semi = (N, t) => { const h = 1 / N, Sx = dstTable(N), x = linspace(0, 1, N + 1).slice(1, -1), c = dst(x.map(u0), N, Sx); return [idst(c.map((v, j) => v * Math.cos(4 / h ** 2 * Math.sin((j + 1) * PI / (2 * N)) ** 2 * t)), N, Sx), c, x, Sx]; };
+    for (const N of [10, 20, 40, 80, 160]) { const h = 1 / N, [U, , x] = semi(N, T); const e = U.map((v, i) => v - exact(x[i], T)); out.space.push({ N, h, L2: l2(e, h), Linf: maxAbs(e) }); }
+    ['L2', 'Linf'].forEach(k => order(out.space.map(r => r[k]), out.space.map(r => r.h)).forEach((p, i) => out.space[i + 1]['p_' + k] = p));
+    { const N = 50, h = 1 / N, m = N - 1, [ref, c, x, Sx] = semi(N, T);
+      for (const nst of [25, 50, 100, 200, 400, 800]) {
+        const k = T / nst, beta = 0.25, gam = 0.5, q = beta * k * k / h ** 4;
+        const d = Array.from({ length: m }, (_, i) => [-4 * q, 1 + (i === 0 || i === m - 1 ? 5 : 6) * q, -4 * q]); // I + βk²K4
+        let U = Float64Array.from(x, u0), V = new Float64Array(m), Acc = K4(U, h).map(v => -v);
+        const energy = () => { const KU = K4(U, h); let s = 0; for (let i = 0; i < m; i++) s += 0.5 * V[i] * V[i] + 0.5 * U[i] * KU[i]; return s * h; };
+        const E0 = energy(); let drift = 0;
+        for (let n = 0; n < nst; n++) { const pred = U.map((u, i) => u + k * V[i] + (0.5 - beta) * k * k * Acc[i]); const An = penta(m, q, d, null, K4(pred, h).map(v => -v));
+          U = pred.map((p, i) => p + beta * k * k * An[i]); V = V.map((v, i) => v + k * ((1 - gam) * Acc[i] + gam * An[i])); Acc = An; drift = Math.max(drift, Math.abs(energy() / E0 - 1)); }
+        const meas = l2(U.map((v, i) => v - ref[i]), h);
+        const pv = c.map((v, j) => { const w = 4 / h ** 2 * Math.sin((j + 1) * PI / (2 * N)) ** 2; return v * Math.sin(w * T) * T * w ** 3 * k * k / 12; });
+        const pred = l2(idst(pv, N, Sx), h);
+        out.time.push({ N, dt: k, L2: meas, energyDrift: drift }); out.deficit.push({ dt: k, measured: meas, predicted: pred, rel: Math.abs(pred / meas - 1) });
+      }
+      order(out.time.map(r => r.L2), out.time.map(r => r.dt)).forEach((p, i) => out.time[i + 1].p_L2 = p);
+      order(out.deficit.map(r => r.rel), out.deficit.map(r => r.dt)).forEach((p, i) => out.deficit[i + 1].p_rel = p);
+    }
+    for (const cfac of [0.98, 1.02]) {
+      const N = 50, h = 1 / N, m = N - 1, k = cfac * h * h / 2, x = linspace(0, 1, N + 1).slice(1, -1); let Up = Float64Array.from(x, u0); const m0 = maxAbs(Up);
+      let U = Up.map((v, i) => v - k * k / 2 * K4(Up, h)[i]), n, mx = m0;
+      for (n = 0; n < 20000; n++) { const KU = K4(U, h), Un = U.map((v, i) => 2 * v - Up[i] - k * k * KU[i]); Up = U; U = Un; mx = Math.max(mx, maxAbs(U)); if (mx > 1e6) break; }
+      const wmax = 4 / h ** 2 * Math.sin((N - 1) * PI / (2 * N)) ** 2;
+      out.leapfrog.push({ N, factor: cfac, dt: k, kwmax: k * wmax, steps: Math.min(n + 1, 20000), maxAbs: mx, stable: mx <= 2 * m0 });
+    }
+    return out;
+  }
+
+  // ================= D: 교차 차원
+  function D() {
+    const out = { trap: [], left: [] }, ex = d => Math.sin(1) ** d, SEEDS = 10, cache = {};
+    for (const rule of ['trap', 'left']) for (let d = 1; d <= 6; d++) {
+      const nmax = Math.pow(2.6e5, 1 / d), ns = [...new Set(Array.from({ length: 6 }, (_, i) => Math.round(Math.exp(Math.log(3) + (Math.log(nmax) - Math.log(3)) * i / 5))))].filter(n => n >= 2);
+      const pts = ns.map(n => { const M = n ** d; let s1 = 0;
+        if (rule === 'trap') { for (let i = 0; i < n; i++) s1 += (i === 0 || i === n - 1 ? 0.5 : 1) * Math.cos(i / (n - 1)); s1 /= (n - 1); } else { for (let i = 0; i < n; i++) s1 += Math.cos(i / n); s1 /= n; }
+        const g = Math.abs(s1 ** d - ex(d)); let se = 0; const ck = d + ':' + M;
+        if (cache[ck] != null) return { M, grid: g, mc: cache[ck] };
+        for (let sd = 0; sd < SEEDS; sd++) { const R = rng(1000 * d + sd + 1); let acc = 0; for (let q = 0; q < M; q++) { let p = 1; for (let c = 0; c < d; c++) p *= Math.cos(R()); acc += p; } se += (acc / M - ex(d)) ** 2; }
+        cache[ck] = Math.sqrt(se / SEEDS); return { M, grid: g, mc: cache[ck] }; });
+      const L3 = pts.slice(-3);
+      out[rule].push({ d, points: pts, slopeGrid: slopeFit(L3.map(p => p.M), L3.map(p => p.grid)), slopeMC: slopeFit(L3.map(p => p.M), L3.map(p => p.mc)), ratio: pts[pts.length - 1].grid / pts[pts.length - 1].mc });
+    }
+    return out;
+  }
+
+  // ================= 판정
+  const within = (p, th, tol = 0.15) => p != null && Math.abs(p - th) <= tol;
+  const last2 = (rows, k) => rows.slice(-2).map(r => r[k]);
+  const lastValid = (rows, k) => rows.filter(r => r[k] != null).slice(-2).map(r => r[k]);
+  function judge(R) {
+    const v = [], add = (id, text, meas, ok) => v.push({ id, text, meas, ok });
+    const f2 = a => a.map(x => x == null ? '–' : x.toFixed(2)).join(', ');
+    const { H1: h1, H2: h2, B: b, S: s, EB: eb, D: d } = R;
+    add('H1-1', '1D 열 공간 차수 2 (L∞·L²)', f2(last2(h1.space, 'p_Linf')) + ' / ' + f2(last2(h1.space, 'p_L2')), last2(h1.space, 'p_Linf').every(p => within(p, 2)) && last2(h1.space, 'p_L2').every(p => within(p, 2)));
+    add('H1-2', '1D 열 시간 차수 1', f2(last2(h1.time, 'p_Linf')), last2(h1.time, 'p_Linf').every(p => within(p, 1)));
+    add('H1-3', 'lumped FEM = FDM (≤10⁻¹²)', h1.lumpedStepDiff.toExponential(1), h1.lumpedStepDiff <= 1e-12);
+    const mix = lastValid(h1.fem, 'p_errMixed');
+    add('H1-4', 'consistent 차이 차수 2, 혼합 질량 차수 4', f2(last2(h1.fem, 'p_diffConsistent')) + ' / ' + f2(mix), last2(h1.fem, 'p_diffConsistent').every(p => within(p, 2)) && mix.length === 2 && mix.every(p => within(p, 4)));
+    add('H1-5', '명시적 Euler r=0.5 안정, 0.51 발산', h1.explicit.map(r => r.r + (r.stable ? ' 안정' : ' 발산')).join(' · '), h1.explicit.find(r => r.r === 0.5).stable && !h1.explicit.find(r => r.r === 0.51).stable);
+    add('H1-6', '결손 예측 상대차의 차수 1', f2(last2(h1.deficit, 'p_rel')), last2(h1.deficit, 'p_rel').every(p => within(p, 1)));
+    add('H2-1', '2D 열 (r=0.2 고정) L∞ 차수 2', f2(last2(h2.refine, 'p_Linf')), last2(h2.refine, 'p_Linf').every(p => within(p, 2)));
+    add('H2-2', '2D 안정 한계 r=1/4 (0.25 안정, 0.26 발산)', h2.stability.map(r => r.r + (r.stable ? ' 안정' : ' 발산')).join(' · '), h2.stability.find(r => r.r === 0.25).stable && !h2.stability.find(r => r.r === 0.26).stable);
+    const s1 = slopeFit(h1.space.slice(-2).map(r => r.N - 1), h1.space.slice(-2).map(r => r.Linf)), s2 = slopeFit(h2.refine.slice(-2).map(r => r.M), h2.refine.slice(-2).map(r => r.Linf));
+    R.H2.slope1D = s1; R.H2.slope2D = s2;
+    add('H2-3', '오차–미지수 기울기 −p/d: 1D −2, 2D −1', s1.toFixed(3) + ' / ' + s2.toFixed(3), Math.abs(s1 + 2) <= 0.1 && Math.abs(s2 + 1) <= 0.1);
+    add('B-1', 'Burgers 공간 차수 2', f2(last2(b.space, 'p_Linf')), last2(b.space, 'p_Linf').every(p => within(p, 2)));
+    add('B-2', 'Burgers 시간 차수 1 (참조 Δt/200)', f2(last2(b.time, 'p_Linf')), last2(b.time, 'p_Linf').every(p => within(p, 1)));
+    const sh = b.shock[b.shock.length - 1];
+    add('B-3', '충격파 차수 L∞ 0, L² ½, L¹ 1', f2([sh.p_Linf, sh.p_L2, sh.p_L1]), last2(b.shock, 'p_Linf').every(p => within(p, 0)) && last2(b.shock, 'p_L2').every(p => within(p, 0.5)) && last2(b.shock, 'p_L1').every(p => within(p, 1)));
+    const ce = Math.max(...b.shock.map(r => r.conservationErr));
+    add('B-4', '보존량 오차 ≤10⁻¹², 속도 0.5±10⁻³', ce.toExponential(1) + ', ' + sh.speed.toFixed(6), ce <= 1e-12 && Math.abs(sh.speed - 0.5) <= 1e-3);
+    add('B-5', 'IMEX 한계 k≤2ν/a² (h 무관), ν=0 불안정', b.imex.map(r => `ν=${r.nu} k=${+r.k.toFixed(4)} N=${r.N}: ${r.stable ? '안정' : '불안정'}`).join(' · '), b.imex.filter(r => r.nu > 0 && r.k === 0.09).every(r => r.stable) && b.imex.filter(r => r.k === 0.12).every(r => !r.stable) && b.imex.filter(r => r.nu === 0).every(r => !r.stable));
+    add('S-1', '슈뢰딩거 공간 차수 2 (FDM, FEM)', f2(last2(s.space, 'p_fdm')) + ' / ' + f2(last2(s.space, 'p_consistent')), ['p_fdm', 'p_consistent'].every(k => last2(s.space, k).every(p => within(p, 2))));
+    add('S-2', '혼합 질량 공간 차수 4', f2(lastValid(s.space, 'p_mixed')), lastValid(s.space, 'p_mixed').every(p => within(p, 4)));
+    const nd = Math.max(...s.time.map(r => r.normDrift));
+    add('S-3', 'CN 시간 차수 2, 노름 변화 ≤10⁻¹²', f2(last2(s.time, 'p_L2')) + ', ' + nd.toExponential(1), last2(s.time, 'p_L2').every(p => within(p, 2)) && nd <= 1e-12);
+    const ee = s.eeNorm.filter(r => r.dt <= 2e-4);
+    add('S-4', 'EE 노름 정확식 상대차 ≤10⁻⁸ (Δt≤2×10⁻⁴)', Math.max(...ee.map(r => r.relDiff)).toExponential(1), ee.every(r => r.relDiff <= 1e-8));
+    add('S-5', 'CN 결손 예측 상대차의 차수 2', f2(last2(s.deficit, 'p_rel')), last2(s.deficit, 'p_rel').every(p => within(p, 2)));
+    add('EB-1', '보 공간 차수 2', f2(last2(eb.space, 'p_L2')), last2(eb.space, 'p_L2').every(p => within(p, 2)));
+    add('EB-2', 'Newmark 시간 차수 2', f2(last2(eb.time, 'p_L2')), last2(eb.time, 'p_L2').every(p => within(p, 2)));
+    const ed = Math.max(...eb.time.map(r => r.energyDrift));
+    add('EB-3', 'Newmark 에너지 변화 ≤10⁻¹²', ed.toExponential(1), ed <= 1e-12);
+    add('EB-4', 'leapfrog 한계 k≈h²/2 (0.98 안정, 1.02 발산)', eb.leapfrog.map(r => r.factor + (r.stable ? ' 안정' : ' 발산')).join(' · '), eb.leapfrog[0].stable && !eb.leapfrog[1].stable);
+    add('EB-5', 'Newmark 결손 예측 상대차의 차수 2', f2(last2(eb.deficit, 'p_rel')), last2(eb.deficit, 'p_rel').every(p => within(p, 2)));
+    const t = d.trap, l = d.left;
+    add('D-1', '사다리꼴 d*=4 (d=3 격자, d=5 MC, d=4 기울기 차 ≤0.1)', `d=3 ${t[2].ratio < 1 ? '격자' : 'MC'} · d=5 ${t[4].ratio < 1 ? '격자' : 'MC'} · d=4 차 ${Math.abs(t[3].slopeGrid - t[3].slopeMC).toFixed(3)}`, t[2].ratio < 1 && t[4].ratio > 1 && Math.abs(t[3].slopeGrid - t[3].slopeMC) <= 0.1);
+    add('D-2', '직사각형 d*=2 (d=1 격자, d=3 MC, d=2 기울기 차 ≤0.1)', `d=1 ${l[0].ratio < 1 ? '격자' : 'MC'} · d=3 ${l[2].ratio < 1 ? '격자' : 'MC'} · d=2 차 ${Math.abs(l[1].slopeGrid - l[1].slopeMC).toFixed(3)}`, l[0].ratio < 1 && l[2].ratio > 1 && Math.abs(l[1].slopeGrid - l[1].slopeMC) <= 0.1);
+    return v;
+  }
+  const STEPS = [['H1', '1차원 열방정식', H1], ['H2', '2차원 열방정식', H2], ['B', 'Burgers', B], ['S', '슈뢰딩거', S], ['EB', 'Euler–Bernoulli 보', EB], ['D', '교차 차원', D]];
+  async function runAll(onProgress) {
+    const R = {}, ms = {};
+    for (const [key, name, fn] of STEPS) { if (onProgress) await onProgress(name); const t0 = Date.now(); R[key] = fn(); ms[key] = Date.now() - t0; }
+    R.verdicts = judge(R); R.runtimeMs = ms; return R;
+  }
+  return { runAll, judge, STEPS };
+})();
+if (typeof module !== 'undefined') module.exports = ENGINE;
+
+(function(){
+  const btn=document.getElementById('rerunBtn'); if(!btn) return;
+  btn.onclick=async()=>{ btn.disabled=true; const st=document.getElementById('rerunStatus'); const t0=performance.now();
+    try{ const R=await ENGINE.runAll(n=>new Promise(r=>{st.textContent='실행 중: '+n+' …'; setTimeout(r,30);}));
+      const rows=document.querySelectorAll('#t19 tbody tr');
+      R.verdicts.forEach((v,i)=>{ const tds=rows[i]&&rows[i].children; if(!tds) return; tds[2].textContent=v.meas; tds[3].innerHTML=v.ok?'<span class="g">맞음</span>':'<span class="l">틀림</span>'; });
+      st.textContent='완료 ('+((performance.now()-t0)/1000).toFixed(1)+'초): '+R.verdicts.filter(v=>v.ok).length+'/'+R.verdicts.length+' 맞음 — 표 19를 이 브라우저의 계산값으로 바꿨다.';
+    }catch(e){ st.textContent='오류: '+e.message; } btn.disabled=false; };
+})();
+</script>
+</body>
+</html>
